@@ -14,6 +14,6 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Prisma
-backend/prisma/dev.db
-backend/prisma/*.db
+# Database (local/dev artifacts)
+backend/db/*.db
+backend/db/*.sqlite
