@@ -21,10 +21,15 @@ const pool = new Pool({
     port: process.env.PORT
 });
 
+// example query with paramaterized inputs
 (async () => {
     try {
-        const {rows} = await pool.query('SELECT tablename FROM pg_catalog.pg_tables');
-        console.log(rows);
+        const text = 'INSERT INTO account VALUES ($1, $2, $3, $4, $5, $6)';
+        const values = ['pia', 'password', 'wow', 10, 'please work', 'f'];
+ 
+        const res = await pool.query(text, values);
+        //const {rows} = await pool.query('SELECT tablename FROM pg_catalog.pg_tables');
+        console.log(res);
     } catch(err) {
         console.log(err);
     } 
