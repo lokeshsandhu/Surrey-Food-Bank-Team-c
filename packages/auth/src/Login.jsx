@@ -3,6 +3,8 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './Login.css'
 
+import { Input, TextInput } from '@mantine/core';
+
 function App() {
   const [count, setCount] = useState(0)
 
