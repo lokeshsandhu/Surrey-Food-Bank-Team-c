@@ -7,23 +7,23 @@ DROP TABLE IF EXISTS public.account;
 
 CREATE TABLE IF NOT EXISTS public.account
 (
-    username character varying(100)[] NOT NULL PRIMARY KEY,
-    user_password character varying NOT NULL,
-    canada_status character varying(100)[],
+    username varchar NOT NULL PRIMARY KEY,
+    user_password varchar NOT NULL,
+    canada_status varchar,
     household_size integer,
-    addr character varying,
+    addr varchar,
     baby_or_pregnant boolean
 );
 
 CREATE TABLE IF NOT EXISTS public.familymember
 (
-    username character varying(100)[] NOT NULL,
-    f_name character varying NOT NULL,
-    l_name character varying,
+    username varchar NOT NULL,
+    f_name varchar NOT NULL,
+    l_name varchar,
     dob date,
-    phone character varying(12)[],
-    email character varying,
-    relationship character varying,
+    phone varchar,
+    email varchar,
+    relationship varchar,
     CONSTRAINT familymember_pkey PRIMARY KEY (username, f_name),
     CONSTRAINT familymember_fkey_username FOREIGN KEY (username)
         REFERENCES public.account (username) MATCH SIMPLE
@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS public.appointment
     appt_date date NOT NULL,
     start_time time without time zone NOT NULL,
     end_time time without time zone NOT NULL,
-    appt_notes character varying,
-    username character varying(100)[],
+    appt_notes varchar,
+    username varchar,
     CONSTRAINT appointment_pkey PRIMARY KEY (appt_date, start_time),
     CONSTRAINT appointment_fkey_user FOREIGN KEY (username)
         REFERENCES public.account (username) MATCH SIMPLE
