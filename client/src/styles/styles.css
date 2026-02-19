@@ -1,0 +1,33 @@
+.page {
+    min-height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
+    background: #035170;
+    background: linear-gradient(135deg, rgba(3, 81, 112, 1) 13%, rgba(240, 78, 99, 1) 50%, rgba(76, 197, 220, 1) 87%);
+    background-size: cover;
+    align-items: center;
+}
+
+.box {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px;
+    box-shadow: 0px 4px 4px 2px #0000006a;
+    min-height: 20vh;
+}
+
+.calendar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: auto;
+    min-height: auto;
+
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+}
