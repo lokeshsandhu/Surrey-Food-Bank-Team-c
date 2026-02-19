@@ -1,0 +1,19 @@
+import { Router } from "express";
+import * as controller from "./accounts.controller";
+import { authenticate, requireAdmin } from "../../middleware/auth.middleware";
+
+const router = Router();
+
+// POST /api/accounts — create a new account 
+router.post("/", controller.createAccount);
+
+// GET /api/accounts/:username get account details
+router.get("/:username", authenticate, controller.getMyAccount);
+
+// PATCH /api/accounts/:username — update a spcefic detail
+router.patch("/:username", authenticate, controller.updateMyAccount);
+
+// DELETE /api/accounts/:username — delete account (admin only)
+router.delete("/:username", authenticate, requireAdmin, controller.deleteAccount);
+
+export default router;
