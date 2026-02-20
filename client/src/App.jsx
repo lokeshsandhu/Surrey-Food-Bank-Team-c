@@ -3,14 +3,16 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css'
+import '@mantine/dates/styles.css';
 
 import ClientDashboard from './pages/clientDashboard';
 
-import { createTheme, MantineProvider } from '@mantine/core';
+import { createTheme, MantineProvider} from '@mantine/core';
 
 function App() {
   const theme = createTheme({
-    fontFamily: 'Proxima Nova, Raleway, Roboto',
+    fontFamily: 'Roboto, sans-serif',
     primaryColor: 'red'
   });
 
