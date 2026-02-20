@@ -8,14 +8,16 @@ import '@mantine/nprogress/styles.css'
 
 import './index.css'
 
-import App from './Login.jsx'
+import LoginPage from './pages/LoginPage.jsx'
+import RegisterPage from './pages/RegisterPage.jsx';
 
 const theme = createTheme({})
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <MantineProvider theme={theme}>
-      <App />
+      {/* <LoginPage /> */}
+      <RegisterPage />
     </MantineProvider>
   </StrictMode>
 )
