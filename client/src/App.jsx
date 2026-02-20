@@ -13,7 +13,8 @@ import { createTheme, MantineProvider} from '@mantine/core';
 function App() {
   const theme = createTheme({
     fontFamily: 'Roboto, sans-serif',
-    primaryColor: 'red'
+    primaryColor: 'red',
+    white: '#F2F2F2'
   });
 
   return (
