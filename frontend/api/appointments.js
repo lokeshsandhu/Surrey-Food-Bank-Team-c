@@ -6,8 +6,9 @@ const API_BASE = "http://localhost:3000/api/appointments";
 
 /**
  * Get appointments in a date range.
+ * Required fields: start, end (YYYY-MM-DD)
  * Example:
- *   getAppointmentsInDateRange("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "2024-06-01", "2024-06-30");
+ *   getAppointmentsInDateRange(token, "2024-06-01", "2024-06-30");
  */
 export function getAppointmentsInDateRange(token, start, end) {
   return fetch(`${API_BASE}/search/date-range?start=${start}&end=${end}`, {
@@ -18,8 +19,9 @@ export function getAppointmentsInDateRange(token, start, end) {
 
 /**
  * Get appointments in a time range.
+ * Required fields: start, end (HH:mm)
  * Example:
- *   getAppointmentsInTimeRange("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "09:00", "12:00");
+ *   getAppointmentsInTimeRange(token, "09:00", "12:00");
  */
 export function getAppointmentsInTimeRange(token, start, end) {
   return fetch(`${API_BASE}/search/time-range?start=${start}&end=${end}`, {
@@ -30,8 +32,9 @@ export function getAppointmentsInTimeRange(token, start, end) {
 
 /**
  * Get appointments in a date and time range.
+ * Required fields: date (YYYY-MM-DD), start, end (HH:mm)
  * Example:
- *   getAppointmentsInDateTimeRange("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "2024-06-01", "09:00", "12:00");
+ *   getAppointmentsInDateTimeRange(token, "2024-06-01", "09:00", "12:00");
  */
 export function getAppointmentsInDateTimeRange(token, date, start, end) {
   return fetch(`${API_BASE}/search/date-time-range?date=${date}&start=${start}&end=${end}`, {
@@ -41,13 +44,15 @@ export function getAppointmentsInDateTimeRange(token, date, start, end) {
 
 
 /**
- * Create multiple appointments in a time range.
+ * Create multiple appointments in a time range (admin only).
+ * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), end_time (HH:mm)
+ * Optional: appt_notes
  * Example:
- *   createAppointmentsInTimeRange("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", {
+ *   createAppointmentsInTimeRange(token, {
  *     appt_date: "2024-06-01",
  *     start_time: "09:00",
  *     end_time: "12:00",
- *     interval: 30
+ *     appt_notes: "Morning slots"
  *   });
  */
 export function createAppointmentsInTimeRange(token, data) {
@@ -60,12 +65,15 @@ export function createAppointmentsInTimeRange(token, data) {
 
 
 /**
- * Create a single appointment.
+ * Create a single available appointment slot (admin only).
+ * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), end_time (HH:mm)
+ * Optional: appt_notes
  * Example:
- *   createAppointment("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", {
+ *   createAppointment(token, {
  *     appt_date: "2024-06-01",
  *     start_time: "10:00",
- *     username: "johndoe"
+ *     end_time: "10:15",
+ *     appt_notes: "Special slot"
  *   });
  */
 export function createAppointment(token, data) {
@@ -78,9 +86,10 @@ export function createAppointment(token, data) {
 
 
 /**
- * Delete an appointment by date and start time.
+ * Delete an appointment by date and start time (admin only).
+ * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm)
  * Example:
- *   deleteAppointment("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "2024-06-01", "10:00");
+ *   deleteAppointment(token, "2024-06-01", "10:00");
  */
 export function deleteAppointment(token, appt_date, start_time) {
   return fetch(`${API_BASE}/appointment`, {
@@ -94,7 +103,7 @@ export function deleteAppointment(token, appt_date, start_time) {
 /**
  * Get all appointments (admin only).
  * Example:
- *   getAllAppointments("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...");
+ *   getAllAppointments(token);
  */
 export function getAllAppointments(token) {
   return fetch(`${API_BASE}/all`, {
@@ -104,14 +113,10 @@ export function getAllAppointments(token) {
 
 
 /**
- * Update an appointment.
+ * Update an appointment (admin only).
+ * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), updateData (object with fields to update)
  * Example:
- *   updateAppointment(
- *     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
- *     "2024-06-01",
- *     "10:00",
- *     { username: "janedoe" }
- *   );
+ *   updateAppointment(token, "2024-06-01", "10:00", { username: "janedoe" });
  */
 export function updateAppointment(token, appt_date, start_time, updateData) {
   return fetch(`${API_BASE}/update`, {
@@ -123,9 +128,10 @@ export function updateAppointment(token, appt_date, start_time, updateData) {
 
 
 /**
- * Delete all appointments for a date.
+ * Delete all appointments for a date (admin only).
+ * Required field: appt_date (YYYY-MM-DD)
  * Example:
- *   deleteAppointmentFromDate("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "2024-06-01");
+ *   deleteAppointmentFromDate(token, "2024-06-01");
  */
 export function deleteAppointmentFromDate(token, appt_date) {
   return fetch(`${API_BASE}/delete/date`, {
@@ -137,9 +143,10 @@ export function deleteAppointmentFromDate(token, appt_date) {
 
 
 /**
- * Delete all appointments for a username.
+ * Delete all appointments for a username (admin only).
+ * Required field: username
  * Example:
- *   deleteAppointmentFromUsername("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "johndoe");
+ *   deleteAppointmentFromUsername(token, "johndoe");
  */
 export function deleteAppointmentFromUsername(token, username) {
   return fetch(`${API_BASE}/delete/username`, {
@@ -151,9 +158,10 @@ export function deleteAppointmentFromUsername(token, username) {
 
 
 /**
- * Delete an appointment for a username, date, and start time.
+ * Delete an appointment for a username, date, and start time (admin only).
+ * Required fields: username, appt_date (YYYY-MM-DD), start_time (HH:mm)
  * Example:
- *   deleteAppointmentFromUsernameDateStart("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "johndoe", "2024-06-01", "10:00");
+ *   deleteAppointmentFromUsernameDateStart(token, "johndoe", "2024-06-01", "10:00");
  */
 export function deleteAppointmentFromUsernameDateStart(token, username, appt_date, start_time) {
   return fetch(`${API_BASE}/delete/username-date-start`, {
@@ -165,9 +173,10 @@ export function deleteAppointmentFromUsernameDateStart(token, username, appt_dat
 
 
 /**
- * Find an appointment by date and start time.
+ * Find an appointment by date and start time (admin only).
+ * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm)
  * Example:
- *   findAppointmentFromApptDateAndStartTime("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "2024-06-01", "10:00");
+ *   findAppointmentFromApptDateAndStartTime(token, "2024-06-01", "10:00");
  */
 export function findAppointmentFromApptDateAndStartTime(token, appt_date, start_time) {
   return fetch(`${API_BASE}/find/date-start?appt_date=${appt_date}&start_time=${start_time}`, {
@@ -177,9 +186,9 @@ export function findAppointmentFromApptDateAndStartTime(token, appt_date, start_
 
 
 /**
- * Get all available appointments.
+ * Get all available appointments (client only).
  * Example:
- *   getAvailableAppointments("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...");
+ *   getAvailableAppointments(token);
  */
 export function getAvailableAppointments(token) {
   return fetch(`${API_BASE}/available`, {
@@ -189,12 +198,12 @@ export function getAvailableAppointments(token) {
 
 
 /**
- * Book an appointment.
+ * Book an appointment (client only).
+ * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm)
  * Example:
- *   bookAppointment("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", {
+ *   bookAppointment(token, {
  *     appt_date: "2024-06-01",
- *     start_time: "10:00",
- *     username: "johndoe"
+ *     start_time: "10:00"
  *   });
  */
 export function bookAppointment(token, data) {
@@ -204,7 +213,12 @@ export function bookAppointment(token, data) {
     body: JSON.stringify(data)
   }).then(res => res.json());
 }
-
+/**
+ * Cancel a booked appointment (client only).
+ * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm)
+ * Example:
+ *   cancelAppointment(token, "2024-06-01", "10:00");
+ */
 export function cancelAppointment(token, appt_date, start_time) {
   return fetch(`${API_BASE}/cancel`, {
     method: "POST",
@@ -213,12 +227,23 @@ export function cancelAppointment(token, appt_date, start_time) {
   }).then(res => res.json());
 }
 
+/**
+ * Get all appointments booked by the current user (client only).
+ * Example:
+ *   getMyAppointments(token);
+ */
 export function getMyAppointments(token) {
   return fetch(`${API_BASE}/mine`, {
     headers: { Authorization: `Bearer ${token}` }
   }).then(res => res.json());
 }
 
+/**
+ * Update a booked appointment (client only).
+ * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), newAppointment (object)
+ * Example:
+ *   updateMyAppointment(token, "2024-06-01", "10:00", { appt_date: "2024-06-08", start_time: "09:00" });
+ */
 export function updateMyAppointment(token, appt_date, start_time, newAppointment) {
   return fetch(`${API_BASE}/update-mine`, {
     method: "POST",
