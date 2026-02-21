@@ -1,0 +1,67 @@
+
+// API functions for accounts endpoints
+
+const API_BASE = "http://localhost:3000/api/accounts";
+
+
+/**
+ * Create a new account.
+ * Example:
+ *   createAccount({
+ *     username: "johndoe",
+ *     password: "password123",
+ *     email: "john@example.com",
+ *     baby_or_pregnant: false
+ *   });
+ */
+export function createAccount(data) {
+  return fetch(API_BASE, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  }).then(res => res.json());
+}
+
+
+/**
+ * Get account details by username.
+ * Example:
+ *   getAccount("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "johndoe");
+ */
+export function getAccount(token, username) {
+  return fetch(`${API_BASE}/${username}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(res => res.json());
+}
+
+
+/**
+ * Update account details.
+ * Example:
+ *   updateAccount(
+ *     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+ *     "johndoe",
+ *     { email: "newemail@example.com", baby_or_pregnant: true }
+ *   );
+ * You only need to include the fields you want to update in the data object.
+ */
+export function updateAccount(token, username, data) {
+  return fetch(`${API_BASE}/${username}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data)
+  }).then(res => res.json());
+}
+
+
+/**
+ * Delete an account by username.
+ * Example:
+ *   deleteAccount("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "johndoe");
+ */
+export function deleteAccount(token, username) {
+  return fetch(`${API_BASE}/${username}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(res => res.json());
+}

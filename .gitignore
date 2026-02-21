@@ -1,0 +1,19 @@
+# Node / TS
+node_modules/
+dist/
+*.log
+
+# Env
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Database (local/dev artifacts)
+backend/db/*.db
+backend/db/*.sqlite

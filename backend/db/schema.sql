@@ -1,0 +1,46 @@
+-- Database schema (scaffold only).
+-- Define tables for: accounts, family_members, appointments, appointment_attendees, etc.
+
+DROP TABLE IF EXISTS public.familymember;
+DROP TABLE IF EXISTS public.appointment;
+DROP TABLE IF EXISTS public.account;
+
+CREATE TABLE IF NOT EXISTS public.account
+(
+    username varchar NOT NULL PRIMARY KEY,
+    user_password varchar NOT NULL,
+    canada_status varchar,
+    household_size integer,
+    addr varchar,
+    baby_or_pregnant boolean
+);
+
+CREATE TABLE IF NOT EXISTS public.familymember
+(
+    username varchar NOT NULL,
+    f_name varchar NOT NULL,
+    l_name varchar,
+    dob date,
+    phone varchar,
+    email varchar,
+    relationship varchar,
+    CONSTRAINT familymember_pkey PRIMARY KEY (username, f_name),
+    CONSTRAINT familymember_fkey_username FOREIGN KEY (username)
+        REFERENCES public.account (username) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS public.appointment
+(
+    appt_date date NOT NULL,
+    start_time time without time zone NOT NULL,
+    end_time time without time zone NOT NULL,
+    appt_notes varchar,
+    username varchar,
+    CONSTRAINT appointment_pkey PRIMARY KEY (appt_date, start_time),
+    CONSTRAINT appointment_fkey_user FOREIGN KEY (username)
+        REFERENCES public.account (username) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
