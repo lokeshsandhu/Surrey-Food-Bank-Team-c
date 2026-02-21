@@ -43,6 +43,7 @@ export function getAccount(token, username) {
  *     "johndoe",
  *     { email: "newemail@example.com", baby_or_pregnant: true }
  *   );
+ * You only need to include the fields you want to update in the data object.
  */
 export function updateAccount(token, username, data) {
   return fetch(`${API_BASE}/${username}`, {

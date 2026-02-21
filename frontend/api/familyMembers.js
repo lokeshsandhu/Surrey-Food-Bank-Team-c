@@ -5,9 +5,10 @@ const API_BASE = "http://localhost:3000/api/family-members";
 
 
 /**
- * Get family members by first name.
+ * Get family members by first name (admin only).
+ * Required field: f_name
  * Example:
- *   getFamilyMembersByFName("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "Jane");
+ *   getFamilyMembersByFName(token, "Jane");
  */
 export function getFamilyMembersByFName(token, f_name) {
   return fetch(`${API_BASE}/search/by-fname?f_name=${encodeURIComponent(f_name)}`, {
@@ -17,9 +18,10 @@ export function getFamilyMembersByFName(token, f_name) {
 
 
 /**
- * Get family members by last name.
+ * Get family members by last name (admin only).
+ * Required field: l_name
  * Example:
- *   getFamilyMembersByLName("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "Doe");
+ *   getFamilyMembersByLName(token, "Doe");
  */
 export function getFamilyMembersByLName(token, l_name) {
   return fetch(`${API_BASE}/search/by-lname?l_name=${encodeURIComponent(l_name)}`, {
@@ -30,12 +32,16 @@ export function getFamilyMembersByLName(token, l_name) {
 
 /**
  * Create a new family member.
+ * Required fields: username, f_name
+ * Optional: l_name, dob, phone, email, relationship
  * Example:
- *   createFamilyMember("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", {
+ *   createFamilyMember(token, {
  *     username: "johndoe",
  *     f_name: "Jane",
  *     l_name: "Doe",
- *     age: 12,
+ *     dob: "2014-06-01",
+ *     phone: "1234567890",
+ *     email: "jane@example.com",
  *     relationship: "child"
  *   });
  */
@@ -50,8 +56,9 @@ export function createFamilyMember(token, data) {
 
 /**
  * Get all family members for a username.
+ * Required field: username
  * Example:
- *   getFamilyMembers("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "johndoe");
+ *   getFamilyMembers(token, "johndoe");
  */
 export function getFamilyMembers(token, username) {
   return fetch(`${API_BASE}/${username}`, {
@@ -62,13 +69,10 @@ export function getFamilyMembers(token, username) {
 
 /**
  * Update a family member's details.
+ * Required fields: username, f_name (in URL)
+ * Optional fields in data: l_name, dob, phone, email, relationship
  * Example:
- *   updateFamilyMember(
- *     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
- *     "johndoe",
- *     "Jane",
- *     { age: 13, relationship: "daughter" }
- *   );
+ *   updateFamilyMember(token, "johndoe", "Jane", { relationship: "daughter", dob: "2013-06-01" });
  */
 export function updateFamilyMember(token, username, f_name, data) {
   return fetch(`${API_BASE}/${username}/${encodeURIComponent(f_name)}`, {
@@ -81,8 +85,9 @@ export function updateFamilyMember(token, username, f_name, data) {
 
 /**
  * Delete a family member by username and first name.
+ * Required fields: username, f_name (in URL)
  * Example:
- *   deleteFamilyMember("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "johndoe", "Jane");
+ *   deleteFamilyMember(token, "johndoe", "Jane");
  */
 export function deleteFamilyMember(token, username, f_name) {
   return fetch(`${API_BASE}/${username}/${encodeURIComponent(f_name)}`, {
