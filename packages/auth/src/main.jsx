@@ -16,7 +16,7 @@ const theme = createTheme({})
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <MantineProvider theme={theme}>
-      {/* <LoginPage /> */}
+      <LoginPage />
       <RegisterPage />
     </MantineProvider>
   </StrictMode>
