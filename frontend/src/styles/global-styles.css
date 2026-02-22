@@ -1,9 +1,30 @@
+/* Mantine notifications portal z-index fix */
+.mantine-Notifications-root {
+    z-index: 9999 !important;
+    position: fixed !important;
+    left: 50%;
+    top: 24px;
+    transform: translateX(-50%);
+    width: 400px;
+    max-width: 90vw;
+    min-width: 200px;
+    pointer-events: none;
+}
+html, body {
+    width: 100vw;
+    max-width: 100vw;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+}
 .top-container {
     width: 100vw;
+    max-width: 100vw;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow-x: hidden;
 }
 
 .linear-gradient {

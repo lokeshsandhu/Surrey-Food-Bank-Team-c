@@ -5,7 +5,8 @@ import '../styles/Login.css'
 import logo from '../assets/surrey-food-bank-logo.png'
 
 import { Input, Card, Button, Text, NavLink, Typography, Image } from '@mantine/core';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
+import { notifications } from '@mantine/notifications';
 
 import {login, me} from '../../api/auth.js';
 
@@ -13,8 +14,23 @@ export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [shownAdminDenied, setShownAdminDenied] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  React.useEffect(() => {
+    if (location.state?.adminDenied && !shownAdminDenied) {
+      notifications.show({
+        title: "Access Denied",
+        message: "You must be an admin to access this page.",
+        color: "red",
+      });
+      setShownAdminDenied(true);
+      // Clear the adminDenied flag from location.state
+      navigate(window.location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, shownAdminDenied, navigate]);
 
   const handleLogin = async () => {
     setError('');
