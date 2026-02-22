@@ -13,7 +13,11 @@ import { BrowserRouter } from 'react-router';
 
 import ClientRoutes from './routes/index.jsx';
 
-const theme = createTheme({});
+const theme = createTheme({
+    fontFamily: 'Roboto, sans-serif',
+    primaryColor: 'red',
+    white: '#F2F2F2'
+  });
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

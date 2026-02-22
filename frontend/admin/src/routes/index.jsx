@@ -1,17 +1,17 @@
 import { Routes, Route } from 'react-router';
 import { LoginPage, RegisterPage } from '../../../../packages/auth/src/index.js';
-import ClientDashboard from '../pages/clientDashboard.jsx';
-import ProtectedRoute from './protectedroute.jsx';
+import AdminDashboard from '../pages/adminDashboard.jsx';
+import AdminRoute from './adminroute.jsx';
 
-export default function ClientRoutes() {
+export default function AdminRoutes() {
     return (
         <Routes>
             <Route path="/" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/dashboard" element={
-                <ProtectedRoute>
-                    <ClientDashboard />
-                </ProtectedRoute>
+                <AdminRoute>
+                    <AdminDashboard />
+                </AdminRoute>
             } />
         </Routes>
     )
