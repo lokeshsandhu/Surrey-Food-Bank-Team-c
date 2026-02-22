@@ -1,5 +1,9 @@
-/**
- * Express Request augmentation types (scaffold only).
- *
- * Intentionally left blank per request: “remove code, just want files”.
- */
+import { JwtPayload } from "../crypto/jwt";
+
+declare global {
+    namespace Express {
+        interface Request {
+            user?: JwtPayload;
+        }
+    }
+}

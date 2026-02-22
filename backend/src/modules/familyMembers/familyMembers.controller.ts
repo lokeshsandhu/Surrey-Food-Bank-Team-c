@@ -1,5 +1,77 @@
-/**
- * Family member HTTP handlers (scaffold only).
- *
- * Intentionally left blank per request: “remove code, just want files”.
- */
+import { Request, Response } from "express";
+import * as service from "./familyMembers.service";
+//Find all people with this first name
+export async function getFamilyMembersByFName(req: Request, res: Response) {
+    try {
+        const { f_name } = req.query;
+        if (!f_name) {
+            res.status(400).json({ error: "f_name query param required" });
+            return;
+        }
+        const results = await service.findFamilyMembersByFName(String(f_name));
+        res.status(200).json(results);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+// Fubd all people with this last name
+export async function getFamilyMembersByLName(req: Request, res: Response) {
+    try {
+        const { l_name } = req.query;
+        if (!l_name) {
+            res.status(400).json({ error: "l_name query param required" });
+            return;
+        }
+        const results = await service.findFamilyMembersByLName(String(l_name));
+        res.status(200).json(results);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+
+export async function createFamilyMember(req: Request, res: Response) {
+    try {
+        const member = await service.createFamilyMember(req.body);
+        res.status(201).json(member);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+export async function getFamilyMembers(req: Request, res: Response) {
+    try {
+        const members = await service.getFamilyMembers(req.params.username);
+        res.status(200).json(members);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+// Update the family member's details
+export async function updateFamilyMember(req: Request, res: Response) {
+    try {
+        const { username, f_name } = req.params;
+        const updated = await service.updateFamilyMember(username, f_name, req.body);
+        if (!updated) {
+            res.status(404).json({ error: "Family member not found" });
+            return;
+        }
+        res.status(200).json(updated);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+//delete this family member from an account
+export async function deleteFamilyMember(req: Request, res: Response) {
+    try {
+        const { username, f_name } = req.params;
+        const deleted = await service.deleteFamilyMember(username, f_name);
+        if (!deleted) {
+            res.status(404).json({ error: "Family member not found" });
+            return;
+        }
+        res.status(200).json(deleted);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}

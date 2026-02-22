@@ -1,5 +1,9 @@
-/**
- * HTTP server bootstrap (scaffold only).
- *
- * Intentionally left blank per request: “remove code, just want files”.
- */
+import "./config/env"; 
+import app from "./app";
+import { env } from "./config/env";
+
+const PORT = env.PORT;
+
+app.listen(PORT, () => {
+	console.log(`Server running on http://localhost:${PORT}`);
+});

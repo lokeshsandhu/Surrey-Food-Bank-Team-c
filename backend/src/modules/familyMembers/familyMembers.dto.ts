@@ -1,11 +1,17 @@
-/**
- * Family member DTOs (scaffold only).
- *
- * Intended endpoints:
- * - POST /api/family-members
- * - GET /api/family-members
- * - PUT /api/family-members/:familyMemberId
- * - DELETE /api/family-members/:familyMemberId
- *
- * Intentionally left blank per request: “remove code, just want files”.
- */
+export interface FamilyMemberDTO {
+    username: string;
+    f_name: string;
+    l_name?: string;
+    dob?: string;
+    phone?: string;
+    email?: string;
+    relationship?: string;
+}
+
+export interface UpdateFamilyMemberDTO {
+    l_name?: string;
+    dob?: string;
+    phone?: string;
+    email?: string;
+    relationship?: string;
+}
