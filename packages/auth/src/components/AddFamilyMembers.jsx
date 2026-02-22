@@ -23,6 +23,7 @@ export default function AddFamilyMembers({ form }) {
             <h2 className='login-title'>Add Family Members</h2>
             <Text size='sm'>Please add any additional family members you would like to register under your account.</Text>
             <Text size='sm'>If this does not apply to you, you may skip this section.</Text>
+            <Text size='sm' mt={15}>When you are done, select "Register".</Text>
             <Stack className='registration-section'>
                 {form.getValues().family_members.map((member, index) => (
                     <Group key={index}>

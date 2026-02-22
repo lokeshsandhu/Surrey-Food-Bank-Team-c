@@ -38,7 +38,6 @@ export default function RegisterPage() {
             user_password: '',
             confirm_password: '',
             canada_status: '',
-            household_size: 0,
             baby_or_pregnant: '',
             addr: {
                 line1: '',
@@ -64,8 +63,8 @@ export default function RegisterPage() {
             username: hasLength({ min: 5 }, 'Username must be at least 5 characters'),
             user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
-            canada_status: (value) => value ? value==='ineligible' ? 'You are not eligible to register for Surrey Food Bank.' : null : 'Please select an option.',
-            baby_or_pregnant: (value) => value && value.length > 0 ? value === 'true' ? true : false : 'Please select an option.',
+            canada_status: (value) => value ? value === 'ineligible' ? 'You are not eligible to register for Surrey Food Bank.' : null : 'Please select an option.',
+            baby_or_pregnant: (value) => value ? null : 'Please select an option.',
             addr: {
                 line1: isNotEmpty('Please enter your address.'),
                 city: isNotEmpty('Please enter your city.'),
@@ -136,81 +135,7 @@ export default function RegisterPage() {
         });
 
         if (!hasErrors) {
-            if (activeSection === 2) {
-                setRegisterError('');
-                // Check for duplicate first names (including main account holder)
-                const allFirstNames = [form.values.main_family_member.f_name, ...form.values.family_members.map(m => m.f_name)];
-                const nameSet = new Set();
-                let duplicateFound = false;
-                for (const name of allFirstNames) {
-                    if (nameSet.has(name)) {
-                        duplicateFound = true;
-                        break;
-                    }
-                    nameSet.add(name);
-                }
-                if (duplicateFound) {
-                    setRegisterError('You cannot add two family members with the same first name. Please use a unique first name for each family member.');
-                    return;
-                }
-                const householdSize = 1 + form.values.family_members.length; 
-                const accountData = {
-                    username: form.values.username,
-                    user_password: form.values.user_password,
-                    canada_status: form.values.canada_status,
-                    household_size: householdSize,
-                    addr: form.values.addr.line1 + ', ' + form.values.addr.line2 + ', ' + form.values.addr.city + ', ' + form.values.addr.province + ', ' + form.values.addr.postal_code,
-                    baby_or_pregnant: form.values.baby_or_pregnant === 'true',
-                };
-                try {
-                    const result = await createAccount(accountData);
-                    if (result && result.username) {
-                        // Login immediately after account creation
-                        const loginResult = await login(accountData.username, accountData.user_password);
-                        if (loginResult && loginResult.token) {
-                            sessionStorage.setItem('token', loginResult.token);
-                            // Add main account holder as a family member with relationship 'owner'
-                            const ownerData = {
-                                username: accountData.username,
-                                f_name: form.values.main_family_member.f_name,
-                                l_name: form.values.main_family_member.l_name,
-                                dob: form.values.main_family_member.dob,
-                                phone: form.values.main_family_member.phone,
-                                email: form.values.main_family_member.email,
-                                relationship: 'owner',
-                            };
-                            try {
-                                await createFamilyMember(loginResult.token, ownerData);
-                                // Add each additional family member
-                                for (const member of form.values.family_members) {
-                                    const memberData = {
-                                        username: accountData.username,
-                                        f_name: member.f_name,
-                                        l_name: member.l_name,
-                                        dob: member.dob,
-                                        phone: member.phone,
-                                        email: member.email,
-                                        relationship: member.relationship,
-                                    };
-                                    await createFamilyMember(loginResult.token, memberData);
-                                }
-                                setActiveSection((current) => (current < 3 ? current + 1 : current));
-                            } catch (famErr) {
-                                setRegisterError('There was a problem adding your family members. Please try again.');
-                                return;
-                            }
-                        } else {
-                            setRegisterError('Sorry, we could not log you in automatically. Please try logging in manually.');
-                        }
-                    } else {
-                        setRegisterError(result?.error || result?.message || 'Registration failed');
-                    }
-                } catch (err) {
-                    setRegisterError('Registration failed');
-                }
-            } else {
-                setActiveSection((current) => (current < 3 ? current + 1 : current));
-            }
+            setActiveSection((current) => (current < 3 ? current + 1 : current));
         }
     }
 

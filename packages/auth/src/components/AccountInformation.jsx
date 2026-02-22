@@ -102,15 +102,6 @@ export default function AccountInformation({ form }) {
                             <Radio value='false' label="No" />
                         </Group>
                     </Radio.Group>
-                    <NumberInput 
-                        label='7. Total Number of Family Members'
-                        description='This will help us determine how much time we should allocate for your appointments.'
-                        allowNegative={false}
-                        w={'50%'}
-                        withAsterisk
-                        key={form.key('household_size')}
-                        {...form.getInputProps('household_size')}
-                    />
                 </Stack>
             </Group>
         </div>
