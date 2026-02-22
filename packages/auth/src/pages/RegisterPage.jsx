@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { act, useState } from 'react'
 import '../styles/global-styles.css'
 import '../styles/Register.css'
@@ -13,11 +14,23 @@ import { Input, Card, Button, Text, NavLink, Typography, Timeline, Image, Steppe
 import { useForm, isNotEmpty, hasLength, matchesField, isEmail } from '@mantine/form'
 
 import validator from 'validator'
-
+import {createAccount} from '../../../../frontend/api/accounts.js';
+import {login} from '../../../../frontend/api/auth.js';
+import {createFamilyMember} from '../../../../frontend/api/familyMembers.js';
 export default function RegisterPage() {
+    const errorRef = useRef(null);
     const [activeSection, setActiveSection] = useState(0)
     const [nextBtnEnabled, setNextBtnEnabled] = useState(false)
-    const prevSection = () => setActiveSection((current) => (current > 0 ? current - 1 : current));
+    const [registerError, setRegisterError] = useState('');
+        useEffect(() => {
+            if (registerError && activeSection === 2 && errorRef.current) {
+                errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+        }, [registerError, activeSection]);
+    const prevSection = () => {
+        setActiveSection((current) => (current > 0 ? current - 1 : current));
+        setRegisterError(''); 
+    };
 
     const form = useForm({
         initialValues: {
@@ -76,7 +89,7 @@ export default function RegisterPage() {
         }
     })
 
-    const nextSection = () => {
+    const nextSection = async () => {
         let fieldsToValidate = [];
 
         if (activeSection === 0) {
@@ -117,15 +130,87 @@ export default function RegisterPage() {
 
         fieldsToValidate.forEach((field) => {
             const result = form.validateField(field);
-
             if (result.hasError) {
                 hasErrors = true;
             }
         });
 
         if (!hasErrors) {
-            setActiveSection((current) => (current < 3 ? current + 1 : current));
-            // setNextBtnEnabled(false)
+            if (activeSection === 2) {
+                setRegisterError('');
+                // Check for duplicate first names (including main account holder)
+                const allFirstNames = [form.values.main_family_member.f_name, ...form.values.family_members.map(m => m.f_name)];
+                const nameSet = new Set();
+                let duplicateFound = false;
+                for (const name of allFirstNames) {
+                    if (nameSet.has(name)) {
+                        duplicateFound = true;
+                        break;
+                    }
+                    nameSet.add(name);
+                }
+                if (duplicateFound) {
+                    setRegisterError('You cannot add two family members with the same first name. Please use a unique first name for each family member.');
+                    return;
+                }
+                const householdSize = 1 + form.values.family_members.length; 
+                const accountData = {
+                    username: form.values.username,
+                    user_password: form.values.user_password,
+                    canada_status: form.values.canada_status,
+                    household_size: householdSize,
+                    addr: form.values.addr.line1 + ', ' + form.values.addr.line2 + ', ' + form.values.addr.city + ', ' + form.values.addr.province + ', ' + form.values.addr.postal_code,
+                    baby_or_pregnant: form.values.baby_or_pregnant === 'true',
+                };
+                try {
+                    const result = await createAccount(accountData);
+                    if (result && result.username) {
+                        // Login immediately after account creation
+                        const loginResult = await login(accountData.username, accountData.user_password);
+                        if (loginResult && loginResult.token) {
+                            sessionStorage.setItem('token', loginResult.token);
+                            // Add main account holder as a family member with relationship 'owner'
+                            const ownerData = {
+                                username: accountData.username,
+                                f_name: form.values.main_family_member.f_name,
+                                l_name: form.values.main_family_member.l_name,
+                                dob: form.values.main_family_member.dob,
+                                phone: form.values.main_family_member.phone,
+                                email: form.values.main_family_member.email,
+                                relationship: 'owner',
+                            };
+                            try {
+                                await createFamilyMember(loginResult.token, ownerData);
+                                // Add each additional family member
+                                for (const member of form.values.family_members) {
+                                    const memberData = {
+                                        username: accountData.username,
+                                        f_name: member.f_name,
+                                        l_name: member.l_name,
+                                        dob: member.dob,
+                                        phone: member.phone,
+                                        email: member.email,
+                                        relationship: member.relationship,
+                                    };
+                                    await createFamilyMember(loginResult.token, memberData);
+                                }
+                                setActiveSection((current) => (current < 3 ? current + 1 : current));
+                            } catch (famErr) {
+                                setRegisterError('There was a problem adding your family members. Please try again.');
+                                return;
+                            }
+                        } else {
+                            setRegisterError('Sorry, we could not log you in automatically. Please try logging in manually.');
+                        }
+                    } else {
+                        setRegisterError(result?.error || result?.message || 'Registration failed');
+                    }
+                } catch (err) {
+                    setRegisterError('Registration failed');
+                }
+            } else {
+                setActiveSection((current) => (current < 3 ? current + 1 : current));
+            }
         }
     }
 
@@ -153,13 +238,37 @@ export default function RegisterPage() {
                 <Group justify="space-between" align='end' mt="md">
                     <Button variant="default" onClick={prevSection} disabled={activeSection === 0}>Back</Button>
                     <Button
-                        onClick={nextSection}
+                        onClick={activeSection === 3 ? async () => {
+                            const username = form.values.username;
+                            const password = form.values.user_password;
+                            try {
+                                const result = await login(username, password);
+                                if (result && result.token) {
+                                    sessionStorage.setItem('token', result.token);
+                                    window.location.href = '/dashboard'; 
+                                } else {
+                                    setRegisterError('Sorry, we could not log you in automatically. Please try logging in manually.');
+                                }
+                            } catch (err) {
+                                setRegisterError('Sorry, we could not log you in automatically. Please try logging in manually.');
+                            }
+                        } : nextSection}
                         color={activeSection >= 2 ? 'rgba(3, 161, 11, 1)' : 'blue'}
-                        // disabled={!nextBtnEnabled}
                     >
                         {activeSection === 2 ? 'Register' : activeSection === 3 ? 'Continue to Dashboard' : 'Next'}
                     </Button>
                 </Group>
+                {activeSection === 2 && registerError && (
+                    <div ref={errorRef} style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+                        <Text color="red" size="lg" style={{ textAlign: 'center', maxWidth: 400 }}>
+                            {registerError === 'Registration failed' || registerError === 'Registration failed.' || registerError === 'Internal server error' ?
+                                'Sorry, we could not create your account. Please check your information and try again.' :
+                                registerError.includes('duplicate') || registerError.includes('already exists') ?
+                                'That username is already taken. Please choose a different one.' :
+                                'Sorry, ' + registerError.replace(/_/g, ' ').replace(/username/i, 'account name')}
+                        </Text>
+                    </div>
+                )}
             </Card>
         </div>
     )
