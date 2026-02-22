@@ -1,0 +1,14 @@
+.link {
+  padding: 0;
+  font-weight: 400;
+}
+
+.login-title {
+  font-weight: 500;
+  margin: 0;
+}
+
+.login-card {
+  min-width: 300px;
+  min-height: 300px;
+}

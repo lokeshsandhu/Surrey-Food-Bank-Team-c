@@ -1,0 +1,15 @@
+.top-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.linear-gradient {
+    background-image: linear-gradient(to bottom right, #49C6DD 13%, #005070 50%, #F24C62 87%);
+}
+
+.card {
+    gap: 15px;
+}
