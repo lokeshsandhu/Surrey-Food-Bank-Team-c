@@ -1,6 +1,5 @@
 import { Routes, Route } from 'react-router';
-import LoginPage from '../../../../packages/auth/src/pages/LoginPage.jsx';
-import RegisterPage from '../../../../packages/auth/src/pages/RegisterPage.jsx';
+import { LoginPage, RegisterPage } from '../../../../packages/auth/src/index.js';
 import ClientDashboard from '../pages/clientDashboard.jsx';
 
 export default function ClientRoutes() {
