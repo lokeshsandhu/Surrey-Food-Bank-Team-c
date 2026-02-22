@@ -25,7 +25,6 @@ export default function RegisterPage() {
             user_password: '',
             confirm_password: '',
             canada_status: '',
-            household_size: 0,
             baby_or_pregnant: '',
             addr: {
                 line1: '',
@@ -51,8 +50,8 @@ export default function RegisterPage() {
             username: hasLength({ min: 5 }, 'Username must be at least 5 characters'),
             user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
-            canada_status: (value) => value ? value==='ineligible' ? 'You are not eligible to register for Surrey Food Bank.' : null : 'Please select an option.',
-            baby_or_pregnant: (value) => value && value.length > 0 ? value === 'true' ? true : false : 'Please select an option.',
+            canada_status: (value) => value ? value === 'ineligible' ? 'You are not eligible to register for Surrey Food Bank.' : null : 'Please select an option.',
+            baby_or_pregnant: (value) => value ? null : 'Please select an option.',
             addr: {
                 line1: isNotEmpty('Please enter your address.'),
                 city: isNotEmpty('Please enter your city.'),
@@ -117,7 +116,6 @@ export default function RegisterPage() {
 
         fieldsToValidate.forEach((field) => {
             const result = form.validateField(field);
-
             if (result.hasError) {
                 hasErrors = true;
             }
@@ -125,7 +123,6 @@ export default function RegisterPage() {
 
         if (!hasErrors) {
             setActiveSection((current) => (current < 3 ? current + 1 : current));
-            // setNextBtnEnabled(false)
         }
     }
 
@@ -155,7 +152,6 @@ export default function RegisterPage() {
                     <Button
                         onClick={nextSection}
                         color={activeSection >= 2 ? 'rgba(3, 161, 11, 1)' : 'blue'}
-                        // disabled={!nextBtnEnabled}
                     >
                         {activeSection === 2 ? 'Register' : activeSection === 3 ? 'Continue to Dashboard' : 'Next'}
                     </Button>
