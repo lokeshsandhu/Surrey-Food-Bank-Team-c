@@ -26,7 +26,7 @@ export default function RegisterPage() {
     const [registerError, setRegisterError] = useState('');
 
     const navigate = useNavigate();
-    
+
     useEffect(() => {
         if (registerError && activeSection === 2 && errorRef.current) {
             errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -38,7 +38,7 @@ export default function RegisterPage() {
             navigate('/');
         }
         setActiveSection((current) => (current > 0 ? current - 1 : current));
-        setRegisterError(''); 
+        setRegisterError('');
     };
 
     const form = useForm({
@@ -73,8 +73,8 @@ export default function RegisterPage() {
             username: hasLength({ min: 5 }, 'Username must be at least 5 characters'),
             user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
-            canada_status: (value) => value ? value==='ineligible' ? 'You are not eligible to register for Surrey Food Bank.' : null : 'Please select an option.',
-            baby_or_pregnant: (value) => value && value.length > 0 ? value === 'true' ? true : false : 'Please select an option.',
+            canada_status: (value) => value ? value === 'ineligible' ? 'You are not eligible to register for Surrey Food Bank.' : null : 'Please select an option.',
+            baby_or_pregnant: (value) => value && value.length > 0 ? null : 'Please select an option.',
             addr: {
                 line1: isNotEmpty('Please enter your address.'),
                 city: isNotEmpty('Please enter your city.'),
@@ -162,7 +162,7 @@ export default function RegisterPage() {
                     setRegisterError('You cannot add two family members with the same first name. Please use a unique first name for each family member.');
                     return;
                 }
-                const householdSize = 1 + form.values.family_members.length; 
+                const householdSize = 1 + form.values.family_members.length;
                 const accountData = {
                     username: form.values.username,
                     user_password: form.values.user_password,
@@ -281,8 +281,8 @@ export default function RegisterPage() {
                             {registerError === 'Registration failed' || registerError === 'Registration failed.' || registerError === 'Internal server error' ?
                                 'Sorry, we could not create your account. Please check your information and try again.' :
                                 registerError.includes('duplicate') || registerError.includes('already exists') ?
-                                'That username is already taken. Please choose a different one.' :
-                                'Sorry, ' + registerError.replace(/_/g, ' ').replace(/username/i, 'account name')}
+                                    'That username is already taken. Please choose a different one.' :
+                                    'Sorry, ' + registerError.replace(/_/g, ' ').replace(/username/i, 'account name')}
                         </Text>
                     </div>
                 )}
