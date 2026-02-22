@@ -23,6 +23,7 @@ export function login(username, password) {
  */
 export function me(token) {
   return fetch("http://localhost:3000/api/auth/me", {
+    method: "POST",
     headers: { Authorization: `Bearer ${token}` }
   }).then(res => res.json());
 }
