@@ -22,6 +22,7 @@ export default function LoginPage() {
       const result = await login(username, password);
       if (result && result.token) {
         sessionStorage.setItem('token', result.token);
+        sessionStorage.setItem('username', username);
         navigate('/dashboard');
       } else {
         setError(result?.error || 'Login failed');

@@ -5,7 +5,6 @@ import '../styles/styles.css';
 
 import AdminNavbar from '../components/navBar';
 import { useState } from 'react';
-import { Notifications } from '@mantine/notifications';
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { getAppointmentsInDateRange } from '../../../api/appointments.js';
@@ -50,7 +49,7 @@ export default function AdminDashboard() {
             <AdminNavbar/>
             <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs" style={{ height: '100%'}}>
                 <div className="box">
-                    You have a booking for June 30th, click here to edit/cancel your booking.
+                    Welcome back {sessionStorage.getItem('username')}! You have a booking for _____, click here to edit/cancel your booking.
                 </div>
                 <div className="box">
                     lorem ipsum dolor sit amet
@@ -104,7 +103,6 @@ export default function AdminDashboard() {
             }}>
                 Logout
             </Button>
-            <Notifications/>
         </div>
     );
 }

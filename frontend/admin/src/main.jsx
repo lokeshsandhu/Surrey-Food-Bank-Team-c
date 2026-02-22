@@ -11,6 +11,8 @@ import './index.css'
 import { createTheme, MantineProvider } from '@mantine/core';
 import { BrowserRouter } from 'react-router';
 
+import { Notifications } from '@mantine/notifications';
+
 import AdminRoutes from './routes/index.jsx';
 
 const theme = createTheme({
@@ -23,6 +25,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <MantineProvider theme={theme}>
       <BrowserRouter>
+        <Notifications />
         <AdminRoutes/>
       </BrowserRouter>
     </MantineProvider>

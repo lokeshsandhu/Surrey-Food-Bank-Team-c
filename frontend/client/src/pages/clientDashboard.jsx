@@ -134,7 +134,6 @@ export default function ClientDashboard() {
             }}>
                 Logout
             </Button>
-            <Notifications/>
         </div>
     );
         
