@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { act, useState } from 'react'
 import '../styles/global-styles.css'
 import '../styles/Register.css'
@@ -13,11 +14,23 @@ import { Input, Card, Button, Text, NavLink, Typography, Timeline, Image, Steppe
 import { useForm, isNotEmpty, hasLength, matchesField, isEmail } from '@mantine/form'
 
 import validator from 'validator'
-
+import {createAccount} from '../../../../frontend/api/accounts.js';
+import {login} from '../../../../frontend/api/auth.js';
+import {createFamilyMember} from '../../../../frontend/api/familyMembers.js';
 export default function RegisterPage() {
+    const errorRef = useRef(null);
     const [activeSection, setActiveSection] = useState(0)
     const [nextBtnEnabled, setNextBtnEnabled] = useState(false)
-    const prevSection = () => setActiveSection((current) => (current > 0 ? current - 1 : current));
+    const [registerError, setRegisterError] = useState('');
+        useEffect(() => {
+            if (registerError && activeSection === 2 && errorRef.current) {
+                errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+        }, [registerError, activeSection]);
+    const prevSection = () => {
+        setActiveSection((current) => (current > 0 ? current - 1 : current));
+        setRegisterError(''); 
+    };
 
     const form = useForm({
         initialValues: {
@@ -75,7 +88,7 @@ export default function RegisterPage() {
         }
     })
 
-    const nextSection = () => {
+    const nextSection = async () => {
         let fieldsToValidate = [];
 
         if (activeSection === 0) {
@@ -150,12 +163,37 @@ export default function RegisterPage() {
                 <Group justify="space-between" align='end' mt="md">
                     <Button variant="default" onClick={prevSection} disabled={activeSection === 0}>Back</Button>
                     <Button
-                        onClick={nextSection}
+                        onClick={activeSection === 3 ? async () => {
+                            const username = form.values.username;
+                            const password = form.values.user_password;
+                            try {
+                                const result = await login(username, password);
+                                if (result && result.token) {
+                                    sessionStorage.setItem('token', result.token);
+                                    window.location.href = '/dashboard'; 
+                                } else {
+                                    setRegisterError('Sorry, we could not log you in automatically. Please try logging in manually.');
+                                }
+                            } catch (err) {
+                                setRegisterError('Sorry, we could not log you in automatically. Please try logging in manually.');
+                            }
+                        } : nextSection}
                         color={activeSection >= 2 ? 'rgba(3, 161, 11, 1)' : 'blue'}
                     >
                         {activeSection === 2 ? 'Register' : activeSection === 3 ? 'Continue to Dashboard' : 'Next'}
                     </Button>
                 </Group>
+                {activeSection === 2 && registerError && (
+                    <div ref={errorRef} style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+                        <Text color="red" size="lg" style={{ textAlign: 'center', maxWidth: 400 }}>
+                            {registerError === 'Registration failed' || registerError === 'Registration failed.' || registerError === 'Internal server error' ?
+                                'Sorry, we could not create your account. Please check your information and try again.' :
+                                registerError.includes('duplicate') || registerError.includes('already exists') ?
+                                'That username is already taken. Please choose a different one.' :
+                                'Sorry, ' + registerError.replace(/_/g, ' ').replace(/username/i, 'account name')}
+                        </Text>
+                    </div>
+                )}
             </Card>
         </div>
     )
