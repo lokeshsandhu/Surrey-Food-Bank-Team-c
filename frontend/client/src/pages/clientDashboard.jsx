@@ -1,12 +1,13 @@
 import { Button, SimpleGrid, LoadingOverlay, Notification } from '@mantine/core';
 import { getTimeRange, DatePicker, TimeGrid } from '@mantine/dates';
-import { useDisclosure } from '@mantine/hooks';
 
 import '../styles/styles.css';
 
 import ClientNavBar from '../components/navBar';
 import { useState } from 'react';
 import { notifications, Notifications } from '@mantine/notifications';
+import { useNavigate } from 'react-router';
+import { bookAppointment, getAppointmentsInDateRange } from '../../../api/appointments.js';
 
 const excludedDays = [1, 3, 5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
 
@@ -15,41 +16,63 @@ export default function ClientDashboard() {
     const [selectedTime, setSelectedTime] = useState(null);
     const [processingBooking, setProcessingBooking] = useState(false);
     const [loadingTimeGrid, setLoadingTimeGrid] = useState(false);
+    const [availableTimes, setAvailableTimes] = useState([]);
     const [bookedTimes, setBookedTimes] = useState([]);
 
-    const handleBooking = () => {
+    const token = sessionStorage.getItem('token');
+    const navigate = useNavigate();
+
+    if (!token) {
+        navigate('/');
+        return null;
+    }
+
+    // console.log('ClientDashboard token:', token);
+
+    const handleBooking = async () => {
         if (selectedDate && selectedTime) {
             // TODO: Send booking information to the backend and handle the response
             setProcessingBooking(true);
-            console.log('Booking date:', selectedDate);
-            console.log('Booking time:', selectedTime);
 
-            // Delete later
-            setTimeout(() => {
-                setProcessingBooking(false);
+            const data = {appt_date: selectedDate, start_time: selectedTime};
+            const res = await bookAppointment(token, data);
+
+            if (res && res.success) {
                 notifications.show({
-                    title: 'Booking Confirmed',
-                    message: `Your appointment is booked for ${selectedDate} at ${selectedTime}`,
+                    title: 'Success',
+                    message: 'Appointment booked successfully',
                     color: 'green',
                 });
-            }, 2000);
+                handleAvailableTimes(selectedDate); // Refresh available times after booking
+            } else {
+                notifications.show({
+                    title: 'Error',
+                    message: res?.error || 'Failed to book appointment',
+                    color: 'red',
+                });
+            }
 
-            // Enter code here
+            setProcessingBooking(false);
+
         }
     };
 
-    const handleAvailableTimes = (date) => {
+    const handleAvailableTimes = async (date) => {
         // TODO: Fetch available times for the selected date from the backend and update the state
         setSelectedDate(date);
         setLoadingTimeGrid(true);
-        console.log('Selected date:', date);
 
-        // Delete later
-        setTimeout(() => {
+        try {
+            const timeslots = await getAppointmentsInDateRange(token, date, date);
+            const takenTimes = timeslots.filter(slot => slot.username !== null);
+            setAvailableTimes(timeslots.map(appointment => appointment.start_time));
+            setBookedTimes(takenTimes.map(appointment => appointment.start_time));
+        } catch (error) {
+            console.error('Error fetching booked times:', error);
+        } finally {
             setLoadingTimeGrid(false);
-        }, 2000);
+        }
 
-        // Enter code here
     }
 
     return (
@@ -83,7 +106,7 @@ export default function ClientDashboard() {
                     <LoadingOverlay visible={loadingTimeGrid} overlayProps={{ radius: "sm", blur: 2 }} />
 
                     <TimeGrid
-                        data={getTimeRange({ startTime: '9:15', endTime: '11:15', interval: '00:15' })}
+                        data={availableTimes}
                         simpleGridProps={{
                             type: 'container',
                             cols: { base: 3 },
@@ -98,14 +121,19 @@ export default function ClientDashboard() {
                     />
 
                     <div className="booking-button">
-                        <Button size="lg" onClick={handleBooking} loading={processingBooking}>
+                        <Button size="lg" onClick={handleBooking} loading={processingBooking} disabled={!selectedDate || !selectedTime}>
                             Book Appointment
                         </Button>
                     </div>
                 </div>
 
             </SimpleGrid>
-            <Notifications/>
+            <Button style={{marginLeft: '20px'}} size="lg" onClick={() => {
+                sessionStorage.removeItem('token');
+                navigate('/');
+            }}>
+                Logout
+            </Button>
         </div>
     );
         

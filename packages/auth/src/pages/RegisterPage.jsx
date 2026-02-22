@@ -13,6 +13,8 @@ import RegistrationFinished from '../components/RegistrationFinished.jsx'
 import { Input, Card, Button, Text, NavLink, Typography, Timeline, Image, Stepper, Group } from '@mantine/core';
 import { useForm, isNotEmpty, hasLength, matchesField, isEmail } from '@mantine/form'
 
+import { useNavigate } from 'react-router';
+
 import validator from 'validator'
 import {createAccount} from '../../../../frontend/api/accounts.js';
 import {login} from '../../../../frontend/api/auth.js';
@@ -22,12 +24,19 @@ export default function RegisterPage() {
     const [activeSection, setActiveSection] = useState(0)
     const [nextBtnEnabled, setNextBtnEnabled] = useState(false)
     const [registerError, setRegisterError] = useState('');
-        useEffect(() => {
-            if (registerError && activeSection === 2 && errorRef.current) {
-                errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-            }
-        }, [registerError, activeSection]);
+
+    const navigate = useNavigate();
+    
+    useEffect(() => {
+        if (registerError && activeSection === 2 && errorRef.current) {
+            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+    }, [registerError, activeSection]);
+
     const prevSection = () => {
+        if (activeSection === 0) {
+            navigate('/');
+        }
         setActiveSection((current) => (current > 0 ? current - 1 : current));
         setRegisterError(''); 
     };
@@ -236,7 +245,7 @@ export default function RegisterPage() {
                     </Stepper.Completed>
                 </Stepper>
                 <Group justify="space-between" align='end' mt="md">
-                    <Button variant="default" onClick={prevSection} disabled={activeSection === 0}>Back</Button>
+                    <Button variant="default" onClick={prevSection}>Back</Button>
                     <Button
                         onClick={activeSection === 3 ? async () => {
                             const username = form.values.username;

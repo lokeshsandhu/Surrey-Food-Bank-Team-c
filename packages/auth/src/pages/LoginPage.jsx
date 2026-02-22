@@ -5,6 +5,7 @@ import '../styles/Login.css'
 import logo from '../assets/surrey-food-bank-logo.png'
 
 import { Input, Card, Button, Text, NavLink, Typography, Image } from '@mantine/core';
+import { useNavigate } from 'react-router';
 
 import {login} from '../../../../frontend/api/auth.js';
 
@@ -13,12 +14,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  const navigate = useNavigate();
+
   const handleLogin = async () => {
     setError('');
     try {
       const result = await login(username, password);
       if (result && result.token) {
         sessionStorage.setItem('token', result.token);
+        sessionStorage.setItem('username', username);
+        navigate('/dashboard');
       } else {
         setError(result?.error || 'Login failed');
       }
@@ -39,6 +44,7 @@ export default function LoginPage() {
           <NavLink 
           className='link' 
           label="Don't have an account?" 
+          onClick={() => navigate('/register')}
           />
           <NavLink className='link' label="Forgot Password?" />
         </div>

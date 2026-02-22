@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "client",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -16,10 +16,12 @@
     "@mantine/form": "^8.3.15",
     "@mantine/hooks": "^8.3.15",
     "@mantine/notifications": "^8.3.15",
+    "@mantine/nprogress": "^8.3.15",
     "@mantinex/mantine-logo": "^2.0.0",
     "dayjs": "^1.11.19",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-router": "^7.13.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

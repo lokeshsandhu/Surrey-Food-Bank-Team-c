@@ -1,0 +1,21 @@
+{
+  "name": "surrey-food-bank-team-c",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend/admin",
+    "frontend/client",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm -w backend run dev",
+    "dev:client": "npm -w client run dev",
+    "dev:admin": "npm -w admin run dev",
+
+    "build:backend": "npm -w backend run build",
+    "build:client": "npm -w client run build",
+    "build:admin": "npm -w admin run build",
+
+    "lint": "npm -ws run lint"
+  }
+}
