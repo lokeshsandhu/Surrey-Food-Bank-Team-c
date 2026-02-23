@@ -1,5 +1,6 @@
 import { Button, SimpleGrid, LoadingOverlay, ScrollArea, Stack } from '@mantine/core';
-import { DatePicker, } from '@mantine/dates';
+import { DatePicker, DatePickerInput, TimePicker, getTimeRange } from '@mantine/dates';
+import { notifications } from '@mantine/notifications';
 
 import '../styles/adminstyles.css';
 import React from 'react';
@@ -7,25 +8,34 @@ import { AdminNavBar } from '../components/navBar.jsx';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { getAppointmentsInDateRange } from '../../api/appointments.js';
+import { getAppointmentsInDateRange, createAppointmentsInTimeRange, updateAppointment } from '../../api/appointments.js';
 
 import { useNavigate } from 'react-router';
-import { notifications } from '@mantine/notifications';
 
 const excludedDays = [1, 3, 5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
 
 export default function AdminDashboard() {
 
-    // console.log('AdminDashboard token:', token);
     const token = sessionStorage.getItem('token');
 
     dayjs.extend(customParseFormat);
 
-    const [loadingTimeGrid, setLoadingTimeGrid] = useState(false);
+    //For time list
+    const [loadingTimeList, setLoadingTimeList] = useState(false);
     const [bookedTimeslots, setBookedTimeslots] = useState([]);
 
+    // For creating timeslots
+    const [createTimeslotDate, setCreateTimeslotDate] = useState(dayjs().format('YYYY-MM-DD'));
+    const [createTimeslotStart, setCreateTimeslotStart] = useState("08:00");
+    const [createTimeslotEnd, setCreateTimeslotEnd] = useState("16:00");
+
+    // For calendar
     const [hovered, setHovered] = useState(null);
     const [value, setValue] = useState(null);
+
+    // For making bookings
+    const [createBookingDate, setCreateBookingDate] = useState(dayjs().format('YYYY-MM-DD'));
+    const [createBookingStart, setCreateBookingStart] = useState("08:00:00");
 
     const navigate = useNavigate();
 
@@ -35,7 +45,7 @@ export default function AdminDashboard() {
     }
 
     const findBookingsForDate = async (date) => {
-        setLoadingTimeGrid(true);
+        setLoadingTimeList(true);
 
         console.log('Finding bookings for date between:', dayjs(startOfWeek(date)).format('YYYY-MM-DD'), 'and', dayjs(endOfWeek(date)).format('YYYY-MM-DD'));
 
@@ -52,9 +62,59 @@ export default function AdminDashboard() {
         
         console.log('Received number of timeslots not if:', timeslots.length);
 
-        setLoadingTimeGrid(false);
-        
+        setLoadingTimeList(false);
     };
+
+    const createTimeslot = async () => {
+
+        console.log('Creating timeslot with date:', dayjs(createTimeslotDate).format('YYYY-MM-DD'), 'start:', dayjs(createTimeslotStart, 'HH:mm:ss').format('HH:mm'), 'end:', dayjs(createTimeslotEnd, 'HH:mm:ss').format('HH:mm'));
+
+        const res = await createAppointmentsInTimeRange(token, {
+            appt_date: dayjs(createTimeslotDate).format('YYYY-MM-DD'),
+            start_time: dayjs(createTimeslotStart, 'HH:mm:ss').format('HH:mm'),
+            end_time: dayjs(createTimeslotEnd, 'HH:mm:ss').format('HH:mm'),
+            appt_notes: ""
+        });
+
+        console.log('Create timeslot response:', res);
+
+        if (res && res.success) {
+            notifications.show({
+                title: 'Success',
+                message: 'Timeslot created successfully',
+                color: 'green'
+            });
+
+        } else {
+            notifications.show({
+                title: 'Error',
+                message: 'Failed to create timeslot: ' + (res?.error || ''),
+                color: 'red'
+            });
+        }
+    }
+
+    const makeBooking = async () => {
+        console.log('Creating booking with date:', dayjs(createBookingDate).format('YYYY-MM-DD'), 'start:', dayjs(createBookingStart, 'HH:mm:ss').format('HH:mm'));
+        const res = await updateAppointment(token, dayjs(createBookingDate).format('YYYY-MM-DD'), dayjs(createBookingStart, 'HH:mm:ss').format('HH:mm'), {username: "admin", appt_notes: "Admin booking"});
+
+        console.log('Make booking response:', res);
+
+        if (res && res.success) {
+            notifications.show({
+                title: 'Success',
+                message: 'Booking created successfully',
+                color: 'green'
+            });
+        } else {
+            notifications.show({
+                title: 'Error',
+                message: 'Failed to create booking: ' + (res?.error || ''),
+                color: 'red'
+            });
+        }
+
+    }
 
     return (
         <div className="page">
@@ -64,10 +124,25 @@ export default function AdminDashboard() {
                     Welcome back {sessionStorage.getItem('username')}! You have a booking for _____, click here to edit/cancel your booking.
                 </div>
                 <div className="box">
-                    lorem ipsum dolor sit amet
+                    <DatePickerInput
+                        label="Pick date to make booking for client"
+                        value={createBookingDate ? createBookingDate : dayjs()}
+                        onChange={setCreateBookingDate}
+                    />
+
+                    <TimePicker label="Appointment timeslot start time" value={createBookingStart} onChange={setCreateBookingStart} format="12h" withDropdown presets={getTimeRange({ startTime: '08:00:00', endTime: '16:00:00', interval: '00:15:00' })}/>
+                    <Button onClick={makeBooking} style={{marginTop: '20px'}}>Make booking</Button>
                 </div>
                 <div className="box">
-                    lorem ipsum dolor sit amet
+                    <DatePickerInput
+                        label="Pick date for new timeslots"
+                        value={createTimeslotDate ? createTimeslotDate : dayjs()}
+                        onChange={setCreateTimeslotDate}
+                    />
+
+                    <TimePicker label="From" value={createTimeslotStart} onChange={setCreateTimeslotStart} format="12h" withDropdown presets={getTimeRange({ startTime: '08:00:00', endTime: createTimeslotEnd, interval: '00:15:00' })}/>
+                    <TimePicker label="To" value={createTimeslotEnd} onChange={setCreateTimeslotEnd} format="12h" withDropdown presets={getTimeRange({ startTime: createTimeslotStart, endTime: '16:00:00', interval: '00:15:00' })}/>
+                    <Button onClick={createTimeslot} style={{marginTop: '20px'}}>Create timeslots</Button>
                 </div>
             </SimpleGrid>
             <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch'}}>
@@ -96,7 +171,7 @@ export default function AdminDashboard() {
 
                 <div className="time-list">
 
-                    <LoadingOverlay visible={loadingTimeGrid} overlayProps={{ radius: "sm", blur: 2 }} />
+                    <LoadingOverlay visible={loadingTimeList} overlayProps={{ radius: "sm", blur: 2 }} />
                     
                     <ScrollArea.Autosize style={{ display: 'flex', flexDirection: 'column', height: '100%'}}>
                         {bookedTimeslots.map(slot => (
