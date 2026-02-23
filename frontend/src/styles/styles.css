@@ -19,15 +19,14 @@
 }
 
 .calendar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    position: relative;
     width: auto;
-    min-height: auto;
+    height: 100%;
 
     background: rgba(255, 255, 255, 0.8);
     border-radius: 10px;
-    padding: 20px;
+    padding: 30px;
+    margin-top: 20px;
     margin-left: 20px;
     margin-right: 20px;
     margin-bottom: 20px;
@@ -37,10 +36,12 @@
 .time-grid {
     position: relative;
     width: auto;
+    height: 100%;
 
     background: rgba(255, 255, 255, 0.8);
     border-radius: 10px;
     padding: 30px;
+    margin-top: 40px;
     margin-left: 20px;
     margin-right: 20px;
     margin-bottom: 20px;

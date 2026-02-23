@@ -27,8 +27,6 @@ export default function ClientDashboard() {
         return null;
     }
 
-    // console.log('ClientDashboard token:', token);
-
     const handleBooking = async () => {
         if (selectedDate && selectedTime) {
             // TODO: Send booking information to the backend and handle the response
@@ -89,7 +87,7 @@ export default function ClientDashboard() {
                     lorem ipsum dolor sit amet
                 </div>
             </SimpleGrid>
-            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs">
+            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{marginBottom: '60px'}}>
 
                 <div className="calendar">
                     <DatePicker

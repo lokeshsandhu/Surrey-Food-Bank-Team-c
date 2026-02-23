@@ -71,7 +71,6 @@ export default function AdminDashboard() {
                 </div>
             </SimpleGrid>
             <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch'}}>
-
                 <div className="calendar">
                     <DatePicker
                         size="xl"
