@@ -15,23 +15,25 @@ import AdminDashboard from './pages/adminDashboard.jsx';
 import ClientDashboard from './pages/clientDashboard.jsx';
 import ProtectedRoute from './routes/protectedroute.jsx';
 import AdminRoute from './routes/adminroute.jsx';
+import ClientList from './pages/clientList.jsx';
 const theme = createTheme({
-    fontFamily: 'Roboto, sans-serif',
-    primaryColor: 'red',
-    white: '#F2F2F2'
+  fontFamily: 'Roboto, sans-serif',
+  primaryColor: 'red',
+  white: '#F2F2F2'
 })
 
 createRoot(document.getElementById('root')).render(
-    <MantineProvider theme={theme}>
-      <Notifications position="top-center" />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="*" element={<Navigate to="/login" />} />
-          <Route path="/adminDashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          <Route path="/clientDashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
-        </Routes>
-      </BrowserRouter>
-    </MantineProvider>
+  <MantineProvider theme={theme}>
+    <Notifications position="top-center" />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="/adminDashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="/adminDashboard/clientList" element={<AdminRoute><ClientList /></AdminRoute>} />
+        <Route path="/clientDashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
+      </Routes>
+    </BrowserRouter>
+  </MantineProvider>
 )

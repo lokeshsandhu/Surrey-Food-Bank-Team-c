@@ -1,4 +1,4 @@
-import { Button, SimpleGrid, LoadingOverlay, ScrollArea, Stack } from '@mantine/core';
+import { Button, SimpleGrid, LoadingOverlay, ScrollArea, Stack, Text } from '@mantine/core';
 import { DatePicker, DatePickerInput, TimePicker, getTimeRange } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 
@@ -59,7 +59,7 @@ export default function AdminDashboard() {
         } else {
             console.log('No timeslots received');
         }
-        
+
         console.log('Received number of timeslots not if:', timeslots.length);
 
         setLoadingTimeList(false);
@@ -135,10 +135,13 @@ export default function AdminDashboard() {
 
     return (
         <div className="page">
-            <AdminNavBar/>
-            <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs" style={{ height: '100%'}}>
-                <div className="box">
-                    Welcome back {sessionStorage.getItem('username')}! You have a booking for _____, click here to edit/cancel your booking.
+            <AdminNavBar />
+            <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs" style={{ height: '100%' }}>
+                <div className="box" style={{height: '100%'}}>
+                    <Text>
+                        Welcome back {sessionStorage.getItem('username')}! You have a booking for _____, click here to edit/cancel your booking.
+                    </Text>
+                    <Button justify='end' mt={20} onClick={() => navigate('/adminDashboard/clientList')}>View Client List</Button>
                 </div>
                 <div className="box">
                     <DatePickerInput
@@ -147,8 +150,8 @@ export default function AdminDashboard() {
                         onChange={setCreateBookingDate}
                     />
 
-                    <TimePicker label="Appointment timeslot start time" value={createBookingTime} onChange={setCreateBookingTime} format="12h" withDropdown presets={getTimeRange({ startTime: '08:00:00', endTime: '16:00:00', interval: '00:15:00' })}/>
-                    <Button onClick={makeBooking} style={{marginTop: '20px'}}>Make booking</Button>
+                    <TimePicker label="Appointment timeslot start time" value={createBookingTime} onChange={setCreateBookingTime} format="12h" withDropdown presets={getTimeRange({ startTime: '08:00:00', endTime: '16:00:00', interval: '00:15:00' })} />
+                    <Button onClick={makeBooking} style={{ marginTop: '20px' }}>Make booking</Button>
                 </div>
                 <div className="box">
                     <DatePickerInput
@@ -157,12 +160,12 @@ export default function AdminDashboard() {
                         onChange={setCreateTimeslotDate}
                     />
 
-                    <TimePicker label="From" value={createTimeslotStart} onChange={setCreateTimeslotStart} format="12h" withDropdown presets={getTimeRange({ startTime: '08:00:00', endTime: createTimeslotEnd, interval: '00:15:00' })}/>
-                    <TimePicker label="To" value={createTimeslotEnd} onChange={setCreateTimeslotEnd} format="12h" withDropdown presets={getTimeRange({ startTime: createTimeslotStart, endTime: '16:00:00', interval: '00:15:00' })}/>
-                    <Button onClick={createTimeslot} style={{marginTop: '20px'}}>Create timeslots</Button>
+                    <TimePicker label="From" value={createTimeslotStart} onChange={setCreateTimeslotStart} format="12h" withDropdown presets={getTimeRange({ startTime: '08:00:00', endTime: createTimeslotEnd, interval: '00:15:00' })} />
+                    <TimePicker label="To" value={createTimeslotEnd} onChange={setCreateTimeslotEnd} format="12h" withDropdown presets={getTimeRange({ startTime: createTimeslotStart, endTime: '16:00:00', interval: '00:15:00' })} />
+                    <Button onClick={createTimeslot} style={{ marginTop: '20px' }}>Create timeslots</Button>
                 </div>
             </SimpleGrid>
-            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch'}}>
+            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
                 <div className="calendar">
                     <DatePicker
                         size="xl"
@@ -174,13 +177,13 @@ export default function AdminDashboard() {
                             const isSelected = isInWeekRange(date, value);
                             const isInRange = isHovered || isSelected;
                             return {
-                            onMouseEnter: () => setHovered(date),
-                            onMouseLeave: () => setHovered(null),
-                            inRange: isInRange,
-                            firstInRange: isInRange && new Date(date).getDay() === 1,
-                            lastInRange: isInRange && new Date(date).getDay() === 0,
-                            selected: isSelected,
-                            onClick: () => setValue(date),
+                                onMouseEnter: () => setHovered(date),
+                                onMouseLeave: () => setHovered(null),
+                                inRange: isInRange,
+                                firstInRange: isInRange && new Date(date).getDay() === 1,
+                                lastInRange: isInRange && new Date(date).getDay() === 0,
+                                selected: isSelected,
+                                onClick: () => setValue(date),
                             };
                         }}
                     />
@@ -189,10 +192,10 @@ export default function AdminDashboard() {
                 <div className="time-list">
 
                     <LoadingOverlay visible={loadingTimeList} overlayProps={{ radius: "sm", blur: 2 }} />
-                    
-                    <ScrollArea.Autosize style={{ display: 'flex', flexDirection: 'column', height: '100%'}}>
+
+                    <ScrollArea.Autosize style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                         {bookedTimeslots.map(slot => (
-                            <Button key={`${slot.appt_date}-${slot.start_time}`} variant="filled" style={{width: "100%", marginBottom: '10px'}}>
+                            <Button key={`${slot.appt_date}-${slot.start_time}`} variant="filled" style={{ width: "100%", marginBottom: '10px' }}>
                                 {dayjs(slot.appt_date).format('YYYY-MM-DD')} {dayjs(slot.start_time, 'HH:mm:ss').format('h:mm A')} - {slot.username ? `Booked by ${slot.username}` : 'Available'}
                             </Button>
                         ))}
@@ -200,7 +203,7 @@ export default function AdminDashboard() {
                 </div>
 
             </SimpleGrid>
-            <Button style={{margin: '20px'}} size="lg" onClick={() => {
+            <Button style={{ margin: '20px' }} size="lg" onClick={() => {
                 sessionStorage.removeItem('token');
                 notifications.show({
                     title: 'Logged out',
@@ -216,25 +219,25 @@ export default function AdminDashboard() {
 }
 
 function getDay(date) {
-  const day = dayjs(date).day();
-  return day === 0 ? 6 : day - 1;
+    const day = dayjs(date).day();
+    return day === 0 ? 6 : day - 1;
 }
 
 function startOfWeek(date) {
-  return dayjs(date)
-    .subtract(getDay(date) + 1, 'day')
-    .toDate();
+    return dayjs(date)
+        .subtract(getDay(date) + 1, 'day')
+        .toDate();
 }
 
 function endOfWeek(date) {
-  return dayjs(date)
-    .add(6 - getDay(date), 'day')
-    .endOf('day')
-    .toDate();
+    return dayjs(date)
+        .add(6 - getDay(date), 'day')
+        .endOf('day')
+        .toDate();
 }
 
 function isInWeekRange(date, value) {
-  return value
-    ? dayjs(date).isBefore(endOfWeek(value)) && dayjs(date).isAfter(startOfWeek(value))
-    : false;
+    return value
+        ? dayjs(date).isBefore(endOfWeek(value)) && dayjs(date).isAfter(startOfWeek(value))
+        : false;
 }
