@@ -130,6 +130,11 @@ export default function ClientDashboard() {
             </SimpleGrid>
             <Button style={{marginLeft: '20px'}} size="lg" onClick={() => {
                 sessionStorage.removeItem('token');
+                notifications.show({
+                    title: 'Logged out',
+                    message: 'You have been successfully logged out.',
+                    color: 'green',
+                });
                 navigate('/');
             }}>
                 Logout

@@ -1,7 +1,7 @@
 import { Button, SimpleGrid, LoadingOverlay, ScrollArea, Stack } from '@mantine/core';
 import { DatePicker, } from '@mantine/dates';
 
-import '../styles/styles.css';
+import '../styles/adminstyles.css';
 import React from 'react';
 import { AdminNavBar } from '../components/navBar.jsx';
 import { useState } from 'react';
@@ -10,14 +10,14 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import { getAppointmentsInDateRange } from '../../api/appointments.js';
 
 import { useNavigate } from 'react-router';
+import { notifications } from '@mantine/notifications';
 
 const excludedDays = [1, 3, 5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
-
-const token = sessionStorage.getItem('token');
 
 export default function AdminDashboard() {
 
     // console.log('AdminDashboard token:', token);
+    const token = sessionStorage.getItem('token');
 
     dayjs.extend(customParseFormat);
 
@@ -29,6 +29,11 @@ export default function AdminDashboard() {
 
     const navigate = useNavigate();
 
+    if (!token) {
+        navigate('/');
+        return null;
+    }
+
     const findBookingsForDate = async (date) => {
         setLoadingTimeGrid(true);
 
@@ -36,9 +41,16 @@ export default function AdminDashboard() {
 
         const timeslots = await getAppointmentsInDateRange(token, dayjs(startOfWeek(date)).format('YYYY-MM-DD'), dayjs(endOfWeek(date)).format('YYYY-MM-DD'));
 
-        console.log('Received number of timeslots:', timeslots.length);
+        console.log(timeslots);
 
-        setBookedTimeslots(timeslots);
+        if (timeslots) {
+            console.log('Received number of timeslots in if:', timeslots.length);
+            setBookedTimeslots(timeslots);
+        } else {
+            console.log('No timeslots received');
+        }
+        
+        console.log('Received number of timeslots not if:', timeslots.length);
 
         setLoadingTimeGrid(false);
         
@@ -99,6 +111,11 @@ export default function AdminDashboard() {
             </SimpleGrid>
             <Button style={{margin: '20px'}} size="lg" onClick={() => {
                 sessionStorage.removeItem('token');
+                notifications.show({
+                    title: 'Logged out',
+                    message: 'You have been successfully logged out.',
+                    color: 'green',
+                });
                 navigate('/');
             }}>
                 Logout

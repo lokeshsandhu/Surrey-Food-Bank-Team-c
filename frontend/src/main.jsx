@@ -15,7 +15,11 @@ import AdminDashboard from './pages/adminDashboard.jsx';
 import ClientDashboard from './pages/clientDashboard.jsx';
 import ProtectedRoute from './routes/protectedroute.jsx';
 import AdminRoute from './routes/adminroute.jsx';
-const theme = createTheme({})
+const theme = createTheme({
+    fontFamily: 'Roboto, sans-serif',
+    primaryColor: 'red',
+    white: '#F2F2F2'
+})
 
 createRoot(document.getElementById('root')).render(
     <MantineProvider theme={theme}>
