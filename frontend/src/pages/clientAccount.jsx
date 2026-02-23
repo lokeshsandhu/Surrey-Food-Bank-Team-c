@@ -72,7 +72,7 @@ export function ClientAccountAdminView() {
 export function ClientAccountClientView() {
     const navigate = useNavigate();
     return (
-        <div className="page">
+        <div className="page" style={{overflowY: 'auto'}}>
             <ClientNavBar />
             <div className="box" style={{ height: '85vh' }}>
                 <ActionIcon mb={10} onClick={() => navigate('/clientDashboard')}>
