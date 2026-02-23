@@ -82,7 +82,7 @@ export default function ClientList() {
         // onClick={() => { navigate(`/profile/${owner.username}`) }}
         >
             <Table.Td>{owner.l_name}, {owner.f_name}</Table.Td>
-            <Table.Td>{owner.email}</Table.Td>
+            <Table.Td><a href={`mailto:${owner.email}`}>{owner.email}</a></Table.Td>
         </Table.Tr>
     ))
 
