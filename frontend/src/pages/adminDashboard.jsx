@@ -8,7 +8,7 @@ import { AdminNavBar } from '../components/navBar.jsx';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { getAppointmentsInDateRange, createAppointmentsInTimeRange, updateAppointment } from '../../api/appointments.js';
+import { getAppointmentsInDateRange, createAppointmentsInTimeRange, updateAppointment, getAppointmentsInDateTimeRange } from '../../api/appointments.js';
 
 import { useNavigate } from 'react-router';
 
@@ -26,8 +26,8 @@ export default function AdminDashboard() {
 
     // For creating timeslots
     const [createTimeslotDate, setCreateTimeslotDate] = useState(dayjs().format('YYYY-MM-DD'));
-    const [createTimeslotStart, setCreateTimeslotStart] = useState("08:00");
-    const [createTimeslotEnd, setCreateTimeslotEnd] = useState("16:00");
+    const [createTimeslotStart, setCreateTimeslotStart] = useState("08:00:00");
+    const [createTimeslotEnd, setCreateTimeslotEnd] = useState("16:00:00");
 
     // For calendar
     const [hovered, setHovered] = useState(null);
@@ -35,7 +35,7 @@ export default function AdminDashboard() {
 
     // For making bookings
     const [createBookingDate, setCreateBookingDate] = useState(dayjs().format('YYYY-MM-DD'));
-    const [createBookingStart, setCreateBookingStart] = useState("08:00:00");
+    const [createBookingTime, setCreateBookingTime] = useState("08:00:00");
 
     const navigate = useNavigate();
 
@@ -95,22 +95,39 @@ export default function AdminDashboard() {
     }
 
     const makeBooking = async () => {
-        console.log('Creating booking with date:', dayjs(createBookingDate).format('YYYY-MM-DD'), 'start:', dayjs(createBookingStart, 'HH:mm:ss').format('HH:mm'));
-        const res = await updateAppointment(token, dayjs(createBookingDate).format('YYYY-MM-DD'), dayjs(createBookingStart, 'HH:mm:ss').format('HH:mm'), {username: "admin", appt_notes: "Admin booking"});
+        console.log('Creating booking with date:', dayjs(createBookingDate).format('YYYY-MM-DD'), 'start:', dayjs(createBookingTime, 'HH:mm:ss').format('HH:mm'));
 
+        const times = await getAppointmentsInDateTimeRange(token, dayjs(createBookingDate).format('YYYY-MM-DD'), dayjs(createBookingTime, 'HH:mm:ss').format('HH:mm'), dayjs(createBookingTime, 'HH:mm:ss').add(15, 'minutes').format('HH:mm'));
+        if (times.length === 0) {
+            notifications.show({
+                title: 'Error',
+                message: 'No available timeslot found for the selected date and time.',
+                color: 'red'
+            });
+            return;
+        } else if (times[0].username !== null) {
+            notifications.show({
+                title: 'Error',
+                message: 'The selected timeslot is already booked.',
+                color: 'red'
+            });
+            return;
+        }
+
+        const res = await updateAppointment(token, dayjs(createBookingDate).format('YYYY-MM-DD'), dayjs(createBookingTime, 'HH:mm:ss').format('HH:mm'), { username: "admin" });
         console.log('Make booking response:', res);
 
-        if (res && res.success) {
-            notifications.show({
-                title: 'Success',
-                message: 'Booking created successfully',
-                color: 'green'
-            });
-        } else {
+        if (res.error) {
             notifications.show({
                 title: 'Error',
                 message: 'Failed to create booking: ' + (res?.error || ''),
                 color: 'red'
+            });
+        } else {
+            notifications.show({
+                title: 'Success',
+                message: 'Booking created successfully',
+                color: 'green'
             });
         }
 
@@ -130,7 +147,7 @@ export default function AdminDashboard() {
                         onChange={setCreateBookingDate}
                     />
 
-                    <TimePicker label="Appointment timeslot start time" value={createBookingStart} onChange={setCreateBookingStart} format="12h" withDropdown presets={getTimeRange({ startTime: '08:00:00', endTime: '16:00:00', interval: '00:15:00' })}/>
+                    <TimePicker label="Appointment timeslot start time" value={createBookingTime} onChange={setCreateBookingTime} format="12h" withDropdown presets={getTimeRange({ startTime: '08:00:00', endTime: '16:00:00', interval: '00:15:00' })}/>
                     <Button onClick={makeBooking} style={{marginTop: '20px'}}>Make booking</Button>
                 </div>
                 <div className="box">
