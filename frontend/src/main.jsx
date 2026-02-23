@@ -16,6 +16,7 @@ import ClientDashboard from './pages/clientDashboard.jsx';
 import ProtectedRoute from './routes/protectedroute.jsx';
 import AdminRoute from './routes/adminroute.jsx';
 import ClientList from './pages/clientList.jsx';
+import { ClientAccountAdminView, ClientAccountClientView } from './pages/clientAccount.jsx';
 const theme = createTheme({
   fontFamily: 'Roboto, sans-serif',
   primaryColor: 'red',
@@ -32,7 +33,9 @@ createRoot(document.getElementById('root')).render(
         <Route path="*" element={<Navigate to="/login" />} />
         <Route path="/adminDashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         <Route path="/adminDashboard/clientList" element={<AdminRoute><ClientList /></AdminRoute>} />
+        <Route path="/adminDashboard/clientList/account/:username" element={<AdminRoute><ClientAccountAdminView /></AdminRoute>} />
         <Route path="/clientDashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
+        <Route path="/clientDashboard/account/:username" element={<ProtectedRoute><ClientAccountClientView /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   </MantineProvider>
