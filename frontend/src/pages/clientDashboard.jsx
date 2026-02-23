@@ -103,7 +103,7 @@ export default function ClientDashboard() {
                     lorem ipsum dolor sit amet
                 </div>
             </SimpleGrid>
-            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{ marginBottom: '60px' }}>
+            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{ marginTop: '20px', marginBottom: '60px', alignItems: 'stretch' }}>
 
                 <div className="calendar">
                     <DatePicker

@@ -53,12 +53,6 @@ export default function AccountInformationTab({ clientUsername }) {
                         w={'60%'}
                         readOnly
                     />
-                    <TextInput
-                        label="Last Name"
-                        value={accountOwner.l_name}
-                        w={'60%'}
-                        readOnly
-                    />
                     <DateInput
                         label="Date of Birth"
                         placeholder="YYYY MM DD"

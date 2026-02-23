@@ -47,7 +47,7 @@ export function ClientAccount() {
                     value="family"
                     pl={20}
                 >
-                    <FamilyMembersTab />
+                    <FamilyMembersTab clientUsername={client_username} />
                 </Tabs.Panel>
             </Tabs>
         </>

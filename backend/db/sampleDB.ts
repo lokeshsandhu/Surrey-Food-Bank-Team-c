@@ -138,10 +138,29 @@ async function sampleApptData() {
     await appointment.bookAppointment(janeBookingFeb25, 'jane123');
     await appointment.bookAppointment(jeffBookingFeb25, 'big_jeff');
     await appointment.bookAppointment(jeffBookingFeb28, 'big_jeff');
-
 }
 
-sampleAdminData();
-sampleJaneData();
-sampleJeffData();
-sampleApptData();
+// create available time slots for the month of March 2026
+async function marchTimeSlots() {
+    for(let i=1; i<32; i++) {
+        const date = '2026-03-' + String(i).padStart(2, '0');;
+        const slot = {
+            appt_date: date,
+            start_time: '08:00',
+            end_time: '16:00',
+            appt_notes: undefined
+        }
+        appointment.createAppointmentsInTimeRange(slot);
+    }
+}
+
+// run init functions
+async function runSample() {
+    await sampleAdminData();
+    await sampleJaneData();
+    await sampleJeffData();
+    sampleApptData();
+    marchTimeSlots();
+}
+
+runSample();
