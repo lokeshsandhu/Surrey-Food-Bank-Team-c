@@ -91,10 +91,10 @@ export default function ClientDashboard() {
                 <div className="box">
                     You have a booking for June 30th, click here to edit/cancel your booking.
                 </div>
-                <div className="box">
-                    lorem ipsum dolor sit amet
+                <div className="box" w='100%'style={{width: '100%', display: 'flex', justifyContent: 'center'}}>
+                    
                     {/* TODO: Change this navigation because the user can just enter someone else's account with the username */}
-                    <Button justify='end' mt={20} onClick={() => navigate(`/clientDashboard/account/${myUsername}`)}>
+                    <Button justify='center' size='lg' mt={20} onClick={() => navigate(`/clientDashboard/account/${myUsername}`)}>
                         View My Account
                         </Button>
 
@@ -142,7 +142,7 @@ export default function ClientDashboard() {
                 </div>
 
             </SimpleGrid>
-            <Button style={{ marginLeft: '20px' }} size="lg" onClick={() => {
+            <Button style={{ marginLeft: '20px', }} size="lg" onClick={() => {
                 sessionStorage.removeItem('token');
                 notifications.show({
                     title: 'Logged out',
