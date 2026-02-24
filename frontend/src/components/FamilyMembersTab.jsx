@@ -44,9 +44,9 @@ export default function AccountInformationTab({ clientUsername }) {
             <Table.Th>First Name</Table.Th>
             <Table.Th>Last Name</Table.Th>
             <Table.Th>DOB [YYYY-MM-DD]</Table.Th>
-            <Table.Th>email</Table.Th>
-            <Table.Th>phone</Table.Th>
-            <Table.Th>Relationship</Table.Th>
+            <Table.Th>Email</Table.Th>
+            <Table.Th>Phone</Table.Th>
+            <Table.Th>Relationship with Owner</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>

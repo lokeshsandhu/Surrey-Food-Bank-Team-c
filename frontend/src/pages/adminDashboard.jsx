@@ -12,7 +12,7 @@ import { getAppointmentsInDateRange, createAppointmentsInTimeRange, updateAppoin
 
 import { useNavigate } from 'react-router';
 
-const excludedDays = [1, 3, 5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
+const excludedDays = [5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
 
 export default function AdminDashboard() {
 

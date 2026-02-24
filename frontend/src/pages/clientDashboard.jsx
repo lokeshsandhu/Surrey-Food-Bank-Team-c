@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router';
 import { bookAppointment, getAppointmentsInDateRange } from '../../api/appointments.js';
 import { me } from '../../api/auth.js';
 
-const excludedDays = [1, 3, 5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
+const excludedDays = [5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
 
 export default function ClientDashboard() {
     const [selectedDate, setSelectedDate] = useState(null);
