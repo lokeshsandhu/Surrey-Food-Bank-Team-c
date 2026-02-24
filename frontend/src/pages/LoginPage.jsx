@@ -30,6 +30,15 @@ export default function LoginPage() {
       // Clear the adminDenied flag from location.state
       navigate(window.location.pathname, { replace: true, state: {} });
     }
+    // Show notification if redirected from protected route
+    if (window && window.sessionStorage && window.sessionStorage.getItem('notifyLoginRedirect')) {
+      notifications.show({
+        title: "Login Required",
+        message: "Please log in to access your dashboard.",
+        color: "blue",
+      });
+      window.sessionStorage.removeItem('notifyLoginRedirect');
+    }
   }, [location.state, shownAdminDenied, navigate]);
 
   const handleLogin = async () => {
