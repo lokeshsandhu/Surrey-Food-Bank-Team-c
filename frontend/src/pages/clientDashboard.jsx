@@ -1,6 +1,6 @@
 import { Button, SimpleGrid, LoadingOverlay, Notification } from '@mantine/core';
 import { getTimeRange, DatePicker, TimeGrid } from '@mantine/dates';
-import React from 'react';
+import React, { useEffect } from 'react';
 import '../styles/styles.css';
 
 import { ClientNavBar } from '../components/navBar.jsx';
@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { notifications, Notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router';
 import { bookAppointment, getAppointmentsInDateRange } from '../../api/appointments.js';
+import { me } from '../../api/auth.js';
 
 const excludedDays = [1, 3, 5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
 
@@ -19,6 +20,8 @@ export default function ClientDashboard() {
     const [availableTimes, setAvailableTimes] = useState([]);
     const [bookedTimes, setBookedTimes] = useState([]);
 
+    const [myUsername, setMyUserName] = useState('');
+
     const token = sessionStorage.getItem('token');
     const navigate = useNavigate();
 
@@ -27,14 +30,12 @@ export default function ClientDashboard() {
         return null;
     }
 
-    // console.log('ClientDashboard token:', token);
-
     const handleBooking = async () => {
         if (selectedDate && selectedTime) {
             // TODO: Send booking information to the backend and handle the response
             setProcessingBooking(true);
 
-            const data = {appt_date: selectedDate, start_time: selectedTime};
+            const data = { appt_date: selectedDate, start_time: selectedTime };
             const res = await bookAppointment(token, data);
 
             if (res && res.success) {
@@ -72,24 +73,37 @@ export default function ClientDashboard() {
         } finally {
             setLoadingTimeGrid(false);
         }
-
     }
+
+    useEffect(() => {
+        const getUserName = async () => {
+            const userInfo = await me(token);
+            setMyUserName(userInfo.username)
+        }
+
+        getUserName();
+    }, [])
 
     return (
         <div className="page">
-            <ClientNavBar/>
+            <ClientNavBar />
             <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs">
                 <div className="box">
                     You have a booking for June 30th, click here to edit/cancel your booking.
                 </div>
                 <div className="box">
                     lorem ipsum dolor sit amet
+                    {/* TODO: Change this navigation because the user can just enter someone else's account with the username */}
+                    <Button justify='end' mt={20} onClick={() => navigate(`/clientDashboard/account/${myUsername}`)}>
+                        View My Account
+                        </Button>
+
                 </div>
                 <div className="box">
                     lorem ipsum dolor sit amet
                 </div>
             </SimpleGrid>
-            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs">
+            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{ marginTop: '20px', marginBottom: '60px', alignItems: 'stretch' }}>
 
                 <div className="calendar">
                     <DatePicker
@@ -128,13 +142,18 @@ export default function ClientDashboard() {
                 </div>
 
             </SimpleGrid>
-            <Button style={{marginLeft: '20px'}} size="lg" onClick={() => {
+            <Button style={{ marginLeft: '20px' }} size="lg" onClick={() => {
                 sessionStorage.removeItem('token');
+                notifications.show({
+                    title: 'Logged out',
+                    message: 'You have been successfully logged out.',
+                    color: 'green',
+                });
                 navigate('/');
             }}>
                 Logout
             </Button>
         </div>
     );
-        
+
 }
