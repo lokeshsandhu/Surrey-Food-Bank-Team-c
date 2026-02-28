@@ -116,7 +116,6 @@ export default function AccountInformation({ form }) {
                         placeholder="Enter any additional information"
                         key={form.key('account_notes')}
                         {...form.getInputProps('account_notes')}
-                        withAsterisk
                     />
                 </Stack>
             </Group>

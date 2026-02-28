@@ -174,6 +174,8 @@ export default function RegisterPage() {
                     household_size: householdSize,
                     addr: form.values.addr.line1 + ', ' + form.values.addr.line2 + ', ' + form.values.addr.city + ', ' + form.values.addr.province + ', ' + form.values.addr.postal_code,
                     baby_or_pregnant: form.values.baby_or_pregnant === 'true',
+                    language_spoken: form.values.language_spoken,
+                    account_notes: form.values.account_notes
                 };
                 try {
                     const result = await createAccount(accountData);

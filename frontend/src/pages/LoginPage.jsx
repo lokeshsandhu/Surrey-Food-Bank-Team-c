@@ -4,11 +4,11 @@ import '../styles/Login.css'
 
 import logo from '../assets/surrey-food-bank-logo.png'
 
-import { Input, Card, Button, Text, NavLink, Typography, Image } from '@mantine/core';
+import { Input, Card, Button, Text, NavLink, Typography, Image, PasswordInput } from '@mantine/core';
 import { useNavigate, useLocation } from 'react-router';
 import { notifications } from '@mantine/notifications';
 
-import {login, me} from '../../api/auth.js';
+import { login, me } from '../../api/auth.js';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -68,16 +68,20 @@ export default function LoginPage() {
   return (
     <div className="top-container linear-gradient">
       <Card className="login-card card" padding={20}>
-        <Image src={logo} h={150} w="auto" m={10} p={2}/>
+        <Image src={logo} h={150} w="auto" m={10} p={2} />
         <Input placeholder='Username' value={username} onChange={e => setUsername(e.target.value)} />
-        <Input placeholder='Password' type='password' value={password} onChange={e => setPassword(e.target.value)} />
+        <PasswordInput
+          placeholder='Password'
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
         <Button onClick={handleLogin}>Login</Button>
         {error && <Text color="red" mt={10}>{error}</Text>}
         <div>
-          <NavLink 
-          className='link' 
-          label="Don't have an account?" 
-          onClick={() => navigate('/register')}
+          <NavLink
+            className='link'
+            label="Don't have an account?"
+            onClick={() => navigate('/register')}
           />
           <NavLink className='link' label="Forgot Password?" />
         </div>

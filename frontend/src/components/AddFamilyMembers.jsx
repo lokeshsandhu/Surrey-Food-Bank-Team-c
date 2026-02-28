@@ -29,12 +29,12 @@ export default function AddFamilyMembers({ form }) {
                     <Group key={index}>
                         <Group w='100%' justify='space-between'>
                             <Text size='md' fw={600} td='underline'>Family Member {index + 1}</Text>
-                            <Button 
-                            variant="light" 
-                            color="red" 
-                            size='compact-sm' 
-                            justify='end'
-                            onClick={() => {form.removeListItem('family_members', index)}}
+                            <Button
+                                variant="light"
+                                color="red"
+                                size='compact-sm'
+                                justify='end'
+                                onClick={() => { form.removeListItem('family_members', index) }}
                             >
                                 Remove</Button>
                         </Group>
@@ -96,7 +96,7 @@ export default function AddFamilyMembers({ form }) {
                     </Group>
                 ))}
             </Stack>
-            <Button onClick={() => addFamilyMember()} my={20}>Add Family Member</Button>
+            <Button style={{ justifyContent: 'end' }} onClick={() => addFamilyMember()} my={20}>Add Family Member</Button>
         </div>
     )
 }
