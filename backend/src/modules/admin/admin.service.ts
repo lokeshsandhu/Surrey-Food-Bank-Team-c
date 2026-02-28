@@ -2,7 +2,7 @@ import pool from "../../db/postgres";
 
 export async function getAllClients() {
     const text = `
-        SELECT username, canada_status, household_size, addr, baby_or_pregnant
+        SELECT *
         FROM account
         ORDER BY username
     `;
@@ -12,7 +12,7 @@ export async function getAllClients() {
 
 export async function getClientByUsername(username: string) {
     const accountText = `
-        SELECT username, canada_status, household_size, addr, baby_or_pregnant
+        SELECT *
         FROM account
         WHERE username = $1
     `;
@@ -21,7 +21,7 @@ export async function getClientByUsername(username: string) {
     if (!account) return null;
 
     const familyText = `
-        SELECT username, f_name, l_name, dob, phone, email, relationship
+        SELECT *
         FROM familymember
         WHERE username = $1
         ORDER BY f_name
@@ -29,7 +29,7 @@ export async function getClientByUsername(username: string) {
     const familyResult = await pool.query(familyText, [username]);
 
     const apptText = `
-        SELECT appt_date, start_time, end_time, appt_notes, username
+        SELECT *
         FROM appointment
         WHERE username = $1
         ORDER BY appt_date, start_time
@@ -45,7 +45,7 @@ export async function getClientByUsername(username: string) {
 
 export async function getAllAppointments() {
     const text = `
-        SELECT appt_date, start_time, end_time, appt_notes, username
+        SELECT *
         FROM appointment
         ORDER BY appt_date, start_time
     `;

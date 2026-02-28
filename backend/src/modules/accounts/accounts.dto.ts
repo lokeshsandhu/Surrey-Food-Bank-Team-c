@@ -5,6 +5,8 @@ export interface AccountDTO {
     household_size?: number;
     addr?: string;
     baby_or_pregnant?: boolean;
+    language_spoken?: string;
+    account_notes?: string;
 }
 
 export interface UpdateAccountDTO {
@@ -12,4 +14,6 @@ export interface UpdateAccountDTO {
     household_size?: number;
     addr?: string;
     baby_or_pregnant?: boolean;
+    language_spoken?: string;
+    account_notes?: string;
 }

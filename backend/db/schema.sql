@@ -12,7 +12,9 @@ CREATE TABLE IF NOT EXISTS public.account
     canada_status varchar,
     household_size integer,
     addr varchar,
-    baby_or_pregnant boolean
+    baby_or_pregnant boolean,
+    language_spoken varchar,
+    account_notes varchar
 );
 
 CREATE TABLE IF NOT EXISTS public.familymember
