@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { Container, Group } from '@mantine/core';
+import { Container, Divider, Group } from '@mantine/core';
 import styles from '../styles/navBar.module.css';
 import LogoHome from './logoHome';
 import ProfileButton from './profileButton';
 import React from 'react';
+import { useNavigate } from 'react-router';
 
 const links = [
     { link: '/settings', label: 'Settings?' },
 ];
 export function ClientNavBar() {
   const [active, setActive] = useState(links[0].link);
+  const navigate = useNavigate();
   const placeholders = links.map((link) => (<a key={link.label} href={link.link} className={styles.link} data-active={active === link.link || undefined} onClick={(event) => {
           event.preventDefault();
           setActive(link.link);
@@ -22,9 +24,6 @@ export function ClientNavBar() {
         <Container fluid className={styles.inner}>
           <LogoHome/>
           <div className={styles.right}>
-            {/* <Group gap={5}>
-              {placeholders}
-            </Group> */}
             <ProfileButton/>
           </div>
         </Container>
@@ -41,15 +40,20 @@ export function AdminNavBar() {
       }}>
     {link.label}
   </a>));
+  const navigate = useNavigate();
   return (
     <nav className={styles.nav}>
       <header className={styles.header}>
         <Container fluid className={styles.inner}>
           <LogoHome/>
           <div className={styles.right}>
-            {/* <Group gap={5}>
-              {placeholders}
-            </Group> */}
+            <Divider orientation="vertical" size="sm" mx="sm" />
+            <a className={styles.link} onClick={() => navigate('/adminDashboard/clientList')}> <h2 style={{ textAlign: 'center', cursor: 'pointer' }}> Client List </h2> </a>
+            <Divider orientation="vertical" size="sm" mx="sm" />
+            <a className={styles.link} onClick={() => navigate('/adminDashboard')}> <h2 style={{ textAlign: 'center', cursor: 'pointer' }}> View Bookings </h2> </a>
+            <Divider orientation="vertical" size="sm" mx="sm" />
+            <a className={styles.link} onClick={() => navigate('/adminDashboard')}> <h2 style={{ textAlign: 'center', cursor: 'pointer' }}> Schedule Timeslots </h2> </a>
+            <Divider orientation="vertical" size="sm" mx="sm" />
             <ProfileButton/>
           </div>
         </Container>

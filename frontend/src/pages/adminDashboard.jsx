@@ -1,4 +1,4 @@
-import { Button, SimpleGrid, LoadingOverlay, ScrollArea, Stack, Text } from '@mantine/core';
+import { Button, SimpleGrid, LoadingOverlay, ScrollArea, Grid, Text, Switch, Menu } from '@mantine/core';
 import { DatePicker, DatePickerInput, TimePicker, getTimeRange } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 
@@ -22,7 +22,9 @@ export default function AdminDashboard() {
 
     //For time list
     const [loadingTimeList, setLoadingTimeList] = useState(false);
-    const [bookedTimeslots, setBookedTimeslots] = useState([]);
+    const [bookedTimeslots, setBookedTimeslots] = useState([[], [], [], [], [], [], []]);
+    const [showOnlyBooked, setShowOnlyBooked] = useState(false);
+    const [currWeek, setCurrWeek] = useState(dayjs());
 
     // For creating timeslots
     const [createTimeslotDate, setCreateTimeslotDate] = useState(dayjs().format('YYYY-MM-DD'));
@@ -44,24 +46,36 @@ export default function AdminDashboard() {
         return null;
     }
 
-    const findBookingsForDate = async (date) => {
+    const findBookingsForDate = async (date, onlyBooked = showOnlyBooked) => {
         setLoadingTimeList(true);
-
-        console.log('Finding bookings for date between:', dayjs(startOfWeek(date)).format('YYYY-MM-DD'), 'and', dayjs(endOfWeek(date)).format('YYYY-MM-DD'));
-
+        setCurrWeek(dayjs(date));
+        
+        const timeslotsbyday = [[],[],[],[],[],[],[]];
         const timeslots = await getAppointmentsInDateRange(token, dayjs(startOfWeek(date)).format('YYYY-MM-DD'), dayjs(endOfWeek(date)).format('YYYY-MM-DD'));
 
-        console.log(timeslots);
+        console.log('Finding bookings for date between:', dayjs(startOfWeek(date)).format('YYYY-MM-DD'), 'and', dayjs(endOfWeek(date)).format('YYYY-MM-DD'));
+        console.log('Received number of timeslots:', timeslots.length);
 
-        if (timeslots) {
-            console.log('Received number of timeslots in if:', timeslots.length);
-            setBookedTimeslots(timeslots);
-        } else {
-            console.log('No timeslots received');
+        for (let i = 0; i < 7; i++) {
+            const dateToCheck = dayjs(startOfWeek(date)).add(i, 'day').format('YYYY-MM-DD');
+            console.log('Checking date:', dateToCheck);
+
+            const slotsForDate = timeslots.filter(slot => dayjs(slot.appt_date).format('YYYY-MM-DD') === dateToCheck);
+            console.log(`Found ${slotsForDate.length} slots for date ${dateToCheck}:`, slotsForDate);
+
+            if (timeslots) {
+                if (onlyBooked) {
+                    timeslotsbyday[i] = slotsForDate.filter(slot => slot.username !== null);
+                    console.log(`After filtering for booked slots, ${timeslotsbyday[i].length} slots remain for date ${dateToCheck}:`, timeslotsbyday[i]);
+                } else {
+                    timeslotsbyday[i] = slotsForDate;
+                }
+            } else {
+                console.log('No timeslots received');
+            }
         }
 
-        console.log('Received number of timeslots not if:', timeslots.length);
-
+        setBookedTimeslots(timeslotsbyday);
         setLoadingTimeList(false);
     };
 
@@ -165,44 +179,80 @@ export default function AdminDashboard() {
                     <Button onClick={createTimeslot} style={{ marginTop: '20px' }}>Create timeslots</Button>
                 </div>
             </SimpleGrid>
-            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
-                <div className="calendar">
-                    <DatePicker
-                        size="xl"
-                        onChange={findBookingsForDate}
-                        firstDayOfWeek={0}
-                        excludeDate={(date) => excludedDays.includes(new Date(date).getDay())}
-                        getDayProps={(date) => {
-                            const isHovered = isInWeekRange(date, hovered);
-                            const isSelected = isInWeekRange(date, value);
-                            const isInRange = isHovered || isSelected;
-                            return {
-                                onMouseEnter: () => setHovered(date),
-                                onMouseLeave: () => setHovered(null),
-                                inRange: isInRange,
-                                firstInRange: isInRange && new Date(date).getDay() === 1,
-                                lastInRange: isInRange && new Date(date).getDay() === 0,
-                                selected: isSelected,
-                                onClick: () => setValue(date),
-                            };
-                        }}
-                    />
-                </div>
+            <Grid verticalSpacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
+                <Grid.Col span={4} style={{height: "500px"}}>
+                    <div className="calendar">
+                        <DatePicker
+                            size="xl"
+                            onChange={findBookingsForDate}
+                            firstDayOfWeek={0}
+                            excludeDate={(date) => excludedDays.includes(new Date(date).getDay())}
+                            getDayProps={(date) => {
+                                const isHovered = isInWeekRange(date, hovered);
+                                const isSelected = isInWeekRange(date, value);
+                                const isInRange = isHovered || isSelected;
+                                return {
+                                    onMouseEnter: () => setHovered(date),
+                                    onMouseLeave: () => setHovered(null),
+                                    inRange: isInRange,
+                                    firstInRange: isInRange && new Date(date).getDay() === 1,
+                                    lastInRange: isInRange && new Date(date).getDay() === 0,
+                                    selected: isSelected,
+                                    onClick: () => setValue(date),
+                                };
+                            }}
+                        />
+                    </div>
+                </Grid.Col>
+                
+                <Grid.Col span={8} style={{ height: '500px'}}>
+                    <div className="time-list">
 
-                <div className="time-list">
+                        <LoadingOverlay visible={loadingTimeList} overlayProps={{ radius: "sm", blur: 2 }} />
+                        
+                        <Switch label="Show only booked timeslots" checked={showOnlyBooked} onChange={(event) => {
+                            const next = event.currentTarget.checked;
+                            setShowOnlyBooked(next);
+                            findBookingsForDate(currWeek, next);
+                            }} />
 
-                    <LoadingOverlay visible={loadingTimeList} overlayProps={{ radius: "sm", blur: 2 }} />
-
-                    <ScrollArea.Autosize style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                        {bookedTimeslots.map(slot => (
-                            <Button key={`${slot.appt_date}-${slot.start_time}`} variant="filled" style={{ width: "100%", marginBottom: '10px' }}>
-                                {dayjs(slot.appt_date).format('YYYY-MM-DD')} {dayjs(slot.start_time, 'HH:mm:ss').format('h:mm A')} - {slot.username ? `Booked by ${slot.username}` : 'Available'}
-                            </Button>
-                        ))}
-                    </ScrollArea.Autosize>
-                </div>
-
-            </SimpleGrid>
+                        <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+                            {bookedTimeslots.map((day, i) => (
+                                <div key={i} style={{ marginBottom: '20px' }}>
+                                    {day.length > 0 && (
+                                        <Text size="lg" weight={500} style={{ marginBottom: '10px' }}>
+                                            {dayjs(day[0].appt_date).format('dddd, MMMM D, YYYY')}
+                                        </Text>
+                                    )}
+                                    {day.map(slot => (
+                                        slot.username ? (
+                                            <Button key={`${slot.appt_date}-${slot.start_time}`} variant="filled" color="red" style={{ width: "100%", marginBottom: '10px' }}>
+                                                {dayjs(slot.appt_date).format('YYYY-MM-DD')} {dayjs(slot.start_time, 'HH:mm:ss').format('h:mm A')} - Booked by {slot.username}
+                                            </Button>
+                                        ) : (
+                                            <Menu shadow="md" width={200} withArrow>
+                                                <Menu.Target>
+                                                    <Button key={`${slot.appt_date}-${slot.start_time}`} variant="filled" style={{ width: "100%", marginBottom: '10px' }} color="green" onClick={() => setCreateBookingTime(dayjs(slot.start_time, 'HH:mm:ss').format('HH:mm:ss'))}>
+                                                        {dayjs(slot.appt_date).format('YYYY-MM-DD')} {dayjs(slot.start_time, 'HH:mm:ss').format('h:mm A')} - {slot.username ? `Booked by ${slot.username}` : 'Available'}
+                                                    </Button>
+                                                </Menu.Target>
+                                                <Menu.Dropdown>
+                                                    <Menu.Item onClick={() => {
+                                                        setCreateBookingDate(dayjs(slot.appt_date).format('YYYY-MM-DD'));
+                                                        makeBooking();
+                                                    }}>
+                                                        Create Booking
+                                                    </Menu.Item>
+                                                </Menu.Dropdown>
+                                            </Menu>
+                                        )
+                                    ))}
+                                </div>
+                            ))}
+                        </ScrollArea>
+                    </div>
+                </Grid.Col>
+            </Grid>
         </div>
     );
 }

@@ -3,8 +3,6 @@
   margin-bottom: 1vh;
   background-color: var(--mantine-color-body);
   border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-  border-bottom-left-radius: var(--mantine-radius-lg);
-  border-bottom-right-radius: var(--mantine-radius-lg);
   box-shadow: 0px 4px 4px 2px #0000006a;
 }
 
@@ -18,21 +16,15 @@
 .link {
   display: block;
   line-height: 1;
-  padding: 5% 5%;
   border-radius: var(--mantine-radius-sm);
   text-decoration: none;
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
   font-size: var(--mantine-font-size-sm);
   font-family: 'Roboto', sans-serif;
   font-weight: 1000;
-
-  @mixin hover {
-    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
-  }
-
-  [data-mantine-color-scheme] &[data-active] {
-    background-color: var(--mantine-color-blue-filled);
-    color: var(--mantine-color-white);
+  justify-self: center;
+  color: var(--mantine-color-red-6);
+  &:hover {
+    color: var(--mantine-color-red-9);
   }
 }
 
@@ -40,4 +32,6 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
+  height: 100%;
+  margin-right: 1%;
 }

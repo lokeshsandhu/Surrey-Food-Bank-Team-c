@@ -1,30 +1,32 @@
 import { Menu } from '@mantine/core';
-import pic from '../assets/pp.png';
-import logout from '../assets/log-out.svg';
+import user_icon from '../assets/user.svg';
+import logout_icon from '../assets/log-out.svg';
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { notifications } from '@mantine/notifications';
+import { me } from '../../api/auth.js';
 
 export default function ProfileButton() {
     const navigate = useNavigate();
-    const link = { link: '/settings', label: 'settings' };
-    const style = {
-        paddingTop: "100px",
-    }
+
     return (
         <div className="profile-button">
             <Menu withArrow position="bottom-end">
                 <Menu.Target>
-                    <a key={link.label} href={link.link} style={style} onClick={(event) => {
-                                event.preventDefault();
-                            }}>
-                        <img src={pic} width={60} height={60} alt="Profile Picture"/>
-                    </a>
+                    <img src={user_icon} width={50} height={50} alt="User Profile Icon" style={{ borderRadius: '50%', cursor: 'pointer' }}/>
                 </Menu.Target>
 
                 <Menu.Dropdown>
+                    {sessionStorage.getItem('role') === 'client' && (
+                        <Menu.Item leftSection={<img src={user_icon} width={20} height={20} alt="Settings"/>} onClick={() => {
+                            navigate('/clientDashboard/account');
+                        }}>
+                            Account
+                        </Menu.Item>
+                    )}
+
                     <Menu.Divider/>
-                    <Menu.Item leftSection={<img src={logout} width={20} height={20} alt="Logout"/>} onClick={() => {
+                    <Menu.Item leftSection={<img src={logout_icon} width={20} height={20} alt="Logout"/>} onClick={() => {
                         sessionStorage.removeItem('token');
                         notifications.show({
                             title: 'Logged out',
