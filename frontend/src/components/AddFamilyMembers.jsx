@@ -60,6 +60,8 @@ export default function AddFamilyMembers({ form }) {
                             <DateInput
                                 label="3. Date of Birth"
                                 placeholder="YYYY MM DD"
+                                valueFormat='YYYY MM DD'
+                                maxDate={new Date()}
                                 key={form.key(`family_members.${index}.dob`)}
                                 {...form.getInputProps(`family_members.${index}.dob`)}
                                 withAsterisk
@@ -71,6 +73,7 @@ export default function AddFamilyMembers({ form }) {
                                 key={form.key(`family_members.${index}.email`)}
                                 {...form.getInputProps(`family_members.${index}.email`)}
                                 w={'45%'}
+                                withAsterisk
                             />
                             <TextInput
                                 label="5. Phone"

@@ -79,20 +79,20 @@ export default function RegisterPage() {
                 line1: isNotEmpty('Please enter your address.'),
                 city: isNotEmpty('Please enter your city.'),
                 province: isNotEmpty('Please enter your province.'),
-                postal_code: (value) => value ? (validator.isPostalCode(value, 'CA') ? null : 'Please enter a valid postal code') : 'Please enter your postal code.'
+                postal_code: (value) => value ? (validator.isPostalCode(value, 'CA') ? null : 'Please enter a valid postal code (e.g. V1M 3B5).') : 'Please enter your postal code.'
             },
             main_family_member: {
                 f_name: (value) => value && value.length > 0 ? null : 'Please enter your first name.',
                 l_name: (value) => value && value.length > 0 ? null : 'Please enter your last name.',
                 dob: (value) => value && value.length > 0 ? null : 'Please enter your date of birth.',
-                email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email.',
-                phone: (value) => value.length > 0 ? null : 'Please enter a valid phone number.'
+                email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
+                phone: (value) => value.length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
             family_members: {
-                f_name: (value) => value && value.length > 0 ? null : 'Please enter your first name.',
-                l_name: (value) => value && value.length > 0 ? null : 'Please enter your last name.',
-                dob: (value) => value && value.length > 0 ? null : 'Please enter your date of birth.',
-                email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email.',
+                f_name: (value) => value && value.length > 0 ? null : 'Please enter their first name.',
+                l_name: (value) => value && value.length > 0 ? null : 'Please enter their last name.',
+                dob: (value) => value && value.length > 0 ? null : 'Please enter their date of birth.',
+                email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
                 relationship: (value) => value.length > 0 ? null : 'Please enter your relationship to this family member.'
             }
         }
