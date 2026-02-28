@@ -19,7 +19,7 @@ export default function ProfileButton() {
                 <Menu.Dropdown>
                     {sessionStorage.getItem('role') === 'client' && (
                         <Menu.Item leftSection={<img src={user_icon} width={20} height={20} alt="Settings"/>} onClick={() => {
-                            navigate('/clientDashboard/account');
+                            navigate('/clientDashboard/account/' + sessionStorage.getItem('username'));
                         }}>
                             Account
                         </Menu.Item>
