@@ -4,6 +4,8 @@ export interface ClientDTO {
     household_size?: number;
     addr?: string;
     baby_or_pregnant?: boolean;
+    language_spoken?: string;
+    account_notes?: string;
 }
 
 export interface ClientDetailDTO extends ClientDTO {

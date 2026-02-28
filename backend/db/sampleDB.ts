@@ -13,7 +13,9 @@ async function sampleAdminData(){
         canada_status: undefined,
         household_size: undefined,
         addr: undefined,
-        baby_or_pregnant: undefined
+        baby_or_pregnant: undefined,
+        language_spoken: undefined,
+        account_notes: 'Admin account'
     }
 
     await account.createAccount(adminAccount);
@@ -27,7 +29,9 @@ async function sampleJaneData(){
         canada_status: 'Canadian Citizen',
         household_size: 4,
         addr: '123 ave, , surrey, bc',
-        baby_or_pregnant: true
+        baby_or_pregnant: true,
+        language_spoken: 'English and Spanish',
+        account_notes: 'Sample account for Jane Doe'
     }
 
     const janeFM = {
@@ -85,7 +89,9 @@ async function sampleJeffData(){
         canada_status: 'Permanent Resident',
         household_size: 1,
         addr: 'Jeff RD, Surrey, BC',
-        baby_or_pregnant: false
+        baby_or_pregnant: false,
+        language_spoken: `English`,
+        account_notes: `Sample account for Jeff Smith`,
     }
 
     const jeffFM = {
@@ -156,11 +162,17 @@ async function marchTimeSlots() {
 
 // run init functions
 async function runSample() {
-    await sampleAdminData();
-    await sampleJaneData();
-    await sampleJeffData();
-    sampleApptData();
-    marchTimeSlots();
+    try {
+        await sampleAdminData();
+        await sampleJaneData();
+        await sampleJeffData();
+        sampleApptData();
+        marchTimeSlots();
+        console.log('Sample data successfully initialized.')
+    } catch (err) {
+        console.log('Unable to initialize sample data: ', err);
+    }
+    
 }
 
 runSample();

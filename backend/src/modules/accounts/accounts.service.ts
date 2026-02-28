@@ -6,9 +6,9 @@ export async function createAccount(data: AccountDTO) {
     const hashedPassword = await hashPassword(data.user_password);
     const text = `
         INSERT INTO account
-        (username, user_password, canada_status, household_size, addr, baby_or_pregnant)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING username, canada_status, household_size, addr, baby_or_pregnant
+        (username, user_password, canada_status, household_size, addr, baby_or_pregnant, language_spoken, account_notes)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING username, canada_status, household_size, addr, baby_or_pregnant, language_spoken, account_notes
     `;
     const values = [
         data.username,
@@ -17,6 +17,8 @@ export async function createAccount(data: AccountDTO) {
         data.household_size,
         data.addr,
         data.baby_or_pregnant,
+        data.language_spoken,
+        data.account_notes
     ];
     const { rows } = await pool.query(text, values);
     return rows[0];
@@ -24,7 +26,7 @@ export async function createAccount(data: AccountDTO) {
 
 export async function getAccountByUsername(username: string) {
     const text = `
-        SELECT username, canada_status, household_size, addr, baby_or_pregnant
+        SELECT *
         FROM account
         WHERE username = $1
     `;
@@ -63,6 +65,14 @@ export async function updateAccount(username: string, data: UpdateAccountDTO) {
         fields.push(`baby_or_pregnant = $${idx++}`);
         values.push(data.baby_or_pregnant);
     }
+    if (data.language_spoken !== undefined) {
+        fields.push(`language_spoken = $${idx++}`);
+        values.push(data.language_spoken);
+    }
+    if (data.account_notes !== undefined) {
+        fields.push(`account_notes = $${idx++}`);
+        values.push(data.account_notes);
+    }
 
     if (fields.length === 0) {
         return getAccountByUsername(username);
@@ -73,7 +83,7 @@ export async function updateAccount(username: string, data: UpdateAccountDTO) {
         UPDATE account
         SET ${fields.join(", ")}
         WHERE username = $${idx}
-        RETURNING username, canada_status, household_size, addr, baby_or_pregnant
+        RETURNING username, canada_status, household_size, addr, baby_or_pregnant, language_spoken, account_notes
     `;
 
     const { rows } = await pool.query(text, values);
