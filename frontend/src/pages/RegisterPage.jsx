@@ -49,6 +49,8 @@ export default function RegisterPage() {
             canada_status: '',
             household_size: 0,
             baby_or_pregnant: '',
+            language_spoken: '',
+            account_notes: '',
             addr: {
                 line1: '',
                 line2: '',
@@ -63,7 +65,7 @@ export default function RegisterPage() {
                 dob: null,
                 phone: '',
                 email: '',
-                relationship: 'Main'
+                relationship: 'owner'
             },
             family_members: []
         },
@@ -75,6 +77,7 @@ export default function RegisterPage() {
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
             canada_status: (value) => value ? null : 'Please select an option.',
             baby_or_pregnant: (value) => value && value.length > 0 ? null : 'Please select an option.',
+            language_spoken: isNotEmpty('Please enter your primary language.'),
             addr: {
                 line1: isNotEmpty('Please enter your address.'),
                 city: isNotEmpty('Please enter your city.'),
@@ -117,6 +120,7 @@ export default function RegisterPage() {
                 "user_password",
                 "confirm_password",
                 "baby_or_pregnant",
+                "language_spoken",
                 "main_family_member.f_name",
                 "main_family_member.l_name",
                 "main_family_member.dob",

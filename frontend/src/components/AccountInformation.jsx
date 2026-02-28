@@ -103,6 +103,21 @@ export default function AccountInformation({ form }) {
                             <Radio value='false' label="No" />
                         </Group>
                     </Radio.Group>
+                    <TextInput
+                        label="7. Language Spoken"
+                        placeholder="e.g. English, French, Mandarin, etc."
+                        key={form.key('language_spoken')}
+                        {...form.getInputProps('language_spoken')}
+                        withAsterisk
+                        w={'45%'}
+                    />
+                    <TextInput
+                        label="8. Additional Notes (optional)"
+                        placeholder="Enter any additional information"
+                        key={form.key('account_notes')}
+                        {...form.getInputProps('account_notes')}
+                        withAsterisk
+                    />
                 </Stack>
             </Group>
         </div>
