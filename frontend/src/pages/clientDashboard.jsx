@@ -1,4 +1,4 @@
-import { Button, SimpleGrid, LoadingOverlay, Grid, ScrollArea } from '@mantine/core';
+import { Button, SimpleGrid, LoadingOverlay, Grid, ScrollArea, Modal, Center } from '@mantine/core';
 import { getTimeRange, DatePicker, TimeGrid } from '@mantine/dates';
 import React, { useEffect } from 'react';
 import '../styles/styles.css';
@@ -7,9 +7,11 @@ import { ClientNavBar } from '../components/navBar.jsx';
 import { useState } from 'react';
 import { notifications, Notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router';
-import { bookAppointment, getAppointmentsInDateRange } from '../../api/appointments.js';
+import { bookAppointment, getAppointmentsInDateRange, getMyAppointments } from '../../api/appointments.js';
 import { me } from '../../api/auth.js';
 import dayjs from 'dayjs';
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import { useDisclosure } from '@mantine/hooks';
 
 const excludedDays = [5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
 
@@ -22,11 +24,16 @@ export default function ClientDashboard() {
     const [loadingTimeGrid, setLoadingTimeGrid] = useState(false);
     const [availableTimes, setAvailableTimes] = useState([]);
     const [bookedTimes, setBookedTimes] = useState([]);
+    const [myAppointment, setMyAppointment] = useState({});
+    const [modalState, {open, close}] = useDisclosure(false);
 
     const [myUsername, setMyUserName] = useState('');
 
     const token = sessionStorage.getItem('token');
     const navigate = useNavigate();
+
+    dayjs.extend(customParseFormat);
+
 
     if (!token) {
         navigate('/');
@@ -63,6 +70,7 @@ export default function ClientDashboard() {
 
     const handleAvailableTimes = async (date) => {
         // TODO: Fetch available times for the selected date from the backend and update the state
+        setSelectedTime(null);
         setSelectedDate(date);
         setLoadingTimeGrid(true);
 
@@ -79,12 +87,20 @@ export default function ClientDashboard() {
     }
 
     useEffect(() => {
+        const fetchMyAppointment = async () => {
+            const myAppointment = await getMyAppointments(token);
+            setMyAppointment(myAppointment[0]);
+        };
+
+        fetchMyAppointment();
+
+    }, []);
+
+    useEffect(() => {
         const fetchTimeslots = async () => {
             const timeslots = await getAppointmentsInDateRange(token, dayjs(currentMonth).startOf('month').format('YYYY-MM-DD'), dayjs(currentMonth).endOf('month').format('YYYY-MM-DD'))
             setAllTimeslots(timeslots);
         };
-
-        console.log("check")
 
         fetchTimeslots();
     }, [currentMonth, token]);
@@ -103,7 +119,7 @@ export default function ClientDashboard() {
             <ClientNavBar />
             <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs">
                 <div className="box">
-                    You have a booking for June 30th, click here to edit/cancel your booking.
+                    You have a booking for {dayjs(myAppointment.appt_date).format('MMMM D, YYYY')}, <a onClick={open}>click here to edit/cancel your booking.</a>
                 </div>
                 <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
                     
@@ -149,6 +165,7 @@ export default function ClientDashboard() {
 
                             <TimeGrid
                                 data={availableTimes}
+                                value={selectedTime}
                                 simpleGridProps={{
                                     type: 'container',
                                     cols: { base: 3 },
@@ -160,7 +177,7 @@ export default function ClientDashboard() {
                                 disableTime={bookedTimes}
                                 onChange={setSelectedTime}
                                 disabled={selectedDate === null}
-                                style={{marginBottom: '20px'}}
+                                style={{marginBottom: '20px', padding: '10px'}}
                             />
 
                             <div className="booking-button">
@@ -172,6 +189,22 @@ export default function ClientDashboard() {
                     </div>
                 </Grid.Col>
             </Grid>
+            <Modal opened={modalState} onClose={close} title="Booking Information" centered>
+                <div className="modal-content">
+                    <p><strong>Date:</strong> {myAppointment.appt_date ? dayjs(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
+                    <p><strong>Time:</strong> {myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
+                    <p><strong>Notes:</strong> {myAppointment.appt_notes ? myAppointment.appt_notes : 'N/A'}</p>
+                    <div>
+                        <Button mr={10}>
+                            Edit Booking
+                        </Button>
+
+                        <Button ml={10}>
+                            Cancel Booking
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 

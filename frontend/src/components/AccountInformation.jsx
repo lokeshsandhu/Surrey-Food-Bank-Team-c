@@ -6,6 +6,7 @@ import React from 'react';
 import '../styles/global-styles.css'
 import '../styles/Register.css'
 import { useState } from 'react';
+import dayjs from 'dayjs';
 
 export default function AccountInformation({ form }) {
     return (
@@ -69,6 +70,9 @@ export default function AccountInformation({ form }) {
                         {...form.getInputProps('main_family_member.dob')}
                         withAsterisk
                         w={'30%'}
+                        maxDate={dayjs()}
+                        defaultDate={dayjs()}
+                        minDate={dayjs().subtract(100, 'year').toDate()}
                     />
                     <TextInput
                         label="4. Email"
