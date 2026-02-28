@@ -1,4 +1,5 @@
-import { Input, Radio, Group, Stack, TextInput, Text, Fieldset, Select } from '@mantine/core';
+import { Input, Radio, Group, Stack, TextInput, Text, Fieldset, Select, Alert } from '@mantine/core';
+import { IconInfoCircle } from '@tabler/icons-react'
 import React from 'react';
 import '../styles/global-styles.css'
 import '../styles/Register.css'
@@ -10,23 +11,28 @@ export default function ElegibilityQuestions({ form }) {
             <h2 className='login-title'>Eligibility Questions</h2>
             <Radio.Group
                 name="status-in-canada"
-                label="1. Status in Canada"
-                description="Please select the option that best describes your status in Canada. Visitors or international students that have stayed in Canada for less than six months do not qualify for this program."
+                label="1. Immigration Status"
                 withAsterisk
                 className='question-section'
                 key={form.key('canada_status')}
                 {...form.getInputProps('canada_status')}
             >
+                <Text size='sm' mb={3}>Please select the option that best describes your status in Canada. </Text>
+                <Text size='sm' my={0} fs='italic'>Note: Visitors or international students that have stayed in Canada for less than 6 months do not qualify for this program.</Text>
                 <Group mt="xs">
                     <Radio value="Canadian Citizen" label="Canadian Citizen" />
                     <Radio value="Permanent Resident" label="Permanent Resident" />
                     <Radio value="International Student > 6 months" label="International student with more than 6 months in Canada" />
-                    <Radio value="ineligible" label="Visitor or international student with less than 6 months in Canada (ineligible)" />
+                    <Radio value="ineligible" label="Visitor or International student with less than 6 months in Canada (ineligible)" />
                     <Radio value="Other" label="Other" />
                 </Group>
             </Radio.Group>
+            {form.getValues().canada_status === 'ineligible' &&
+                <Alert variant="light" color="red" title="You may not be eligible for this program" icon={<IconInfoCircle />}></Alert>
+            }
             <Fieldset legend="2. Address" variant='unstyled'>
-                <Text size='sm' my={0}>In order to be eligible for the program, clients must reside within the Surrey and North Delta catchment area. Please enter your residential address if you qualify.</Text>
+                <Text size='sm' my={0}>In order to be eligible for the program, clients must reside within Surrey, North Delta, or Cloverdale, north of 40th Avenue.</Text>
+                <Text>Please enter your residential address.</Text>
                 <Group className='address' my={10}>
                     <TextInput
                         label="Address Line 1"
