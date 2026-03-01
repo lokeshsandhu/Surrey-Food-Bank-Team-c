@@ -7,6 +7,7 @@ import '../styles/global-styles.css'
 import '../styles/Register.css'
 import { useState } from 'react';
 import dayjs from 'dayjs';
+import { usernameExists } from '../../api/accounts';
 
 export default function AccountInformation({ form }) {
     return (
@@ -21,6 +22,19 @@ export default function AccountInformation({ form }) {
                     {...form.getInputProps('username')}
                     withAsterisk
                     w={'60%'}
+                    onBlur={async (event) => {
+                        form.getInputProps('username').onBlur(event);
+
+                        const inputUsername = form.values.username;
+                        console.log('inputUsername', inputUsername)
+                        if (!form.errors.username && inputUsername) {
+                            const exists = await usernameExists(inputUsername);
+                            console.log('exists', exists)
+                            if (exists) {
+                                form.setFieldError('username', 'Username already taken. Try a different username.')
+                            }
+                        }
+                    }}
                 />
                 <PasswordInput
                     label="Password"

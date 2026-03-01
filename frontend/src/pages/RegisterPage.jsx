@@ -35,6 +35,7 @@ export default function RegisterPage() {
         }
     }, [registerError, activeSection]);
 
+
     const prevSection = () => {
         if (activeSection === 0) {
             navigate('/');
