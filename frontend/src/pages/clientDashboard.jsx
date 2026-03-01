@@ -119,7 +119,8 @@ export default function ClientDashboard() {
             <ClientNavBar />
             <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs">
                 <div className="box">
-                    You have a booking for {dayjs(myAppointment.appt_date).format('MMMM D, YYYY')}, <a onClick={open}>click here to edit/cancel your booking.</a>
+                    {myAppointment && myAppointment.appt_date ? `You have a booking for ${dayjs(myAppointment.appt_date).format('MMMM D, YYYY')}, ` : 'You do not have any upcoming bookings. '}
+                    {myAppointment && myAppointment.appt_date && <a onClick={open}>click here to edit/cancel your booking.</a>}
                 </div>
                 <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
                     
@@ -191,9 +192,9 @@ export default function ClientDashboard() {
             </Grid>
             <Modal opened={modalState} onClose={close} title="Booking Information" centered>
                 <div className="modal-content">
-                    <p><strong>Date:</strong> {myAppointment.appt_date ? dayjs(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
-                    <p><strong>Time:</strong> {myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
-                    <p><strong>Notes:</strong> {myAppointment.appt_notes ? myAppointment.appt_notes : 'N/A'}</p>
+                    <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? dayjs(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
+                    <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
+                    <p><strong>Notes:</strong> {myAppointment && myAppointment.appt_notes ? myAppointment.appt_notes : 'N/A'}</p>
                     <div>
                         <Button mr={10}>
                             Edit Booking
