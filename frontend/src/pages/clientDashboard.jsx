@@ -89,7 +89,10 @@ export default function ClientDashboard() {
     useEffect(() => {
         const fetchMyAppointment = async () => {
             const myAppointment = await getMyAppointments(token);
-            setMyAppointment(myAppointment[0]);
+            if (myAppointment[0] != null || undefined) {
+                setMyAppointment(myAppointment[0]);
+            }
+            
         };
 
         fetchMyAppointment();
@@ -134,7 +137,7 @@ export default function ClientDashboard() {
                     lorem ipsum dolor sit amet
                 </div>
             </SimpleGrid>
-            <Grid verticalSpacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
+            <Grid verticalspacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
 
                 <Grid.Col span={6} style={{height: "500px"}}>
                     <div className="calendar">
