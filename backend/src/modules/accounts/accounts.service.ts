@@ -33,7 +33,11 @@ export async function getAccountByUsername(username: string) {
     const { rows } = await pool.query(text, [username]);
     return rows[0] ?? null;
 }
-
+export async function usernameExists(username: string): Promise<boolean> {
+    const text = `SELECT 1 FROM account WHERE username = $1 LIMIT 1`;
+    const { rows } = await pool.query(text, [username]);
+    return rows.length > 0;
+}
 export async function getAccountWithPassword(username: string) {
     const text = `
         SELECT username, user_password
