@@ -51,3 +51,13 @@ export async function deleteAccount(req: Request, res: Response) {
         res.status(500).json({ error: err.message });
     }
 }
+
+export async function checkUsernameExists(req: Request, res: Response) {
+    try {
+        const username = req.params.username;
+        const exists = await service.usernameExists(username);
+        res.status(200).json({ exists });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}

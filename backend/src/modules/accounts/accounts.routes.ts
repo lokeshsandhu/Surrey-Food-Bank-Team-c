@@ -16,4 +16,7 @@ router.patch("/:username", authenticate, controller.updateMyAccount);
 // DELETE /api/accounts/:username — delete account (admin only)
 router.delete("/:username", authenticate, requireAdmin, controller.deleteAccount);
 
+// GET /api/accounts/exists/:username — check if username exists
+router.get("/exists/:username", controller.checkUsernameExists);
+
 export default router;
