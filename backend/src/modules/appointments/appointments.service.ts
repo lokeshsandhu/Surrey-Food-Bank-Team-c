@@ -256,15 +256,15 @@ export async function bookAppointment(data: BookAppointmentDTO, username: string
 }
 
 // Client: cancel their own booking (slot becomes available again)
-export async function cancelBooking(appt_date: string, start_time: string, username: string) {
+export async function cancelBooking(username: string) {
     const text = `
         UPDATE appointment
         SET username = NULL
-        WHERE appt_date = $1 AND start_time = $2 AND username = $3
+        WHERE username = $1
         RETURNING *
     `;
-    const { rows } = await pool.query(text, [appt_date, start_time, username]);
-    return rows[0] ?? null;
+    const { rows } = await pool.query(text, [username]);
+    return rows;
 }
 
 // Client: get their own booked appointments
