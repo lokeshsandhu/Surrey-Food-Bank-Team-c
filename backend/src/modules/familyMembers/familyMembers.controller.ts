@@ -75,3 +75,13 @@ export async function deleteFamilyMember(req: Request, res: Response) {
         res.status(500).json({ error: err.message });
     }
 }
+
+// List all family members with relationship = 'owner'
+export async function getOwnerFamilyMembers(req: Request, res: Response) {
+    try {
+        const members = await service.getOwnerFamilyMembers();
+        res.status(200).json(members);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}

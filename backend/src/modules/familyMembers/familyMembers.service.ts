@@ -101,3 +101,10 @@ export async function deleteFamilyMember(username: string, f_name: string) {
     const { rows } = await pool.query(text, [username, f_name]);
     return rows[0] ?? null;
 }
+
+// Get all family members with relationship = 'owner'
+export async function getOwnerFamilyMembers() {
+    const text = `SELECT * FROM familymember WHERE relationship = 'owner' ORDER BY username, f_name`;
+    const { rows } = await pool.query(text);
+    return rows;
+}

@@ -1,4 +1,3 @@
-
 // API functions for family members endpoints
 
 const API_BASE = "http://localhost:3000/api/family-members";
@@ -92,6 +91,17 @@ export function updateFamilyMember(token, username, f_name, data) {
 export function deleteFamilyMember(token, username, f_name) {
   return fetch(`${API_BASE}/${username}/${encodeURIComponent(f_name)}`, {
     method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(res => res.json());
+}
+
+/**
+ * Get all family members with relationship = 'owner'.
+ * Example:
+ *   getOwnerFamilyMembers(token);
+ */
+export function getOwnerFamilyMembers(token) {
+  return fetch(`${API_BASE}/owners`, {
     headers: { Authorization: `Bearer ${token}` }
   }).then(res => res.json());
 }
