@@ -29,10 +29,11 @@ export function ClientAccount() {
                 variant="pills"
                 defaultValue="account"
                 orientation="vertical"
-                p={20}
-                h={'90%'}
+                p={10}
+                h={'95%'}
+
             >
-                <Tabs.List bg='white'>
+                <Tabs.List bg='white' p={10} style={{ borderRadius: 4 }} h={'100%'}>
                     <Tabs.Tab value="account">Account Information</Tabs.Tab>
                     <Tabs.Tab value="family">Family Members</Tabs.Tab>
                 </Tabs.List>
@@ -40,6 +41,8 @@ export function ClientAccount() {
                 <Tabs.Panel
                     value="account"
                     pl={20}
+                    pb={10}
+                    style={{ overflowY: 'auto' }}
                 >
                     <AccountInformationTab clientUsername={client_username} />
                 </Tabs.Panel>
@@ -72,7 +75,7 @@ export function ClientAccountAdminView() {
 export function ClientAccountClientView() {
     const navigate = useNavigate();
     return (
-        <div className="page" style={{overflowY: 'auto'}}>
+        <div className="page" style={{ overflowY: 'auto' }}>
             <ClientNavBar />
             <div className="box" style={{ height: '85vh' }}>
                 <ActionIcon mb={10} onClick={() => navigate('/clientDashboard')}>

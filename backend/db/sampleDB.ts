@@ -28,7 +28,7 @@ async function sampleJaneData(){
         user_password: 'Password1!',
         canada_status: 'Canadian Citizen',
         household_size: 4,
-        addr: '123 ave, , surrey, bc',
+        addr: '123 ave, , surrey, BC, V1M 3B5',
         baby_or_pregnant: true,
         language_spoken: 'English and Spanish',
         account_notes: 'Sample account for Jane Doe'
@@ -88,7 +88,7 @@ async function sampleJeffData(){
         user_password: 'big_J3ff',
         canada_status: 'Permanent Resident',
         household_size: 1,
-        addr: 'Jeff RD, Surrey, BC',
+        addr: 'Jeff RD, Surrey, BC, V1M 3B5',
         baby_or_pregnant: false,
         language_spoken: `English`,
         account_notes: `Sample account for Jeff Smith`,
