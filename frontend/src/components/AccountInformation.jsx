@@ -22,19 +22,17 @@ export default function AccountInformation({ form }) {
                     {...form.getInputProps('username')}
                     withAsterisk
                     w={'60%'}
-                    onBlur={async (event) => {
-                        form.getInputProps('username').onBlur(event);
+                    // onBlur={async (event) => {
+                    //     form.getInputProps('username').onBlur(event);
 
-                        const inputUsername = form.values.username;
-                        console.log('inputUsername', inputUsername)
-                        if (!form.errors.username && inputUsername) {
-                            const exists = await usernameExists(inputUsername);
-                            console.log('exists', exists)
-                            if (exists) {
-                                form.setFieldError('username', 'Username already taken. Try a different username.')
-                            }
-                        }
-                    }}
+                    //     const inputUsername = form.values.username;
+                    //     if (!form.errors.username && inputUsername) {
+                    //         const result = await usernameExists(inputUsername);
+                    //         if (result.exists) {
+                    //             form.setFieldError('username', 'Username already taken. Try a different username.')
+                    //         }
+                    //     }
+                    // }}
                 />
                 <PasswordInput
                     label="Password"
