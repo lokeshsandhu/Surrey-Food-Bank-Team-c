@@ -26,21 +26,6 @@ export default function ElegibilityQuestions({ form }) {
         setIsProvinceEligible(isEligible);
     }
 
-    // useEffect(() => {
-    //     const { city, province } = form.getValues().addr
-    //     const isEligible =
-    //         province.length === 2 &&
-    //         city.length > 4 &&
-    //         province !== 'BC'
-    //         && city !== 'Surrey' &&
-    //         city !== 'North Delta' &&
-    //         city !== 'Cloverdale';
-    //     setIsAddresssEligible(isEligible);
-    // }, [
-    //     form.getValues().addr.city,
-    //     form.getValues().addr.province
-    // ])
-
     return (
         <Group>
             <h2 className='login-title'>Eligibility Questions</h2>
@@ -67,7 +52,7 @@ export default function ElegibilityQuestions({ form }) {
             }
             <Fieldset legend="2. Address" variant='unstyled'>
                 <Text size='sm' mb={3}>Please enter your residential address.</Text>
-                <Text size='sm' my={0} fs='italic'>Note: In order to be eligible for the program, clients must reside in BC within Surrey, North Delta, or Cloverdale, north of 40th Avenue.</Text>
+                <Text size='sm' my={0} fs='italic'>Note: In order to be eligible for the program, clients must reside in British Columbia within Surrey, North Delta, or Cloverdale, north of 40th Avenue.</Text>
                 <Group className='address' my={10}>
                     <TextInput
                         label="Address Line 1"
