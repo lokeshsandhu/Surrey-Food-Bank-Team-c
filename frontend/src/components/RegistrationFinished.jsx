@@ -101,7 +101,7 @@ export default function RegistrationFinished({ form }) {
                 />
                 <TextInput
                     variant="filled"
-                    label="9. Additional Notes"
+                    label="8. Additional Notes"
                     value={form.values.account_notes.length > 0 ? form.values.account_notes : '(Empty)'}
                     readOnly
                 />
