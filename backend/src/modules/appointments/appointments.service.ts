@@ -229,36 +229,42 @@ export async function bookAppointment(data: BookAppointmentDTO, username: string
     const slotsNeeded = householdSize >= 4 ? 2 : 1;
     const booked = [];
     const update = `UPDATE appointment SET username = $1 WHERE appt_date = $2 AND start_time = $3 AND username IS NULL RETURNING *`;
-    const { rows: first } = await pool.query(update, [username, data.appt_date, data.start_time]);
-    if (!first[0]) throw new Error("Booking would overlap with an existing appointment or slot is unavailable");
-    booked.push(first[0]);
-    if (slotsNeeded === 2) {
-        const [hour, min] = data.start_time.split(":").map(Number);
-        const nextMin = min + 15;
-        let nextHour = hour;
-        let nextMinAdj = nextMin;
-        if (nextMin >= 60) {
-            nextHour += 1;
-            nextMinAdj = nextMin - 60;
-        }
-        const nextStart = `${nextHour.toString().padStart(2, "0")}:${nextMinAdj.toString().padStart(2, "0")}`;
-        const { rows: second } = await pool.query(update, [username, data.appt_date, nextStart]);
-        if (!second[0]) throw new Error("Booking would overlap with an existing appointment or slot is unavailable");
-        booked.push(second[0]);
+    if (slotsNeeded === 1) {
+        const { rows: first } = await pool.query(update, [username, data.appt_date, data.start_time]);
+        if (!first[0]) throw new Error("Booking would overlap with an existing appointment or slot is unavailable");
+        booked.push(first[0]);
+        return { overlap: false, appointment: booked, duration: 15 };
     }
-    return { overlap: false, appointment: booked, duration: slotsNeeded * 15 };
+    const [hour, min] = data.start_time.split(":").map(Number);
+    const nextMin = min + 15;
+    let nextHour = hour;
+    let nextMinAdj = nextMin;
+    if (nextMin >= 60) {
+        nextHour += 1;
+        nextMinAdj = nextMin - 60;
+    }
+    const nextStart = `${nextHour.toString().padStart(2, "0")}:${nextMinAdj.toString().padStart(2, "0")}`;
+    const checkQuery = `SELECT * FROM appointment WHERE appt_date = $1 AND (start_time = $2 OR start_time = $3) AND username IS NULL`;
+    const { rows: availableSlots } = await pool.query(checkQuery, [data.appt_date, data.start_time, nextStart]);
+    if (availableSlots.length < 2) {
+        throw new Error("Both slots must be available to book a double slot appointment.");
+    }
+    const { rows: first } = await pool.query(update, [username, data.appt_date, data.start_time]);
+    const { rows: second } = await pool.query(update, [username, data.appt_date, nextStart]);
+    booked.push(first[0], second[0]);
+    return { overlap: false, appointment: booked, duration: 30 };
 }
 
 // Client: cancel their own booking (slot becomes available again)
-export async function cancelBooking(appt_date: string, start_time: string, username: string) {
+export async function cancelBooking(username: string) {
     const text = `
         UPDATE appointment
         SET username = NULL
-        WHERE appt_date = $1 AND start_time = $2 AND username = $3
+        WHERE username = $1
         RETURNING *
     `;
-    const { rows } = await pool.query(text, [appt_date, start_time, username]);
-    return rows[0] ?? null;
+    const { rows } = await pool.query(text, [username]);
+    return rows;
 }
 
 // Client: get their own booked appointments
