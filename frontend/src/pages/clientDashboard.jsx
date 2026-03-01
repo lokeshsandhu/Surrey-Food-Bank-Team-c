@@ -89,9 +89,7 @@ export default function ClientDashboard() {
     useEffect(() => {
         const fetchMyAppointment = async () => {
             const myAppointment = await getMyAppointments(token);
-            if (myAppointment[0] != null || undefined) {
-                setMyAppointment(myAppointment[0]);
-            }
+            setMyAppointment(myAppointment[0]);
             
         };
 
