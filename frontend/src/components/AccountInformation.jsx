@@ -7,6 +7,7 @@ import '../styles/global-styles.css'
 import '../styles/Register.css'
 import { useState } from 'react';
 import dayjs from 'dayjs';
+import { usernameExists } from '../../api/accounts';
 
 export default function AccountInformation({ form }) {
     return (
@@ -21,6 +22,17 @@ export default function AccountInformation({ form }) {
                     {...form.getInputProps('username')}
                     withAsterisk
                     w={'60%'}
+                    // onBlur={async (event) => {
+                    //     form.getInputProps('username').onBlur(event);
+
+                    //     const inputUsername = form.values.username;
+                    //     if (!form.errors.username && inputUsername) {
+                    //         const result = await usernameExists(inputUsername);
+                    //         if (result.exists) {
+                    //             form.setFieldError('username', 'Username already taken. Try a different username.')
+                    //         }
+                    //     }
+                    // }}
                 />
                 <PasswordInput
                     label="Password"
@@ -66,7 +78,7 @@ export default function AccountInformation({ form }) {
                     <DateInput
                         label="3. Date of Birth"
                         placeholder="YYYY MM DD"
-                        key={form.key('family_members.0.dob')}
+                        valueFormat='YYYY MM DD'
                         {...form.getInputProps('main_family_member.dob')}
                         withAsterisk
                         w={'30%'}
@@ -106,6 +118,20 @@ export default function AccountInformation({ form }) {
                             <Radio value='false' label="No" />
                         </Group>
                     </Radio.Group>
+                    <TextInput
+                        label="7. Language Spoken"
+                        placeholder="e.g. English, French, Mandarin, etc."
+                        key={form.key('language_spoken')}
+                        {...form.getInputProps('language_spoken')}
+                        withAsterisk
+                        w={'45%'}
+                    />
+                    <TextInput
+                        label="8. Additional Notes (optional)"
+                        placeholder="Enter any additional information"
+                        key={form.key('account_notes')}
+                        {...form.getInputProps('account_notes')}
+                    />
                 </Stack>
             </Group>
         </div>
