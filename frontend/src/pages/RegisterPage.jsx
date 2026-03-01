@@ -20,14 +20,13 @@ import validator from 'validator'
 import { createAccount, usernameExists } from '../../api/accounts.js';
 import { login, me } from '../../api/auth.js';
 import { createFamilyMember } from '../../api/familyMembers.js';
+
 export default function RegisterPage() {
     const errorRef = useRef(null);
     const [activeSection, setActiveSection] = useState(0);
     const [registerError, setRegisterError] = useState('');
     const [opened, { open, close }] = useDisclosure(false);
     const [loading, setLoading] = useState(false);
-
-    const [doesUsernameExist, setDoesUsernameExist] = useState(false);
 
     const navigate = useNavigate();
 
@@ -62,7 +61,7 @@ export default function RegisterPage() {
         validateInputOnBlur: true,
         validateInputOnChange: true,
         validate: {
-            username: (value) => value.length < 5 ? 'Username must be at least 5 characters' : doesUsernameExist ? 'Username already taken. Try a different username.' : null,
+            username: (value) => value.length < 5 ? 'Username must be at least 5 characters' : null,
             user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
             canada_status: (value) => value ? null : 'Please select an option.',
@@ -99,15 +98,23 @@ export default function RegisterPage() {
     }, [registerError, activeSection]);
 
     useEffect(() => {
-        const usernameExistsOrNot = async () => {
-            const result = await usernameExists(form.values.username);
-            console.log('exists', result)
-           setDoesUsernameExist(result.exists)
+        const checkUsername = async () => {
+            const currentUsername = form.values.username;
+            if (currentUsername.length < 5) return;
+            const result = await usernameExists(currentUsername);
 
-        }
-        if (form.values.username.length >= 5) {
-            usernameExistsOrNot();
-        }
+            if (form.values.username === currentUsername) {
+                if (result.exists) {
+                    form.setFieldError(
+                        'username',
+                        'Username already taken. Try a different username.'
+                    );
+                } else {
+                    form.clearFieldError('username');
+                }
+            }
+        };
+        checkUsername();
     }, [form.values.username])
 
     const prevSection = () => {
