@@ -162,14 +162,17 @@ export default function AccountInformationTab({ clientUsername }) {
             try {
                 const accountResult = await updateAccount(token, clientUsername, accountData)
                 const ownerResult = await updateFamilyMember(token, clientUsername, form.values.accountOwner.f_name, ownerData)
-                console.log('accountResult', accountResult, 'ownerResult', ownerResult)
                 notifications.show({
                     title: 'Saved',
                     message: 'Your changes to Account Information have been saved.',
                     color: 'green',
                 });
             } catch (err) {
-
+                notifications.show({
+                    title: 'Error',
+                    message: 'There was a problem when saving your changes. Please try again.',
+                    color: 'green',
+                });
             } finally {
                 await getAccountInformation();
             }
@@ -298,7 +301,6 @@ export default function AccountInformationTab({ clientUsername }) {
                         {...form.getInputProps('accountInformation.canada_status')}
                     >
                         <Text size='sm' mb={3}>Please select the option that best describes your status in Canada. </Text>
-                        <Text size='sm' my={0} fs='italic'>Note: Visitors or international students that have stayed in Canada for less than 6 months do not qualify for this program.</Text>
                         <Group mt="xs">
                             <Radio value="Canadian Citizen" label="Canadian Citizen" />
                             <Radio value="Permanent Resident" label="Permanent Resident" />
