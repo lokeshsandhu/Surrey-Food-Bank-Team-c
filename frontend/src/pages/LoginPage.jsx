@@ -48,6 +48,7 @@ export default function LoginPage() {
       if (result && result.token) {
         sessionStorage.setItem('token', result.token);
         sessionStorage.setItem('username', username);
+        sessionStorage.setItem('role', result.role);
         // Fetch user info to determine role
         const userInfo = await me(result.token);
         if (userInfo && userInfo.role === 'admin') {

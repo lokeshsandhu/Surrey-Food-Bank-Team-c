@@ -1,18 +1,44 @@
-import pic from '../assets/pp.png';
+import { Menu } from '@mantine/core';
+import user_icon from '../assets/user.svg';
+import logout_icon from '../assets/log-out.svg';
 import React from 'react';
+import { useNavigate } from 'react-router';
+import { notifications } from '@mantine/notifications';
+import { me } from '../../api/auth.js';
 
 export default function ProfileButton() {
-    const link = { link: '/settings', label: 'settings' };
-    const style = {
-        paddingTop: "100px",
-    }
+    const navigate = useNavigate();
+
     return (
         <div className="profile-button">
-            <a key={link.label} href={link.link} style={style} onClick={(event) => {
-                        event.preventDefault();
+            <Menu withArrow position="bottom-end">
+                <Menu.Target>
+                    <img src={user_icon} width={50} height={50} alt="User Profile Icon" style={{ borderRadius: '50%', cursor: 'pointer' }}/>
+                </Menu.Target>
+
+                <Menu.Dropdown>
+                    {sessionStorage.getItem('role') === 'client' && (
+                        <Menu.Item leftSection={<img src={user_icon} width={20} height={20} alt="Settings"/>} onClick={() => {
+                            navigate('/clientDashboard/account/' + sessionStorage.getItem('username'));
+                        }}>
+                            Account
+                        </Menu.Item>
+                    )}
+
+                    <Menu.Divider/>
+                    <Menu.Item leftSection={<img src={logout_icon} width={20} height={20} alt="Logout"/>} onClick={() => {
+                        sessionStorage.removeItem('token');
+                        notifications.show({
+                            title: 'Logged out',
+                            message: 'You have been successfully logged out.',
+                            color: 'green',
+                        });
+                        navigate('/');
                     }}>
-                <img src={pic} width={60} height={60} alt="Profile Picture"/>
-            </a>
+                        Logout
+                    </Menu.Item>
+                </Menu.Dropdown>
+            </Menu>
         </div>
     );
 }
