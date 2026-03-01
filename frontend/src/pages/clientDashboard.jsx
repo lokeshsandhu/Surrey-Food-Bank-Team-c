@@ -52,7 +52,15 @@ export default function ClientDashboard() {
                 notifications.show({
                     title: 'Success',
                     message: 'Appointment booked successfully',
-                    color: 'green',
+                    color: 'var(--mantine-color-green-6)',
+                    autoClose: 5000,
+                    withCloseButton: true,
+                    withBorder: true,
+                    style: {
+                        border: '3px solid',
+                        borderColor: 'var(--mantine-color-green-6)',
+                        borderRadius: '8px',
+                    }
                 });
                 handleAvailableTimes(selectedDate); // Refresh available times after booking
             } else {

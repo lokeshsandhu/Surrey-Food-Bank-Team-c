@@ -233,7 +233,7 @@ export default function AdminDashboard() {
                                     {day.map(slot => (
                                         slot.username ? (
                                             <Button key={`${slot.appt_date}-${slot.start_time}`} variant="filled" color="red" style={{ width: "100%", marginBottom: '10px' }}>
-                                                {dayjs(slot.appt_date).format('YYYY-MM-DD')} {dayjs(slot.start_time, 'HH:mm:ss').format('h:mm A')} - Booked by {slot.username}
+                                                {dayjs(slot.start_time, 'HH:mm:ss').format('h:mm A')} - Booked by {slot.username}
                                             </Button>
                                         ) : (
                                             <Menu key={`${slot.appt_date}-${slot.start_time}-menu`} shadow="md" width={200} withArrow>
