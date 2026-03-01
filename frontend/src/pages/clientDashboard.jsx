@@ -1,4 +1,4 @@
-import { Button, SimpleGrid, LoadingOverlay, Notification } from '@mantine/core';
+import { Button, SimpleGrid, LoadingOverlay, Grid, ScrollArea, Modal, Center } from '@mantine/core';
 import { getTimeRange, DatePicker, TimeGrid } from '@mantine/dates';
 import React, { useEffect } from 'react';
 import '../styles/styles.css';
@@ -7,23 +7,33 @@ import { ClientNavBar } from '../components/navBar.jsx';
 import { useState } from 'react';
 import { notifications, Notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router';
-import { bookAppointment, getAppointmentsInDateRange } from '../../api/appointments.js';
+import { bookAppointment, getAppointmentsInDateRange, getMyAppointments } from '../../api/appointments.js';
 import { me } from '../../api/auth.js';
+import dayjs from 'dayjs';
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import { useDisclosure } from '@mantine/hooks';
 
 const excludedDays = [5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
 
 export default function ClientDashboard() {
+    const [allTimeslots, setAllTimeslots] = useState([{}]);
+    const [currentMonth, setCurrentMonth] = useState(dayjs().format('YYYY-MM'));
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState(null);
     const [processingBooking, setProcessingBooking] = useState(false);
     const [loadingTimeGrid, setLoadingTimeGrid] = useState(false);
     const [availableTimes, setAvailableTimes] = useState([]);
     const [bookedTimes, setBookedTimes] = useState([]);
+    const [myAppointment, setMyAppointment] = useState({});
+    const [modalState, {open, close}] = useDisclosure(false);
 
     const [myUsername, setMyUserName] = useState('');
 
     const token = sessionStorage.getItem('token');
     const navigate = useNavigate();
+
+    dayjs.extend(customParseFormat);
+
 
     if (!token) {
         navigate('/');
@@ -60,6 +70,7 @@ export default function ClientDashboard() {
 
     const handleAvailableTimes = async (date) => {
         // TODO: Fetch available times for the selected date from the backend and update the state
+        setSelectedTime(null);
         setSelectedDate(date);
         setLoadingTimeGrid(true);
 
@@ -76,6 +87,25 @@ export default function ClientDashboard() {
     }
 
     useEffect(() => {
+        const fetchMyAppointment = async () => {
+            const myAppointment = await getMyAppointments(token);
+            setMyAppointment(myAppointment[0]);
+        };
+
+        fetchMyAppointment();
+
+    }, []);
+
+    useEffect(() => {
+        const fetchTimeslots = async () => {
+            const timeslots = await getAppointmentsInDateRange(token, dayjs(currentMonth).startOf('month').format('YYYY-MM-DD'), dayjs(currentMonth).endOf('month').format('YYYY-MM-DD'))
+            setAllTimeslots(timeslots);
+        };
+
+        fetchTimeslots();
+    }, [currentMonth, token]);
+
+    useEffect(() => {
         const getUserName = async () => {
             const userInfo = await me(token);
             setMyUserName(userInfo.username)
@@ -89,9 +119,9 @@ export default function ClientDashboard() {
             <ClientNavBar />
             <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs">
                 <div className="box">
-                    You have a booking for June 30th, click here to edit/cancel your booking.
+                    You have a booking for {dayjs(myAppointment.appt_date).format('MMMM D, YYYY')}, <a onClick={open}>click here to edit/cancel your booking.</a>
                 </div>
-                <div className="box" w='100%'style={{width: '100%', display: 'flex', justifyContent: 'center'}}>
+                <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
                     
                     {/* TODO: Change this navigation because the user can just enter someone else's account with the username */}
                     <Button justify='center' size='lg' mt={20} onClick={() => navigate(`/clientDashboard/account/${myUsername}`)}>
@@ -103,56 +133,78 @@ export default function ClientDashboard() {
                     lorem ipsum dolor sit amet
                 </div>
             </SimpleGrid>
-            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{ marginTop: '20px', marginBottom: '60px', alignItems: 'stretch' }}>
+            <Grid verticalSpacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
 
-                <div className="calendar">
-                    <DatePicker
-                        size="xl"
-                        onChange={handleAvailableTimes}
-                        firstDayOfWeek={0}
-                        excludeDate={(date) => excludedDays.includes(new Date(date).getDay())}
-                        hideOutsideDates
-                    />
-                </div>
+                <Grid.Col span={6} style={{height: "500px"}}>
+                    <div className="calendar">
+                        <DatePicker
+                            size="xl"
+                            onChange={handleAvailableTimes}
+                            onMonthSelect={setCurrentMonth}
+                            onNextMonth={setCurrentMonth}
+                            onPreviousMonth={setCurrentMonth}
+                            firstDayOfWeek={0}
+                            excludeDate={(date) =>{
+                                if (excludedDays.includes(new Date(date).getDay())) {
+                                    return true;
+                                } else if (!allTimeslots.some(timeslot => dayjs(timeslot.appt_date).format('YYYY-MM-DD') === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            }}
+                            hideOutsideDates
+                        />
+                    </div>
+                </Grid.Col>
 
-                <div className="time-grid">
+                <Grid.Col span={6} style={{height: "500px"}}>
+                    <div className="time-grid">
+                        <ScrollArea style={{ height: '100%'}}>
+                            <LoadingOverlay visible={loadingTimeGrid} overlayProps={{ radius: "sm", blur: 2 }} />
 
-                    <LoadingOverlay visible={loadingTimeGrid} overlayProps={{ radius: "sm", blur: 2 }} />
+                            <TimeGrid
+                                data={availableTimes}
+                                value={selectedTime}
+                                simpleGridProps={{
+                                    type: 'container',
+                                    cols: { base: 3 },
+                                    spacing: 'lg',
+                                }}
+                                format="12h"
+                                withSeconds={false}
+                                size="lg"
+                                disableTime={bookedTimes}
+                                onChange={setSelectedTime}
+                                disabled={selectedDate === null}
+                                style={{marginBottom: '20px', padding: '10px'}}
+                            />
 
-                    <TimeGrid
-                        data={availableTimes}
-                        simpleGridProps={{
-                            type: 'container',
-                            cols: { base: 3 },
-                            spacing: 'lg',
-                        }}
-                        format="12h"
-                        withSeconds={false}
-                        size="lg"
-                        disableTime={bookedTimes}
-                        onChange={setSelectedTime}
-                        disabled={selectedDate === null}
-                    />
+                            <div className="booking-button">
+                                <Button size="lg" onClick={handleBooking} loading={processingBooking} disabled={!selectedDate || !selectedTime}>
+                                    Book Appointment
+                                </Button>
+                            </div>
+                        </ScrollArea>
+                    </div>
+                </Grid.Col>
+            </Grid>
+            <Modal opened={modalState} onClose={close} title="Booking Information" centered>
+                <div className="modal-content">
+                    <p><strong>Date:</strong> {myAppointment.appt_date ? dayjs(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
+                    <p><strong>Time:</strong> {myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
+                    <p><strong>Notes:</strong> {myAppointment.appt_notes ? myAppointment.appt_notes : 'N/A'}</p>
+                    <div>
+                        <Button mr={10}>
+                            Edit Booking
+                        </Button>
 
-                    <div className="booking-button">
-                        <Button size="lg" onClick={handleBooking} loading={processingBooking} disabled={!selectedDate || !selectedTime}>
-                            Book Appointment
+                        <Button ml={10}>
+                            Cancel Booking
                         </Button>
                     </div>
                 </div>
-
-            </SimpleGrid>
-            <Button style={{ marginLeft: '20px', }} size="lg" onClick={() => {
-                sessionStorage.removeItem('token');
-                notifications.show({
-                    title: 'Logged out',
-                    message: 'You have been successfully logged out.',
-                    color: 'green',
-                });
-                navigate('/');
-            }}>
-                Logout
-            </Button>
+            </Modal>
         </div>
     );
 
