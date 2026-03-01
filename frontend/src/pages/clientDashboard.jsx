@@ -89,7 +89,10 @@ export default function ClientDashboard() {
     useEffect(() => {
         const fetchMyAppointment = async () => {
             const myAppointment = await getMyAppointments(token);
-            setMyAppointment(myAppointment[0]);
+            if (myAppointment[0] != null || undefined) {
+                setMyAppointment(myAppointment[0]);
+            }
+            
         };
 
         fetchMyAppointment();
@@ -119,7 +122,7 @@ export default function ClientDashboard() {
             <ClientNavBar />
             <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs">
                 <div className="box">
-                    You have a booking for {dayjs(myAppointment.appt_date).format('MMMM D, YYYY')}, <a onClick={open}>click here to edit/cancel your booking.</a>
+                        You have a booking for {dayjs(myAppointment.appt_date).format('MMMM D, YYYY')}, <a onClick={open}>click here to edit/cancel your booking.</a>
                 </div>
                 <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
                     
@@ -133,7 +136,7 @@ export default function ClientDashboard() {
                     lorem ipsum dolor sit amet
                 </div>
             </SimpleGrid>
-            <Grid verticalSpacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
+            <Grid verticalspacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
 
                 <Grid.Col span={6} style={{height: "500px"}}>
                     <div className="calendar">

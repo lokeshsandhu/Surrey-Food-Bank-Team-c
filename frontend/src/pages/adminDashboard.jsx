@@ -153,7 +153,7 @@ export default function AdminDashboard() {
     return (
         <div className="page">
             <AdminNavBar />
-            <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs" style={{ height: '100%' }}>
+            <SimpleGrid cols={3} spacing="xs" verticalspacing="xs" style={{ height: '100%' }}>
                 <div className="box" style={{height: '100%'}}>
                     <Text>
                         Welcome back {sessionStorage.getItem('username')}! You have a booking for _____, click here to edit/cancel your booking.
@@ -182,7 +182,7 @@ export default function AdminDashboard() {
                     <Button onClick={createTimeslot} style={{ marginTop: '20px' }}>Create timeslots</Button>
                 </div>
             </SimpleGrid>
-            <Grid verticalSpacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
+            <Grid verticalspacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
                 <Grid.Col span={4} style={{height: "500px"}}>
                     <div className="calendar">
                         <DatePicker
