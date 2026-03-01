@@ -17,7 +17,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { useNavigate } from 'react-router';
 
 import validator from 'validator'
-import { createAccount } from '../../api/accounts.js';
+import { createAccount, usernameExists } from '../../api/accounts.js';
 import { login, me } from '../../api/auth.js';
 import { createFamilyMember } from '../../api/familyMembers.js';
 export default function RegisterPage() {
@@ -27,81 +27,42 @@ export default function RegisterPage() {
     const [opened, { open, close }] = useDisclosure(false);
     const [loading, setLoading] = useState(false);
 
+    const [doesUsernameExist, setDoesUsernameExist] = useState(false);
+
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if (registerError && activeSection === 2 && errorRef.current) {
-            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }
-    }, [registerError, activeSection]);
-
-
-    const prevSection = () => {
-        if (activeSection === 0) {
-            navigate('/');
-        }
-        setActiveSection((current) => (current > 0 ? current - 1 : current));
-        setRegisterError('');
-    };
-
     const form = useForm({
-        initialValues: {
-            username: 'allisonTest2',
-            user_password: 'Abc1234$',
-            confirm_password: 'Abc1234$',
-            canada_status: 'Canadian Citizen',
-            household_size: 0,
-            baby_or_pregnant: 'false',
-            language_spoken: 'English, Korean',
-            account_notes: 'N/A',
-            addr: {
-                line1: '123 W 4th',
-                line2: '',
-                city: 'Surrey',
-                province: 'BC',
-                postal_code: 'V6T 1Z1'
-            },
-            main_family_member:
-            {
-                f_name: 'Allison',
-                l_name: 'Test',
-                dob: null,
-                phone: '(123) 456-7890',
-                email: 'allison@gmail.com',
-                relationship: 'owner'
-            },
-            family_members: []
-            // initialValues: {
-            //     username: '',
-            //     user_password: '',
-            //     confirm_password: '',
-            //     canada_status: '',
-            //     household_size: 0,
-            //     baby_or_pregnant: '',
-            //     language_spoken: '',
-            //     account_notes: '',
-            //     addr: {
-            //         line1: '',
-            //         line2: '',
-            //         city: '',
-            //         province: '',
-            //         postal_code: ''
-            //     },
-            //     main_family_member:
-            //     {
-            //         f_name: '',
-            //         l_name: '',
-            //         dob: null,
-            //         phone: '',
-            //         email: '',
-            //         relationship: 'owner'
-            //     },
-            //     family_members: []
+            initialValues: {
+                username: '',
+                user_password: '',
+                confirm_password: '',
+                canada_status: '',
+                household_size: 0,
+                baby_or_pregnant: '',
+                language_spoken: '',
+                account_notes: '',
+                addr: {
+                    line1: '',
+                    line2: '',
+                    city: '',
+                    province: '',
+                    postal_code: ''
+                },
+                main_family_member:
+                {
+                    f_name: '',
+                    l_name: '',
+                    dob: null,
+                    phone: '',
+                    email: '',
+                    relationship: 'owner'
+                },
+                family_members: []
         },
         validateInputOnBlur: true,
         validateInputOnChange: true,
         validate: {
-            username: hasLength({ min: 5 }, 'Username must be at least 5 characters'),
+            username: (value) => value.length < 5 ? 'Username must be at least 5 characters' : doesUsernameExist ? 'Username already taken. Try a different username.' : null,
             user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
             canada_status: (value) => value ? null : 'Please select an option.',
@@ -130,6 +91,34 @@ export default function RegisterPage() {
         }
     })
 
+
+    useEffect(() => {
+        if (registerError && activeSection === 2 && errorRef.current) {
+            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+    }, [registerError, activeSection]);
+
+    useEffect(() => {
+        const usernameExistsOrNot = async () => {
+            const result = await usernameExists(form.values.username);
+            console.log('exists', result)
+           setDoesUsernameExist(result.exists)
+
+        }
+        if (form.values.username.length >= 5) {
+            usernameExistsOrNot();
+        }
+    }, [form.values.username])
+
+    const prevSection = () => {
+        if (activeSection === 0) {
+            navigate('/');
+        }
+        setActiveSection((current) => (current > 0 ? current - 1 : current));
+        setRegisterError('');
+    };
+
+    
     const loginNavigate = async () => {
         const username = form.values.username;
         const password = form.values.user_password;
@@ -332,8 +321,8 @@ export default function RegisterPage() {
                 )}
             </Card>
             <Modal opened={opened} onClose={close} title="Register Success" centered>
-                <Text my={10}>Select 'Continue' to view your dashboard</Text>
-                <Button onClick={() => { loginNavigate() }}>Continue</Button>
+                <Text mb={4}>Select 'Continue' to view your dashboard</Text>
+                <Button mt={4} color='cyan' onClick={() => { loginNavigate() }}>Continue</Button>
             </Modal>
         </div>
     )
