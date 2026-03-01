@@ -227,6 +227,8 @@ export default function RegisterPage() {
                         const loginResult = await login(accountData.username, accountData.user_password);
                         if (loginResult && loginResult.token) {
                             sessionStorage.setItem('token', loginResult.token);
+                            sessionStorage.setItem('username', accountData.username);
+                            sessionStorage.setItem('role', 'client');
                             // Add main account holder as a family member with relationship 'owner'
                             const ownerData = {
                                 username: accountData.username,
