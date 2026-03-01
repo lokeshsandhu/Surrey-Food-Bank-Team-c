@@ -67,7 +67,6 @@ export default function AccountInformation({ form }) {
                         label="3. Date of Birth"
                         placeholder="YYYY MM DD"
                         valueFormat='YYYY MM DD'
-                        maxDate={new Date()}
                         {...form.getInputProps('main_family_member.dob')}
                         withAsterisk
                         w={'30%'}

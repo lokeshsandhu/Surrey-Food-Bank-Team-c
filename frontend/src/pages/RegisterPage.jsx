@@ -43,31 +43,57 @@ export default function RegisterPage() {
 
     const form = useForm({
         initialValues: {
-            username: '',
-            user_password: '',
-            confirm_password: '',
-            canada_status: '',
+            username: 'allisonTest',
+            user_password: 'Abc1234$',
+            confirm_password: 'Abc1234$',
+            canada_status: 'Canadian Citizen',
             household_size: 0,
-            baby_or_pregnant: '',
-            language_spoken: '',
-            account_notes: '',
+            baby_or_pregnant: 'false',
+            language_spoken: 'English, Korean',
+            account_notes: 'N/A',
             addr: {
-                line1: '',
+                line1: '123 W 4th',
                 line2: '',
-                city: '',
-                province: '',
-                postal_code: ''
+                city: 'Surrey',
+                province: 'BC',
+                postal_code: 'V6T 1Z1'
             },
             main_family_member:
             {
-                f_name: '',
-                l_name: '',
+                f_name: 'Allison',
+                l_name: 'Test',
                 dob: null,
-                phone: '',
-                email: '',
+                phone: '(123) 456-7890',
+                email: 'allison@gmail.com',
                 relationship: 'owner'
             },
             family_members: []
+        // initialValues: {
+        //     username: '',
+        //     user_password: '',
+        //     confirm_password: '',
+        //     canada_status: '',
+        //     household_size: 0,
+        //     baby_or_pregnant: '',
+        //     language_spoken: '',
+        //     account_notes: '',
+        //     addr: {
+        //         line1: '',
+        //         line2: '',
+        //         city: '',
+        //         province: '',
+        //         postal_code: ''
+        //     },
+        //     main_family_member:
+        //     {
+        //         f_name: '',
+        //         l_name: '',
+        //         dob: null,
+        //         phone: '',
+        //         email: '',
+        //         relationship: 'owner'
+        //     },
+        //     family_members: []
         },
         validateInputOnBlur: true,
         validateInputOnChange: true,

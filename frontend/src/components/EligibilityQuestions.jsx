@@ -58,7 +58,7 @@ export default function ElegibilityQuestions({ form }) {
                     <Radio value="Canadian Citizen" label="Canadian Citizen" />
                     <Radio value="Permanent Resident" label="Permanent Resident" />
                     <Radio value="International Student > 6 months" label="International student with more than 6 months in Canada" />
-                    <Radio value="ineligible" label="Visitor or International student with less than 6 months in Canada" />
+                    <Radio value="(Ineligible) Visitor or International student with less than 6 months in Canada" label="Visitor or International student with less than 6 months in Canada" />
                     <Radio value="Other" label="Other" />
                 </Group>
             </Radio.Group>
