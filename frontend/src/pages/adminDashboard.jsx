@@ -108,10 +108,13 @@ export default function AdminDashboard() {
         }
     }
 
-    const makeBooking = async (bookingDate, bookingTime) => {
+    const makeBooking = async (bookingDate = createBookingDate, bookingTime = createBookingTime) => {
+
         console.log('Creating booking with date:', dayjs(bookingDate).format('YYYY-MM-DD'), 'start:', dayjs(bookingTime, 'HH:mm:ss').format('HH:mm'));
 
         const times = await getAppointmentsInDateTimeRange(token, dayjs(bookingDate).format('YYYY-MM-DD'), dayjs(bookingTime, 'HH:mm:ss').format('HH:mm'), dayjs(bookingTime, 'HH:mm:ss').add(15, 'minutes').format('HH:mm'));
+        console.log('Received timeslots for booking:', times);
+        
         if (times.length === 0) {
             notifications.show({
                 title: 'Error',
@@ -168,7 +171,7 @@ export default function AdminDashboard() {
                     />
 
                     <TimePicker label="Appointment timeslot start time" value={createBookingTime} onChange={setCreateBookingTime} format="12h" withDropdown presets={getTimeRange({ startTime: '08:00:00', endTime: '16:00:00', interval: '00:15:00' })} />
-                    <Button onClick={makeBooking} style={{ marginTop: '20px' }}>Make booking</Button>
+                    <Button onClick={() => makeBooking()} style={{ marginTop: '20px' }}>Make booking</Button>
                 </div>
                 <div className="box">
                     <DatePickerInput
@@ -233,14 +236,14 @@ export default function AdminDashboard() {
                                                 {dayjs(slot.appt_date).format('YYYY-MM-DD')} {dayjs(slot.start_time, 'HH:mm:ss').format('h:mm A')} - Booked by {slot.username}
                                             </Button>
                                         ) : (
-                                            <Menu shadow="md" width={200} withArrow>
+                                            <Menu key={`${slot.appt_date}-${slot.start_time}-menu`} shadow="md" width={200} withArrow>
                                                 <Menu.Target>
                                                     <Button key={`${slot.appt_date}-${slot.start_time}`} variant="filled" style={{ width: "100%", marginBottom: '10px' }} color="green">
                                                         {dayjs(slot.appt_date).format('YYYY-MM-DD')} {dayjs(slot.start_time, 'HH:mm:ss').format('h:mm A')} - {slot.username ? `Booked by ${slot.username}` : 'Available'}
                                                     </Button>
                                                 </Menu.Target>
                                                 <Menu.Dropdown>
-                                                    <Menu.Item onClick={() => {
+                                                    <Menu.Item key={`${slot.appt_date}-${slot.start_time}-create`} onClick={() => {
                                                         makeBooking(dayjs(slot.appt_date).format('YYYY-MM-DD'), dayjs(slot.start_time, 'HH:mm:ss').format('HH:mm:ss'));
                                                     }}>
                                                         Create Booking
