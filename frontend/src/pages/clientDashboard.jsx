@@ -52,7 +52,15 @@ export default function ClientDashboard() {
                 notifications.show({
                     title: 'Success',
                     message: 'Appointment booked successfully',
-                    color: 'green',
+                    color: 'var(--mantine-color-green-6)',
+                    autoClose: 5000,
+                    withCloseButton: true,
+                    withBorder: true,
+                    style: {
+                        border: '3px solid',
+                        borderColor: 'var(--mantine-color-green-6)',
+                        borderRadius: '8px',
+                    }
                 });
                 handleAvailableTimes(selectedDate); // Refresh available times after booking
             } else {
@@ -90,6 +98,7 @@ export default function ClientDashboard() {
         const fetchMyAppointment = async () => {
             const myAppointment = await getMyAppointments(token);
             setMyAppointment(myAppointment[0]);
+            
         };
 
         fetchMyAppointment();
@@ -119,7 +128,8 @@ export default function ClientDashboard() {
             <ClientNavBar />
             <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs">
                 <div className="box">
-                    You have a booking for {dayjs(myAppointment.appt_date).format('MMMM D, YYYY')}, <a onClick={open}>click here to edit/cancel your booking.</a>
+                    {myAppointment && myAppointment.appt_date ? `You have a booking for ${dayjs(myAppointment.appt_date).format('MMMM D, YYYY')}, ` : 'You do not have any upcoming bookings. '}
+                    {myAppointment && myAppointment.appt_date && <a onClick={open}>click here to edit/cancel your booking.</a>}
                 </div>
                 <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
                     
@@ -133,7 +143,7 @@ export default function ClientDashboard() {
                     lorem ipsum dolor sit amet
                 </div>
             </SimpleGrid>
-            <Grid verticalSpacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
+            <Grid verticalspacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
 
                 <Grid.Col span={6} style={{height: "500px"}}>
                     <div className="calendar">
@@ -191,9 +201,9 @@ export default function ClientDashboard() {
             </Grid>
             <Modal opened={modalState} onClose={close} title="Booking Information" centered>
                 <div className="modal-content">
-                    <p><strong>Date:</strong> {myAppointment.appt_date ? dayjs(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
-                    <p><strong>Time:</strong> {myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
-                    <p><strong>Notes:</strong> {myAppointment.appt_notes ? myAppointment.appt_notes : 'N/A'}</p>
+                    <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? dayjs(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
+                    <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
+                    <p><strong>Notes:</strong> {myAppointment && myAppointment.appt_notes ? myAppointment.appt_notes : 'N/A'}</p>
                     <div>
                         <Button mr={10}>
                             Edit Booking

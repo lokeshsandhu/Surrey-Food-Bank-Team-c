@@ -1,7 +1,7 @@
 import React, { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { Notifications } from '@mantine/notifications';
+import { notifications, Notifications } from '@mantine/notifications';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 import '@mantine/core/styles.css';
@@ -23,9 +23,26 @@ const theme = createTheme({
   white: '#F2F2F2'
 })
 
+const notifStyle = {
+  root: {
+    width: 600,
+    padding: '20px',
+    minHeight: 500,
+  },
+  title: {
+    fontSize: 18,
+  },
+  description: {
+    fontSize: 16,
+  },
+  notification: {
+    pointerEvents: 'auto',
+  }
+};
+
 createRoot(document.getElementById('root')).render(
   <MantineProvider theme={theme}>
-    <Notifications position="top-center" />
+  <Notifications position="top-center" styles={notifStyle}/>
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
