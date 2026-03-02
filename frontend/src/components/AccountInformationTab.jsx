@@ -1,18 +1,21 @@
 import { Title, Text, Stack, TextInput, Radio, Group, Fieldset, Select, Button } from "@mantine/core"
 import { DateInput } from "@mantine/dates";
 import React, { useEffect, useState } from "react"
-import { getAccount, updateAccount } from "../../api/accounts";
-import { getFamilyMembers, updateFamilyMember } from "../../api/familyMembers";
+import { getAccount, updateAccount, usernameExists } from "../../api/accounts";
+import { getFamilyMembers, updateFamilyMember, familyMemberExists } from "../../api/familyMembers";
 import { useForm, isNotEmpty } from "@mantine/form";
 import validator from 'validator'
 import dayjs from 'dayjs';
 import { IMaskInput } from 'react-imask'
 import { notifications } from '@mantine/notifications';
-
+import { useNavigate } from 'react-router';
 
 
 export default function AccountInformationTab({ clientUsername }) {
     const token = sessionStorage.getItem('token');
+    const navigate = useNavigate();
+    const role = sessionStorage.getItem('role');
+    const username = sessionStorage.getItem("username")
 
     const provinceOptions = ['NL', 'PE', 'NS', 'NB', 'QC', 'ON', 'MB', 'SK', 'AB', 'BC', 'YT', 'NT', 'NU']
     provinceOptions.sort();
@@ -20,6 +23,10 @@ export default function AccountInformationTab({ clientUsername }) {
     if (!token) {
         navigate('/');
         return null;
+    }
+
+    if (username !== clientUsername && role !== 'admin') {
+        navigate(`/clientDashboard/account/${username}`)
     }
 
     const form = useForm({
@@ -40,6 +47,7 @@ export default function AccountInformationTab({ clientUsername }) {
                 account_notes: ''
             },
             accountOwner: {
+                username: '',
                 f_name: '',
                 l_name: '',
                 dob: null,
@@ -51,6 +59,7 @@ export default function AccountInformationTab({ clientUsername }) {
         validateInputOnChange: true,
         validate: {
             accountInformation: {
+                username: (value) => value.length < 5 ? 'Username must be at least 5 characters' : null,
                 canada_status: (value) => value ? null : 'Please select an option.',
                 baby_or_pregnant: (value) => value && value.length > 0 ? null : 'Please select an option.',
                 language_spoken: isNotEmpty('Please enter your primary language.'),
@@ -76,10 +85,7 @@ export default function AccountInformationTab({ clientUsername }) {
         const familyMembers = await getFamilyMembers(token, clientUsername);
         const ownerTemp = familyMembers.filter(member => member.relationship === 'owner');
         const owner = ownerTemp[0];
-        console.log('account', result)
-        console.log('owner', owner)
         const address = splitAddress(result.addr)
-        console.log('address', address)
         // TODO: Rewrite (better practices)
         if (result && owner) {
             form.setValues({
@@ -121,8 +127,29 @@ export default function AccountInformationTab({ clientUsername }) {
         };
     }
 
+    // const checkFirstName = async () => {
+    //     const currentFname = form.values.accountOwner.f_name;
+
+    //     const result = await familyMemberExists(clientUsername, currentFname);
+    //     console.log('result', result)
+
+    //     if (currentFname === form.values.accountOwner.f_name) return;
+    //     if (result.exists) {
+    //         form.setFieldError(
+    //             'accountOwner.f_name',
+    //             'A family member already has this first name. Try a different name.'
+    //         );
+    //     }
+    // };
+
+    // useEffect(() => {
+
+    //     checkFirstName();
+    // }, [form.values.accountOwner.f_name])
+
     const updateAccountInformation = async () => {
         const fieldsToValidate = [
+            "accountOwner.f_name",
             "accountOwner.l_name",
             "accountOwner.dob",
             "accountOwner.email",
@@ -134,8 +161,12 @@ export default function AccountInformationTab({ clientUsername }) {
             "accountInformation.baby_or_pregnant",
             "accountInformation.language_spoken",
         ]
-        let hasErrors = false;
 
+
+        // await checkFirstName();
+        // if (form.errors.accountOwner.f_name) return;
+
+        let hasErrors = false;
         fieldsToValidate.forEach((field) => {
             const result = form.validateField(field);
             if (result.hasError) {
@@ -147,6 +178,7 @@ export default function AccountInformationTab({ clientUsername }) {
             const accountInfo = form.values.accountInformation;
             const ownerInfo = form.values.accountOwner;
             const accountData = {
+                // username: accountInfo.username,
                 canada_status: accountInfo.canada_status,
                 addr: accountInfo.addr.line1 + ', ' + accountInfo.addr.line2 + ', ' + accountInfo.addr.city + ', ' + accountInfo.addr.province + ', ' + accountInfo.addr.postal_code,
                 baby_or_pregnant: accountInfo.baby_or_pregnant === 'true',
@@ -154,6 +186,7 @@ export default function AccountInformationTab({ clientUsername }) {
                 account_notes: accountInfo.account_notes
             }
             const ownerData = {
+                // f_name: ownerInfo.f_name,
                 l_name: ownerInfo.l_name,
                 dob: ownerInfo.dob,
                 phone: ownerInfo.phone,
@@ -197,6 +230,7 @@ export default function AccountInformationTab({ clientUsername }) {
                     <TextInput
                         variant='unstyled'
                         label="Username"
+                        placeholder="e.g. john123"
                         value={form.values.accountInformation.username}
                         w={'60%'}
                         readOnly
@@ -205,8 +239,16 @@ export default function AccountInformationTab({ clientUsername }) {
                         variant='unstyled'
                         label="First Name"
                         value={form.values.accountOwner.f_name}
+                        // placeholder="e.g. Alex"
+                        // key={form.key('accountOwner.f_name')}
+                        // {...form.getInputProps('accountOwner.f_name')}
                         readOnly
                         w={'45%'}
+                    // onBlur={async (event) => {
+                    //     form.getInputProps('accountOwner.f_name').onBlur(event);
+
+                    //     await checkFirstName();
+                    // }}
                     />
                     <TextInput
                         label="Last Name"

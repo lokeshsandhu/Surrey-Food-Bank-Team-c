@@ -105,3 +105,8 @@ export function getOwnerFamilyMembers(token) {
     headers: { Authorization: `Bearer ${token}` }
   }).then(res => res.json());
 }
+
+// return true if family member with given name and username already exists
+export function familyMemberExists(username, f_name) {
+  return fetch(`${API_BASE}/exists/${username}/${f_name}`).then(res => res.json());
+}

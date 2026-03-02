@@ -5,6 +5,7 @@ import { LoginDTO } from "./auth.dto";
 
 const ADMIN_USERNAMES = new Set(["admin"]);
 
+// Verify if account with given username and password exists and role (admin or client), return role and token
 export async function login(data: LoginDTO) {
     const account = await getAccountWithPassword(data.username);
     if (!account) {

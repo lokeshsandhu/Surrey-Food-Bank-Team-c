@@ -1,5 +1,6 @@
 import pool from "../../db/postgres";
 
+// Select all rows in account table, return rows
 export async function getAllClients() {
     const text = `
         SELECT *
@@ -10,6 +11,9 @@ export async function getAllClients() {
     return rows;
 }
 
+// Select from account table with given username
+// If username is found in account table, select all rows in familymember table and appointment table with given username
+// Return familymember and appointment rows
 export async function getClientByUsername(username: string) {
     const accountText = `
         SELECT *
@@ -43,6 +47,7 @@ export async function getClientByUsername(username: string) {
     };
 }
 
+// Select all rows from appointment table, return rows
 export async function getAllAppointments() {
     const text = `
         SELECT *

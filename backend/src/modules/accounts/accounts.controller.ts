@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as service from "./accounts.service";
 
+// Create a new account
 export async function createAccount(req: Request, res: Response) {
     try {
         const account = await service.createAccount(req.body);
@@ -10,6 +11,7 @@ export async function createAccount(req: Request, res: Response) {
     }
 }
 
+// Find account with given username
 export async function getMyAccount(req: Request, res: Response) {
     try {
         const username = req.params.username;
@@ -24,6 +26,7 @@ export async function getMyAccount(req: Request, res: Response) {
     }
 }
 
+// Update select fields in account with given username
 export async function updateMyAccount(req: Request, res: Response) {
     try {
         const username = req.params.username;
@@ -38,6 +41,7 @@ export async function updateMyAccount(req: Request, res: Response) {
     }
 }
 
+// Delete account with given username
 export async function deleteAccount(req: Request, res: Response) {
     try {
         const username = req.params.username;
@@ -52,6 +56,7 @@ export async function deleteAccount(req: Request, res: Response) {
     }
 }
 
+// Check if account with given username already exists
 export async function checkUsernameExists(req: Request, res: Response) {
     try {
         const username = req.params.username;

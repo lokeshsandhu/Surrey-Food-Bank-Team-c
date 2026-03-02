@@ -10,6 +10,20 @@ import dayjs from 'dayjs';
 import { usernameExists } from '../../api/accounts';
 
 export default function AccountInformation({ form }) {
+
+    const checkUsername = async () => {
+            const currentUsername = form.values.username;
+            if (currentUsername.length < 5) return;
+    
+            const result = await usernameExists(currentUsername);
+    
+            if (result.exists) {
+                form.setFieldError(
+                    'username',
+                    'Username already taken. Try a different username.'
+                );
+            }
+        };
     return (
         <div>
             <h2 className='login-title'>Account Information</h2>
@@ -22,6 +36,11 @@ export default function AccountInformation({ form }) {
                     {...form.getInputProps('username')}
                     withAsterisk
                     w={'60%'}
+                    onBlur={async (event) => {
+                        form.getInputProps('username').onBlur(event);
+
+                        await checkUsername();
+                    }}
                 />
                 <PasswordInput
                     label="Password"

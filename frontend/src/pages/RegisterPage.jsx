@@ -31,32 +31,32 @@ export default function RegisterPage() {
     const navigate = useNavigate();
 
     const form = useForm({
-            initialValues: {
-                username: '',
-                user_password: '',
-                confirm_password: '',
-                canada_status: '',
-                household_size: 0,
-                baby_or_pregnant: '',
-                language_spoken: '',
-                account_notes: '',
-                addr: {
-                    line1: '',
-                    line2: '',
-                    city: '',
-                    province: '',
-                    postal_code: ''
-                },
-                main_family_member:
-                {
-                    f_name: '',
-                    l_name: '',
-                    dob: null,
-                    phone: '',
-                    email: '',
-                    relationship: 'owner'
-                },
-                family_members: []
+        initialValues: {
+            username: '',
+            user_password: '',
+            confirm_password: '',
+            canada_status: '',
+            household_size: 0,
+            baby_or_pregnant: '',
+            language_spoken: '',
+            account_notes: '',
+            addr: {
+                line1: '',
+                line2: '',
+                city: '',
+                province: '',
+                postal_code: ''
+            },
+            main_family_member:
+            {
+                f_name: '',
+                l_name: '',
+                dob: null,
+                phone: '',
+                email: '',
+                relationship: 'owner'
+            },
+            family_members: []
         },
         validateInputOnBlur: true,
         validateInputOnChange: true,
@@ -97,23 +97,22 @@ export default function RegisterPage() {
         }
     }, [registerError, activeSection]);
 
-    useEffect(() => {
-        const checkUsername = async () => {
-            const currentUsername = form.values.username;
-            if (currentUsername.length < 5) return;
-            const result = await usernameExists(currentUsername);
+    const checkUsername = async () => {
+        const currentUsername = form.values.username;
+        if (currentUsername.length < 5) return;
 
-            if (form.values.username === currentUsername) {
-                if (result.exists) {
-                    form.setFieldError(
-                        'username',
-                        'Username already taken. Try a different username.'
-                    );
-                } else {
-                    form.clearFieldError('username');
-                }
-            }
-        };
+        const result = await usernameExists(currentUsername);
+
+        if (result.exists) {
+            form.setFieldError(
+                'username',
+                'Username already taken. Try a different username.'
+            );
+        }
+    };
+
+    useEffect(() => {
+
         checkUsername();
     }, [form.values.username])
 
@@ -125,7 +124,7 @@ export default function RegisterPage() {
         setRegisterError('');
     };
 
-    
+
     const loginNavigate = async () => {
         const username = form.values.username;
         const password = form.values.user_password;
@@ -176,6 +175,7 @@ export default function RegisterPage() {
                 "main_family_member.email",
                 "main_family_member.phone",
             ];
+            
         }
 
         if (activeSection === 2) {
@@ -188,8 +188,11 @@ export default function RegisterPage() {
             ]);
         }
 
-        let hasErrors = false;
 
+        await checkUsername();
+        if (form.errors.username) return;
+
+        let hasErrors = false;
         fieldsToValidate.forEach((field) => {
             const result = form.validateField(field);
             if (result.hasError) {
