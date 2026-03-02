@@ -12,6 +12,7 @@ import { me } from '../../api/auth.js';
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useDisclosure } from '@mantine/hooks';
+import { cancelAppointment } from '../../api/appointments.js';
 
 const excludedDays = [5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
 
@@ -26,6 +27,7 @@ export default function ClientDashboard() {
     const [bookedTimes, setBookedTimes] = useState([]);
     const [myAppointment, setMyAppointment] = useState({});
     const [modalState, {open, close}] = useDisclosure(false);
+    const [modalLoading, setModalLoading] = useState(false);
 
     const [myUsername, setMyUserName] = useState('');
 
@@ -41,6 +43,15 @@ export default function ClientDashboard() {
     }
 
     const handleBooking = async () => {
+        if (myAppointment && myAppointment.appt_date) {
+            notifications.show({
+                title: 'Error',
+                message: 'You already have an appointment booked, please cancel or edit your existing appointment before booking a new one.',
+                color: 'red',
+            });
+            return;
+        }
+
         if (selectedDate && selectedTime) {
             // TODO: Send booking information to the backend and handle the response
             setProcessingBooking(true);
@@ -63,6 +74,7 @@ export default function ClientDashboard() {
                     }
                 });
                 handleAvailableTimes(selectedDate); // Refresh available times after booking
+                fetchMyAppointment();
             } else {
                 notifications.show({
                     title: 'Error',
@@ -94,13 +106,43 @@ export default function ClientDashboard() {
         }
     }
 
-    useEffect(() => {
-        const fetchMyAppointment = async () => {
-            const myAppointment = await getMyAppointments(token);
-            setMyAppointment(myAppointment[0]);
-            
-        };
+    const handleCancelBooking = async (appointment) => {
+        setModalLoading(true);
+        const res = await cancelAppointment(token, appointment.appt_date, appointment.start_time);
+        if (res && res.success) {
+            notifications.show({
+                title: 'Success',
+                message: 'Appointment cancelled successfully',
+                color: 'var(--mantine-color-green-6)',
+                autoClose: 5000,
+                withCloseButton: true,                withBorder: true,
+                style: {
+                    border: '3px solid',
+                    borderColor: 'var(--mantine-color-green-6)',
+                    borderRadius: '8px',
+                }
+            });
+        } else {
+            notifications.show({
+                title: 'Error',
+                message: res?.error || 'Failed to cancel appointment',
+                color: 'red',
+            });
+        }
+        setModalLoading(false);
+        close();
+        handleAvailableTimes(selectedDate); // Refresh available times after cancellation
+        fetchMyAppointment(); // Refresh user's appointment information after cancellation
+    }
 
+    const fetchMyAppointment = async () => {
+        const myAppointment = await getMyAppointments(token);
+        const earliestAppointment = myAppointment.filter(appointment => appointment.appt_date >= dayjs().format('YYYY-MM-DD'));
+        setMyAppointment(earliestAppointment[0]);
+    };
+
+    useEffect(() => {
+        
         fetchMyAppointment();
 
     }, []);
@@ -128,8 +170,8 @@ export default function ClientDashboard() {
             <ClientNavBar />
             <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs">
                 <div className="box">
-                    {myAppointment && myAppointment.appt_date ? `You have a booking for ${dayjs(myAppointment.appt_date).format('MMMM D, YYYY')}, ` : 'You do not have any upcoming bookings. '}
-                    {myAppointment && myAppointment.appt_date && <a onClick={open}>click here to edit/cancel your booking.</a>}
+                    {myAppointment && myAppointment.appt_date ? `You have a booking for ${dayjs(myAppointment.appt_date).format('MMMM D, YYYY')} at ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')}, ` : 'You do not have any upcoming bookings. '}
+                    {myAppointment && myAppointment.appt_date && <a onClick={open} style={{cursor: 'pointer', textDecoration: 'underline'}}>click here to edit/cancel your booking.</a>}
                 </div>
                 <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
                     
@@ -159,6 +201,8 @@ export default function ClientDashboard() {
                                     return true;
                                 } else if (!allTimeslots.some(timeslot => dayjs(timeslot.appt_date).format('YYYY-MM-DD') === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
                                     return true;
+                                // } else if (dayjs(date).format('YYYY-MM-DD') < dayjs().format('YYYY-MM-DD')) { // Disable past dates
+                                //     return true;
                                 } else {
                                     return false;
                                 }
@@ -200,6 +244,7 @@ export default function ClientDashboard() {
                 </Grid.Col>
             </Grid>
             <Modal opened={modalState} onClose={close} title="Booking Information" centered>
+                <LoadingOverlay visible={modalLoading}/>
                 <div className="modal-content">
                     <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? dayjs(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
                     <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
@@ -209,7 +254,7 @@ export default function ClientDashboard() {
                             Edit Booking
                         </Button>
 
-                        <Button ml={10}>
+                        <Button ml={10} onClick={() => handleCancelBooking(myAppointment)}>
                             Cancel Booking
                         </Button>
                     </div>
