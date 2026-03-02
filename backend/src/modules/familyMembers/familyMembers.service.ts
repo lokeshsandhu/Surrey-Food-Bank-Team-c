@@ -1,18 +1,21 @@
 import pool from "../../db/postgres";
 import { FamilyMemberDTO, UpdateFamilyMemberDTO } from "./familyMembers.dto";
 
-
+// Select all rows with given first name from familymember table, return row(s)
 export async function findFamilyMembersByFName(f_name: string) {
     const text = `SELECT * FROM familymember WHERE f_name = LOWER($1) ORDER BY username`;
     const { rows } = await pool.query(text, [f_name]);
     return rows;
 }
 
+// Select all rows with given last name from familymember table, return row(s)
 export async function findFamilyMembersByLName(l_name: string) {
     const text = `SELECT * FROM familymember WHERE l_name = LOWER($1) ORDER BY username`;
     const { rows } = await pool.query(text, [l_name]);
     return rows;
 }
+
+// Insert row into familymember table, return row(s)
 export async function createFamilyMember(data: FamilyMemberDTO) {
     const text = `
         INSERT INTO familymember
@@ -33,6 +36,7 @@ export async function createFamilyMember(data: FamilyMemberDTO) {
     return rows[0];
 }
 
+// Select all rows with given username from familymember table, return row(s)
 export async function getFamilyMembers(username: string) {
     const text = `
         SELECT * FROM familymember
@@ -43,6 +47,8 @@ export async function getFamilyMembers(username: string) {
     return rows;
 }
 
+// Update row in familymember table with given username and first name, return row
+// Only the fields you specify are updated
 export async function updateFamilyMember(
     username: string,
     f_name: string,
@@ -92,6 +98,7 @@ export async function updateFamilyMember(
     return rows[0] ?? null;
 }
 
+// Delete row from familymember table with given username and first name, return row
 export async function deleteFamilyMember(username: string, f_name: string) {
     const text = `
         DELETE FROM familymember
@@ -102,7 +109,7 @@ export async function deleteFamilyMember(username: string, f_name: string) {
     return rows[0] ?? null;
 }
 
-// Get all family members with relationship = 'owner'
+// Select all rows with relationship = 'owner' from familymember table
 export async function getOwnerFamilyMembers() {
     const text = `SELECT * FROM familymember WHERE relationship = 'owner' ORDER BY username, f_name`;
     const { rows } = await pool.query(text);

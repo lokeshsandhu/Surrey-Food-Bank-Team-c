@@ -7,10 +7,10 @@ const router = Router();
 // POST /api/accounts — create a new account 
 router.post("/", controller.createAccount);
 
-// GET /api/accounts/:username get account details
+// GET /api/accounts/:username — get account details
 router.get("/:username", authenticate, controller.getMyAccount);
 
-// PATCH /api/accounts/:username — update a spcefic detail
+// PATCH /api/accounts/:username — update a specific detail
 router.patch("/:username", authenticate, controller.updateMyAccount);
 
 // DELETE /api/accounts/:username — delete account (admin only)

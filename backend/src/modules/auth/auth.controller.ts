@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as service from "./auth.service";
 
+// Verify login credentials and level of access
 export async function login(req: Request, res: Response) {
     try {
         const { username, password } = req.body;
@@ -21,6 +22,7 @@ export async function login(req: Request, res: Response) {
         res.status(500).json({ success: false, error: err.message });
     }
 }
+
 // Call this in the frontend to check the user's role, we can the display an admin page or client page depending on it.
 export async function me(req: Request, res: Response) {
     try {

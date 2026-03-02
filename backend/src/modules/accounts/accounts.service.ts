@@ -2,6 +2,7 @@ import pool from "../../db/postgres";
 import { AccountDTO, UpdateAccountDTO } from "./accounts.dto";
 import { hashPassword } from "../../shared/crypto/password";
 
+// Insert a new row into account table with given info, return row
 export async function createAccount(data: AccountDTO) {
     const hashedPassword = await hashPassword(data.user_password);
     const text = `
@@ -24,6 +25,7 @@ export async function createAccount(data: AccountDTO) {
     return rows[0];
 }
 
+// Select from account table with given username, return row
 export async function getAccountByUsername(username: string) {
     const text = `
         SELECT *
@@ -33,11 +35,15 @@ export async function getAccountByUsername(username: string) {
     const { rows } = await pool.query(text, [username]);
     return rows[0] ?? null;
 }
+
+// Select from account table with given username, return boolean
 export async function usernameExists(username: string): Promise<boolean> {
     const text = `SELECT 1 FROM account WHERE username = $1 LIMIT 1`;
     const { rows } = await pool.query(text, [username]);
     return rows.length > 0;
 }
+
+// Select from account table with given username, return username and password
 export async function getAccountWithPassword(username: string) {
     const text = `
         SELECT username, user_password
@@ -47,6 +53,8 @@ export async function getAccountWithPassword(username: string) {
     const { rows } = await pool.query(text, [username]);
     return rows[0] ?? null;
 }
+
+// Update row in account table with given username, return row
 // Only the fields you specify are updated
 export async function updateAccount(username: string, data: UpdateAccountDTO) {
     const fields: string[] = [];
@@ -94,6 +102,7 @@ export async function updateAccount(username: string, data: UpdateAccountDTO) {
     return rows[0] ?? null;
 }
 
+// Delete row in account table with given username, return row
 export async function deleteAccount(username: string) {
     const text = `
         DELETE FROM account

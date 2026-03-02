@@ -1,5 +1,6 @@
 import pool from "../../db/postgres";
 import { CreateSlotDTO, BookAppointmentDTO, CreateAppointmentsInRangeDTO } from "./appointments.dto";
+
 // Update an appointment by date and start_time
 export async function updateAppointment(appt_date: string, start_time: string, updateData: Partial<{ end_time: string; appt_notes: string; username: string }>) {
     const fields = [];

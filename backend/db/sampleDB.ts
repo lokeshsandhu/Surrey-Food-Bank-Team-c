@@ -129,11 +129,6 @@ async function sampleApptData() {
         start_time: '10:00',
     }
 
-    const jeffBookingFeb25 = {
-        appt_date: '2026-02-25',
-        start_time: '13:00',
-    }
-
     const jeffBookingFeb28 = {
         appt_date: '2026-02-28',
         start_time: '08:00',
@@ -142,7 +137,6 @@ async function sampleApptData() {
     await appointment.createAppointmentsInTimeRange(feb25Slots);
     await appointment.createAppointment(feb28FullSlot);
     await appointment.bookAppointment(janeBookingFeb25, 'jane123');
-    await appointment.bookAppointment(jeffBookingFeb25, 'big_jeff');
     await appointment.bookAppointment(jeffBookingFeb28, 'big_jeff');
 }
 
