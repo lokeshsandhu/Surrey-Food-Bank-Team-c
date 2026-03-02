@@ -90,3 +90,15 @@ export async function getOwnerFamilyMembers(req: Request, res: Response) {
         res.status(500).json({ error: err.message });
     }
 }
+
+// Check if family member with given username and first name already exists
+export async function checkUsernameFamilyMemberExists(req: Request, res: Response) {
+    try {
+        const username = req.params.username;
+        const f_name = req.params.f_name;
+        const exists = await service.usernameFamilyMemberExists(username, f_name);
+        res.status(200).json({ exists });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}

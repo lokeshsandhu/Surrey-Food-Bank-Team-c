@@ -23,4 +23,7 @@ router.delete("/:username/:f_name", authenticate, controller.deleteFamilyMember)
 // GET /api/family-members/owners — list all family members with relationship = 'owner'
 router.get("/owners", authenticate, controller.getOwnerFamilyMembers);
 
+// GET /api/family-members/exists/:username — check if username exists
+router.get("/exists/:username/:f_name", controller.checkUsernameFamilyMemberExists);
+
 export default router;

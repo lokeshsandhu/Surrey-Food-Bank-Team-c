@@ -115,3 +115,10 @@ export async function getOwnerFamilyMembers() {
     const { rows } = await pool.query(text);
     return rows;
 }
+
+// Select from familymember table with given username and f_name, return boolean
+export async function usernameFamilyMemberExists(username: string, f_name:string): Promise<boolean> {
+    const text = `SELECT * FROM familymember WHERE username = $1 AND f_name = $2`;
+    const { rows } = await pool.query(text, [username, f_name]);
+    return rows.length > 0;
+}
