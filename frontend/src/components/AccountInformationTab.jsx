@@ -14,6 +14,8 @@ import { useNavigate } from 'react-router';
 export default function AccountInformationTab({ clientUsername }) {
     const token = sessionStorage.getItem('token');
     const navigate = useNavigate();
+    const role = sessionStorage.getItem('role');
+    const username = sessionStorage.getItem("username")
 
     const provinceOptions = ['NL', 'PE', 'NS', 'NB', 'QC', 'ON', 'MB', 'SK', 'AB', 'BC', 'YT', 'NT', 'NU']
     provinceOptions.sort();
@@ -23,7 +25,9 @@ export default function AccountInformationTab({ clientUsername }) {
         return null;
     }
 
-
+    if (username !== clientUsername && role !== 'admin') {
+        navigate(`/clientDashboard/account/${username}`)
+    }
 
     const form = useForm({
         initialValues: {
