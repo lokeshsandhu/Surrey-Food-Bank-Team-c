@@ -146,6 +146,7 @@ export default function AccountInformationTab({ clientUsername }) {
 
     const updateAccountInformation = async () => {
         const fieldsToValidate = [
+            "accountOwner.f_name",
             "accountOwner.l_name",
             "accountOwner.dob",
             "accountOwner.email",
@@ -182,6 +183,7 @@ export default function AccountInformationTab({ clientUsername }) {
                 account_notes: accountInfo.account_notes
             }
             const ownerData = {
+                f_name: ownerInfo.f_name,
                 l_name: ownerInfo.l_name,
                 dob: ownerInfo.dob,
                 phone: ownerInfo.phone,
