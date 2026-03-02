@@ -175,6 +175,7 @@ export default function RegisterPage() {
                 "main_family_member.email",
                 "main_family_member.phone",
             ];
+            
         }
 
         if (activeSection === 2) {
