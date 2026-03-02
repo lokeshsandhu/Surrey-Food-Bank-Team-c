@@ -50,9 +50,7 @@ export function AdminNavBar() {
             <Divider orientation="vertical" size="sm" mx="sm" />
             <a className={styles.link} onClick={() => navigate('/adminDashboard/clientList')}> <h2 style={{ textAlign: 'center', cursor: 'pointer' }}> Client List </h2> </a>
             <Divider orientation="vertical" size="sm" mx="sm" />
-            <a className={styles.link} onClick={() => navigate('/adminDashboard')}> <h2 style={{ textAlign: 'center', cursor: 'pointer' }}> View Bookings </h2> </a>
-            <Divider orientation="vertical" size="sm" mx="sm" />
-            <a className={styles.link} onClick={() => navigate('/adminDashboard')}> <h2 style={{ textAlign: 'center', cursor: 'pointer' }}> Schedule Timeslots </h2> </a>
+            <a className={styles.link} onClick={() => navigate('/adminDashboard/timeslots')}> <h2 style={{ textAlign: 'center', cursor: 'pointer' }}> Timeslots Page </h2> </a>
             <Divider orientation="vertical" size="sm" mx="sm" />
             <ProfileButton/>
           </div>

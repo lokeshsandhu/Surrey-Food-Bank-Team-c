@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css'
+import '@mantine/notifications/styles.css';
+import '@mantine/schedule/styles.css'
 
 import './index.css'
 import { MantineProvider, createTheme } from '@mantine/core';
@@ -13,6 +15,7 @@ import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx';
 import AdminDashboard from './pages/adminDashboard.jsx';
 import ClientDashboard from './pages/clientDashboard.jsx';
+import TimeslotPage from './pages/timeslotPage.jsx';
 import ProtectedRoute from './routes/protectedroute.jsx';
 import AdminRoute from './routes/adminroute.jsx';
 import ClientList from './pages/clientList.jsx';
@@ -49,6 +52,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/register" element={<RegisterPage />} />
         <Route path="*" element={<Navigate to="/login" />} />
         <Route path="/adminDashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="/adminDashboard/timeslots" element={<AdminRoute><TimeslotPage /></AdminRoute>} />
         <Route path="/adminDashboard/clientList" element={<AdminRoute><ClientList /></AdminRoute>} />
         <Route path="/adminDashboard/clientList/account/:username" element={<AdminRoute><ClientAccountAdminView /></AdminRoute>} />
         <Route path="/clientDashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
