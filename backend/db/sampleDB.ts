@@ -154,6 +154,40 @@ async function marchTimeSlots() {
     }
 }
 
+async function testUpdate() {
+    const janeFM = {
+        f_name: 'New Jane',
+        l_name: 'New Doe',
+        dob: '2000/01/01',
+        phone: 'new phone',
+        email: 'new email',
+        relationship: 'owner',
+    }
+
+    const janeAccount = {
+        username: 'newjaneaccount',
+        canada_status: 'new status',
+        household_size: 8,
+        addr: 'new addr',
+        baby_or_pregnant: false,
+        language_spoken: 'new lang',
+        account_notes: 'new info'
+    }
+
+    const jillFM = {
+        f_name: 'evil jill',
+        l_name: 'evil last name',
+        dob: '1000/01/01',
+        phone: 'evil phone',
+        email: 'evil email',
+        relationship: 'evil daughter',
+    }
+
+    await familymember.updateFamilyMember('jane123', 'Jane', janeFM);
+    await account.updateAccount('jane123', janeAccount);
+    await familymember.updateFamilyMember('newjaneaccount', 'Jill', jillFM);
+}
+
 // run init functions
 async function runSample() {
     try {
@@ -170,3 +204,4 @@ async function runSample() {
 }
 
 runSample();
+//testUpdate();

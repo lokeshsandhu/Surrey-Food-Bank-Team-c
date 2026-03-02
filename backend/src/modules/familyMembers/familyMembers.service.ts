@@ -58,8 +58,12 @@ export async function updateFamilyMember(
     const values: unknown[] = [];
     let idx = 1;
 
+    if (data.f_name !== undefined) {
+        fields.push(`f_name = LOWER($${idx++})`);
+        values.push(data.f_name);
+    }
     if (data.l_name !== undefined) {
-        fields.push(`l_name = LOWER($)${idx++}`);
+        fields.push(`l_name = LOWER($${idx++})`);
         values.push(data.l_name);
     }
     if (data.dob !== undefined) {
@@ -91,7 +95,7 @@ export async function updateFamilyMember(
     const text = `
         UPDATE familymember
         SET ${fields.join(", ")}
-        WHERE username = $${idx} AND f_name = LOWER($)${idx + 1}
+        WHERE username = $${idx} AND f_name = LOWER($${idx + 1})
         RETURNING *
     `;
     const { rows } = await pool.query(text, values);

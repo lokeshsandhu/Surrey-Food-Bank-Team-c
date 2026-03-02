@@ -40,8 +40,10 @@ We recommend using the latest versions and cannot guarantee functionality on old
 Example with pgAdmin:
 > Right-click on Databases and create a new database.
 > ![Right-click on Databases and create a new database](/setup-images/pgAdmin1.png)
+
 > Enter `sfb_db` as the name and click save.
 > ![Enter sfb_db as the name and click save](/setup-images/pgAdmin2.png)
+
 > The database should now be initialized.
 > ![Database initialized](/setup-images/pgAdmin3.png)
 
@@ -57,7 +59,9 @@ Example with pgAdmin:
 4. Once the dependencies have been installed, cd into the db folder: `cd db`.
 
 5. Run the initialization script: `node resetDB.js`.
-    This message will print to conosle if successful: `Database initialized: 6 successful, 0 errors`.
+
+    This message will print to console if successful: `Database initialized: 6 successful, 0 errors`.
+
     Example:
     ![DB init example](/setup-images/vscode1.png)
 
@@ -74,6 +78,7 @@ If using pgAdmin, open the [QueryTool](https://www.w3schools.com/postgresql/post
 Example:
 > Right-click sfb_db and open the Query Tool.
 > ![Right-click sfb_db and open the Query Tool](/setup-images/pgAdmin4.png)
+
 > Write your queries and click the play button to execute. The *Data Output* section below will show the result of the queries, which for now should be empty tables with column names.
 > ![Write your queries and click the execute query button to execute](/setup-images/pgAdmin5.png)
 

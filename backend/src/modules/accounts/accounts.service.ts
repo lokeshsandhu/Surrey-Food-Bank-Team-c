@@ -61,6 +61,10 @@ export async function updateAccount(username: string, data: UpdateAccountDTO) {
     const values: unknown[] = [];
     let idx = 1;
 
+    if (data.username !== undefined) {
+        fields.push(`username = $${idx++}`);
+        values.push(data.username);
+    }
     if (data.canada_status !== undefined) {
         fields.push(`canada_status = $${idx++}`);
         values.push(data.canada_status);
