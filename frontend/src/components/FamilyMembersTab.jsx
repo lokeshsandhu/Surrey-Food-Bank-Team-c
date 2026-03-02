@@ -175,6 +175,7 @@ export default function FamilyMembersTab({ clientUsername }) {
               value={form.values.f_name}
               withAsterisk
               w={'45%'}
+              readOnly
             />
             <TextInput
               label="Last Name"
@@ -213,12 +214,14 @@ export default function FamilyMembersTab({ clientUsername }) {
             w={'45%'}
           />
           <TextInput
+            variant={form.values.relationship === 'owner' ? "unstyled" : "default"}
             label="Relationship"
-            placeholder="e.g. Daughter"
+            placeholder="e.g. Daughter, Son"
             key={form.key(`relationship`)}
             {...form.getInputProps(`relationship`)}
             withAsterisk
             w={'45%'}
+            readOnly={form.values.relationship === 'owner'}
           />
         </Stack>
         <Group w='100%' display={'flex'} mt={20}
