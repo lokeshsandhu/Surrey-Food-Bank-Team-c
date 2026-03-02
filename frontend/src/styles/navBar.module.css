@@ -26,6 +26,15 @@
   &:hover {
     color: var(--mantine-color-red-9);
   }
+
+  &:hover .icons{
+    filter: invert(18%) sepia(78%) saturate(1990%) hue-rotate(339deg) brightness(120%) contrast(100%);
+  }
+}
+
+.icons{
+  filter: invert(59%) sepia(36%) saturate(6026%) hue-rotate(324deg) brightness(115%) contrast(114%);
+  
 }
 
 .right {
