@@ -11,6 +11,9 @@ router.get("/search/by-lname", authenticate, requireAdmin, controller.getFamilyM
 // POST /api/family-members — create a family member
 router.post("/", authenticate,controller.createFamilyMember);
 
+// GET /api/family-members/owners — list all family members with relationship = 'owner'
+router.get("/owners", authenticate, controller.getOwnerFamilyMembers);
+
 // GET /api/family-members/:username — list family members for an account
 router.get("/:username", authenticate,controller.getFamilyMembers);
 
@@ -19,8 +22,5 @@ router.put("/:username/:f_name", authenticate,controller.updateFamilyMember);
 
 // DELETE /api/family-members/:username/:f_name — delete a family member
 router.delete("/:username/:f_name", authenticate, controller.deleteFamilyMember);
-
-// GET /api/family-members/owners — list all family members with relationship = 'owner'
-router.get("/owners", authenticate, controller.getOwnerFamilyMembers);
 
 export default router;
