@@ -1,4 +1,3 @@
-
 // API functions for appointments endpoints
 
 const API_BASE = "http://localhost:3000/api/appointments";
@@ -213,17 +212,18 @@ export function bookAppointment(token, data) {
     body: JSON.stringify(data)
   }).then(res => res.json());
 }
+
 /**
- * Cancel a booked appointment (client only).
- * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm)
+ * Cancel all booked appointments for the client (client only).
+ * No fields required except token.
  * Example:
- *   cancelAppointment(token, "2024-06-01", "10:00");
+ *   cancelAppointment(token);
  */
-export function cancelAppointment(token, appt_date, start_time) {
+export function cancelAppointment(token) {
   return fetch(`${API_BASE}/cancel`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ appt_date, start_time })
+    body: JSON.stringify({})
   }).then(res => res.json());
 }
 

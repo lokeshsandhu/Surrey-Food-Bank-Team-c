@@ -8,7 +8,7 @@ import '../styles/clientList.css';
 
 import { ActionIcon, CloseButton, TextInput, Title, Table, Button } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
-import { getFamilyMembersByFName, getFamilyMembersByLName } from '../../api/familyMembers';
+import { getFamilyMembersByFName, getFamilyMembersByLName, getOwnerFamilyMembers } from '../../api/familyMembers';
 
 export default function ClientList() {
 
@@ -24,27 +24,10 @@ export default function ClientList() {
     }
 
     // TODO: Replace with API call to get all family members with relationship="owner"
-    const getAllAccountOwners = () => {
-        setAccountOwners([
-            {
-                username: 'jane123',
-                f_name: 'Jane',
-                l_name: 'Doe',
-                dob: '1990-01-1',
-                phone: '(111) 111-1111',
-                email: 'jane@email.com',
-                relationship: 'owner'
-            },
-            {
-                username: 'big_jeff',
-                f_name: 'Jeff',
-                l_name: 'Smith',
-                dob: '1980-12-30',
-                phone: '(222) 222-2222',
-                email: 'bigjeff@email.com',
-                relationship: 'owner'
-            }
-        ])
+    const getAllAccountOwners = async () => {
+        const result = await getOwnerFamilyMembers(token);
+        console.log(result)
+        setAccountOwners(result);
     }
 
     const searchClients = async () => {

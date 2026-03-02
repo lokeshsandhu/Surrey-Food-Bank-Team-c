@@ -1,23 +1,26 @@
 import pool from "../../db/postgres";
 import { FamilyMemberDTO, UpdateFamilyMemberDTO } from "./familyMembers.dto";
 
-
+// Select all rows with given first name from familymember table, return row(s)
 export async function findFamilyMembersByFName(f_name: string) {
-    const text = `SELECT * FROM familymember WHERE f_name = $1 ORDER BY username`;
+    const text = `SELECT * FROM familymember WHERE f_name = LOWER($1) ORDER BY username`;
     const { rows } = await pool.query(text, [f_name]);
     return rows;
 }
 
+// Select all rows with given last name from familymember table, return row(s)
 export async function findFamilyMembersByLName(l_name: string) {
-    const text = `SELECT * FROM familymember WHERE l_name = $1 ORDER BY username`;
+    const text = `SELECT * FROM familymember WHERE l_name = LOWER($1) ORDER BY username`;
     const { rows } = await pool.query(text, [l_name]);
     return rows;
 }
+
+// Insert row into familymember table, return row(s)
 export async function createFamilyMember(data: FamilyMemberDTO) {
     const text = `
         INSERT INTO familymember
         (username, f_name, l_name, dob, phone, email, relationship)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        VALUES ($1, LOWER($2), LOWER($3), $4, $5, $6, $7)
         RETURNING *
     `;
     const values = [
@@ -33,6 +36,7 @@ export async function createFamilyMember(data: FamilyMemberDTO) {
     return rows[0];
 }
 
+// Select all rows with given username from familymember table, return row(s)
 export async function getFamilyMembers(username: string) {
     const text = `
         SELECT * FROM familymember
@@ -43,6 +47,8 @@ export async function getFamilyMembers(username: string) {
     return rows;
 }
 
+// Update row in familymember table with given username and first name, return row
+// Only the fields you specify are updated
 export async function updateFamilyMember(
     username: string,
     f_name: string,
@@ -52,8 +58,12 @@ export async function updateFamilyMember(
     const values: unknown[] = [];
     let idx = 1;
 
+    if (data.f_name !== undefined) {
+        fields.push(`f_name = LOWER($${idx++})`);
+        values.push(data.f_name);
+    }
     if (data.l_name !== undefined) {
-        fields.push(`l_name = $${idx++}`);
+        fields.push(`l_name = LOWER($${idx++})`);
         values.push(data.l_name);
     }
     if (data.dob !== undefined) {
@@ -75,7 +85,7 @@ export async function updateFamilyMember(
 
     if (fields.length === 0) {
         const { rows } = await pool.query(
-            `SELECT * FROM familymember WHERE username = $1 AND f_name = $2`,
+            `SELECT * FROM familymember WHERE username = $1 AND f_name = LOWER($2)`,
             [username, f_name]
         );
         return rows[0] ?? null;
@@ -85,19 +95,34 @@ export async function updateFamilyMember(
     const text = `
         UPDATE familymember
         SET ${fields.join(", ")}
-        WHERE username = $${idx} AND f_name = $${idx + 1}
+        WHERE username = $${idx} AND f_name = LOWER($${idx + 1})
         RETURNING *
     `;
     const { rows } = await pool.query(text, values);
     return rows[0] ?? null;
 }
 
+// Delete row from familymember table with given username and first name, return row
 export async function deleteFamilyMember(username: string, f_name: string) {
     const text = `
         DELETE FROM familymember
-        WHERE username = $1 AND f_name = $2
+        WHERE username = $1 AND f_name = LOWER($2)
         RETURNING *
     `;
     const { rows } = await pool.query(text, [username, f_name]);
     return rows[0] ?? null;
+}
+
+// Select all rows with relationship = 'owner' from familymember table
+export async function getOwnerFamilyMembers() {
+    const text = `SELECT * FROM familymember WHERE relationship = 'owner' ORDER BY username, f_name`;
+    const { rows } = await pool.query(text);
+    return rows;
+}
+
+// Select from familymember table with given username and f_name, return boolean
+export async function usernameFamilyMemberExists(username: string, f_name:string): Promise<boolean> {
+    const text = `SELECT * FROM familymember WHERE username = $1 AND f_name = $2`;
+    const { rows } = await pool.query(text, [username, f_name]);
+    return rows.length > 0;
 }

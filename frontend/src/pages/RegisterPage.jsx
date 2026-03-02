@@ -20,6 +20,7 @@ import validator from 'validator'
 import { createAccount, usernameExists } from '../../api/accounts.js';
 import { login, me } from '../../api/auth.js';
 import { createFamilyMember } from '../../api/familyMembers.js';
+
 export default function RegisterPage() {
     const errorRef = useRef(null);
     const [activeSection, setActiveSection] = useState(0);
@@ -27,42 +28,40 @@ export default function RegisterPage() {
     const [opened, { open, close }] = useDisclosure(false);
     const [loading, setLoading] = useState(false);
 
-    const [doesUsernameExist, setDoesUsernameExist] = useState(false);
-
     const navigate = useNavigate();
 
     const form = useForm({
-            initialValues: {
-                username: '',
-                user_password: '',
-                confirm_password: '',
-                canada_status: '',
-                household_size: 0,
-                baby_or_pregnant: '',
-                language_spoken: '',
-                account_notes: '',
-                addr: {
-                    line1: '',
-                    line2: '',
-                    city: '',
-                    province: '',
-                    postal_code: ''
-                },
-                main_family_member:
-                {
-                    f_name: '',
-                    l_name: '',
-                    dob: null,
-                    phone: '',
-                    email: '',
-                    relationship: 'owner'
-                },
-                family_members: []
+        initialValues: {
+            username: '',
+            user_password: '',
+            confirm_password: '',
+            canada_status: '',
+            household_size: 0,
+            baby_or_pregnant: '',
+            language_spoken: '',
+            account_notes: '',
+            addr: {
+                line1: '',
+                line2: '',
+                city: '',
+                province: '',
+                postal_code: ''
+            },
+            main_family_member:
+            {
+                f_name: '',
+                l_name: '',
+                dob: null,
+                phone: '',
+                email: '',
+                relationship: 'owner'
+            },
+            family_members: []
         },
         validateInputOnBlur: true,
         validateInputOnChange: true,
         validate: {
-            username: (value) => value.length < 5 ? 'Username must be at least 5 characters' : doesUsernameExist ? 'Username already taken. Try a different username.' : null,
+            username: (value) => value.length < 5 ? 'Username must be at least 5 characters' : null,
             user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
             canada_status: (value) => value ? null : 'Please select an option.',
@@ -98,16 +97,23 @@ export default function RegisterPage() {
         }
     }, [registerError, activeSection]);
 
-    useEffect(() => {
-        const usernameExistsOrNot = async () => {
-            const result = await usernameExists(form.values.username);
-            console.log('exists', result)
-           setDoesUsernameExist(result.exists)
+    const checkUsername = async () => {
+        const currentUsername = form.values.username;
+        if (currentUsername.length < 5) return;
 
+        const result = await usernameExists(currentUsername);
+
+        if (result.exists) {
+            form.setFieldError(
+                'username',
+                'Username already taken. Try a different username.'
+            );
         }
-        if (form.values.username.length >= 5) {
-            usernameExistsOrNot();
-        }
+    };
+
+    useEffect(() => {
+
+        checkUsername();
     }, [form.values.username])
 
     const prevSection = () => {
@@ -118,7 +124,7 @@ export default function RegisterPage() {
         setRegisterError('');
     };
 
-    
+
     const loginNavigate = async () => {
         const username = form.values.username;
         const password = form.values.user_password;
@@ -169,6 +175,7 @@ export default function RegisterPage() {
                 "main_family_member.email",
                 "main_family_member.phone",
             ];
+            
         }
 
         if (activeSection === 2) {
@@ -181,8 +188,11 @@ export default function RegisterPage() {
             ]);
         }
 
-        let hasErrors = false;
 
+        await checkUsername();
+        if (form.errors.username) return;
+
+        let hasErrors = false;
         fieldsToValidate.forEach((field) => {
             const result = form.validateField(field);
             if (result.hasError) {
@@ -227,6 +237,8 @@ export default function RegisterPage() {
                         const loginResult = await login(accountData.username, accountData.user_password);
                         if (loginResult && loginResult.token) {
                             sessionStorage.setItem('token', loginResult.token);
+                            sessionStorage.setItem('username', accountData.username);
+                            sessionStorage.setItem('role', 'client');
                             // Add main account holder as a family member with relationship 'owner'
                             const ownerData = {
                                 username: accountData.username,

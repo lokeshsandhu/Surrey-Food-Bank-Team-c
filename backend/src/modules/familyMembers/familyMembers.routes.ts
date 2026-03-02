@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import * as controller from "./familyMembers.controller";
 import { authenticate, requireAdmin } from "../../middleware/auth.middleware";
@@ -11,6 +10,9 @@ router.get("/search/by-lname", authenticate, requireAdmin, controller.getFamilyM
 
 // POST /api/family-members — create a family member
 router.post("/", authenticate,controller.createFamilyMember);
+
+// GET /api/family-members/owners — list all family members with relationship = 'owner'
+router.get("/owners", authenticate, controller.getOwnerFamilyMembers);
 
 // GET /api/family-members/:username — list family members for an account
 router.get("/:username", authenticate,controller.getFamilyMembers);

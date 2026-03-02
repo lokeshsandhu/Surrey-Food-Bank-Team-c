@@ -10,6 +10,20 @@ import dayjs from 'dayjs';
 import { usernameExists } from '../../api/accounts';
 
 export default function AccountInformation({ form }) {
+
+    const checkUsername = async () => {
+            const currentUsername = form.values.username;
+            if (currentUsername.length < 5) return;
+    
+            const result = await usernameExists(currentUsername);
+    
+            if (result.exists) {
+                form.setFieldError(
+                    'username',
+                    'Username already taken. Try a different username.'
+                );
+            }
+        };
     return (
         <div>
             <h2 className='login-title'>Account Information</h2>
@@ -22,17 +36,11 @@ export default function AccountInformation({ form }) {
                     {...form.getInputProps('username')}
                     withAsterisk
                     w={'60%'}
-                    // onBlur={async (event) => {
-                    //     form.getInputProps('username').onBlur(event);
+                    onBlur={async (event) => {
+                        form.getInputProps('username').onBlur(event);
 
-                    //     const inputUsername = form.values.username;
-                    //     if (!form.errors.username && inputUsername) {
-                    //         const result = await usernameExists(inputUsername);
-                    //         if (result.exists) {
-                    //             form.setFieldError('username', 'Username already taken. Try a different username.')
-                    //         }
-                    //     }
-                    // }}
+                        await checkUsername();
+                    }}
                 />
                 <PasswordInput
                     label="Password"
@@ -89,7 +97,7 @@ export default function AccountInformation({ form }) {
                     <TextInput
                         label="4. Email"
                         placeholder="e.g. alexdoe@gmail.com"
-                        key={form.key('family_members.0.email')}
+                        key={form.key('main_family_member.email')}
                         {...form.getInputProps('main_family_member.email')}
                         withAsterisk
                         w={'45%'}
@@ -97,7 +105,7 @@ export default function AccountInformation({ form }) {
                     <TextInput
                         label="5. Phone"
                         placeholder="e.g. (123) 456-7890"
-                        key={form.key('family_members.0.phone')}
+                        key={form.key('main_family_member.phone')}
                         {...form.getInputProps('main_family_member.phone')}
                         component={IMaskInput}
                         mask='(000) 000-0000'

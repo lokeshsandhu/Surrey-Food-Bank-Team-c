@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as service from "./familyMembers.service";
+
 //Find all people with this first name
 export async function getFamilyMembersByFName(req: Request, res: Response) {
     try {
@@ -14,7 +15,8 @@ export async function getFamilyMembersByFName(req: Request, res: Response) {
         res.status(500).json({ error: err.message });
     }
 }
-// Fubd all people with this last name
+
+// Find all people with this last name
 export async function getFamilyMembersByLName(req: Request, res: Response) {
     try {
         const { l_name } = req.query;
@@ -29,7 +31,7 @@ export async function getFamilyMembersByLName(req: Request, res: Response) {
     }
 }
 
-
+// Create a new family member
 export async function createFamilyMember(req: Request, res: Response) {
     try {
         const member = await service.createFamilyMember(req.body);
@@ -39,6 +41,7 @@ export async function createFamilyMember(req: Request, res: Response) {
     }
 }
 
+// Find all family members under given username
 export async function getFamilyMembers(req: Request, res: Response) {
     try {
         const members = await service.getFamilyMembers(req.params.username);
@@ -47,7 +50,8 @@ export async function getFamilyMembers(req: Request, res: Response) {
         res.status(500).json({ error: err.message });
     }
 }
-// Update the family member's details
+
+// Update family member's details
 export async function updateFamilyMember(req: Request, res: Response) {
     try {
         const { username, f_name } = req.params;
@@ -61,6 +65,7 @@ export async function updateFamilyMember(req: Request, res: Response) {
         res.status(500).json({ error: err.message });
     }
 }
+
 //delete this family member from an account
 export async function deleteFamilyMember(req: Request, res: Response) {
     try {
@@ -71,6 +76,28 @@ export async function deleteFamilyMember(req: Request, res: Response) {
             return;
         }
         res.status(200).json(deleted);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+// List all family members with relationship = 'owner'
+export async function getOwnerFamilyMembers(req: Request, res: Response) {
+    try {
+        const members = await service.getOwnerFamilyMembers();
+        res.status(200).json(members);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+// Check if family member with given username and first name already exists
+export async function checkUsernameFamilyMemberExists(req: Request, res: Response) {
+    try {
+        const username = req.params.username;
+        const f_name = req.params.f_name;
+        const exists = await service.usernameFamilyMemberExists(username, f_name);
+        res.status(200).json({ exists });
     } catch (err: any) {
         res.status(500).json({ error: err.message });
     }
