@@ -23,4 +23,7 @@ router.put("/:username/:f_name", authenticate,controller.updateFamilyMember);
 // DELETE /api/family-members/:username/:f_name — delete a family member
 router.delete("/:username/:f_name", authenticate, controller.deleteFamilyMember);
 
+// GET /api/family-members/exists/:username — check if username exists
+router.get("/exists/:username/:f_name", controller.checkUsernameFamilyMemberExists);
+
 export default router;
