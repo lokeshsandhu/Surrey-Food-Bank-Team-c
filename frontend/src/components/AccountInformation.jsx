@@ -7,8 +7,23 @@ import '../styles/global-styles.css'
 import '../styles/Register.css'
 import { useState } from 'react';
 import dayjs from 'dayjs';
+import { usernameExists } from '../../api/accounts';
 
 export default function AccountInformation({ form }) {
+
+    const checkUsername = async () => {
+            const currentUsername = form.values.username;
+            if (currentUsername.length < 5) return;
+    
+            const result = await usernameExists(currentUsername);
+    
+            if (result.exists) {
+                form.setFieldError(
+                    'username',
+                    'Username already taken. Try a different username.'
+                );
+            }
+        };
     return (
         <div>
             <h2 className='login-title'>Account Information</h2>
@@ -21,6 +36,11 @@ export default function AccountInformation({ form }) {
                     {...form.getInputProps('username')}
                     withAsterisk
                     w={'60%'}
+                    onBlur={async (event) => {
+                        form.getInputProps('username').onBlur(event);
+
+                        await checkUsername();
+                    }}
                 />
                 <PasswordInput
                     label="Password"
@@ -66,7 +86,7 @@ export default function AccountInformation({ form }) {
                     <DateInput
                         label="3. Date of Birth"
                         placeholder="YYYY MM DD"
-                        key={form.key('family_members.0.dob')}
+                        valueFormat='YYYY MM DD'
                         {...form.getInputProps('main_family_member.dob')}
                         withAsterisk
                         w={'30%'}
@@ -77,7 +97,7 @@ export default function AccountInformation({ form }) {
                     <TextInput
                         label="4. Email"
                         placeholder="e.g. alexdoe@gmail.com"
-                        key={form.key('family_members.0.email')}
+                        key={form.key('main_family_member.email')}
                         {...form.getInputProps('main_family_member.email')}
                         withAsterisk
                         w={'45%'}
@@ -85,7 +105,7 @@ export default function AccountInformation({ form }) {
                     <TextInput
                         label="5. Phone"
                         placeholder="e.g. (123) 456-7890"
-                        key={form.key('family_members.0.phone')}
+                        key={form.key('main_family_member.phone')}
                         {...form.getInputProps('main_family_member.phone')}
                         component={IMaskInput}
                         mask='(000) 000-0000'
@@ -106,6 +126,20 @@ export default function AccountInformation({ form }) {
                             <Radio value='false' label="No" />
                         </Group>
                     </Radio.Group>
+                    <TextInput
+                        label="7. Language Spoken"
+                        placeholder="e.g. English, French, Mandarin, etc."
+                        key={form.key('language_spoken')}
+                        {...form.getInputProps('language_spoken')}
+                        withAsterisk
+                        w={'45%'}
+                    />
+                    <TextInput
+                        label="8. Additional Notes (optional)"
+                        placeholder="Enter any additional information"
+                        key={form.key('account_notes')}
+                        {...form.getInputProps('account_notes')}
+                    />
                 </Stack>
             </Group>
         </div>

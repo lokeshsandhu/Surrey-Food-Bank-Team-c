@@ -65,3 +65,7 @@ export function deleteAccount(token, username) {
     headers: { Authorization: `Bearer ${token}` }
   }).then(res => res.json());
 }
+
+export function usernameExists(username) {
+  return fetch(`${API_BASE}/exists/${username}`).then(res => res.json());
+}

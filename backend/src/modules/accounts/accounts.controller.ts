@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as service from "./accounts.service";
 
+// Create a new account
 export async function createAccount(req: Request, res: Response) {
     try {
         const account = await service.createAccount(req.body);
@@ -10,6 +11,7 @@ export async function createAccount(req: Request, res: Response) {
     }
 }
 
+// Find account with given username
 export async function getMyAccount(req: Request, res: Response) {
     try {
         const username = req.params.username;
@@ -24,6 +26,7 @@ export async function getMyAccount(req: Request, res: Response) {
     }
 }
 
+// Update select fields in account with given username
 export async function updateMyAccount(req: Request, res: Response) {
     try {
         const username = req.params.username;
@@ -38,6 +41,7 @@ export async function updateMyAccount(req: Request, res: Response) {
     }
 }
 
+// Delete account with given username
 export async function deleteAccount(req: Request, res: Response) {
     try {
         const username = req.params.username;
@@ -47,6 +51,17 @@ export async function deleteAccount(req: Request, res: Response) {
             return;
         }
         res.status(200).json({ message: "Account deleted", username: deleted.username });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+// Check if account with given username already exists
+export async function checkUsernameExists(req: Request, res: Response) {
+    try {
+        const username = req.params.username;
+        const exists = await service.usernameExists(username);
+        res.status(200).json({ exists });
     } catch (err: any) {
         res.status(500).json({ error: err.message });
     }

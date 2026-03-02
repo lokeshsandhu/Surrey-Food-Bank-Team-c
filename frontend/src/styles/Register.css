@@ -32,3 +32,8 @@ fieldset legend, .mantine-Fieldset-legend, .mantine-InputWrapper-label {
 .subsection-title {
     margin-top: 40px;
 }
+
+.mantine-Modal-title {
+    font-weight: 700;
+    font-size: 16px;
+}

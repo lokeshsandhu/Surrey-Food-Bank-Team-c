@@ -10,36 +10,25 @@ import AccountInformation from '../components/AccountInformation.jsx'
 import AddFamilyMembers from '../components/AddFamilyMembers.jsx'
 import RegistrationFinished from '../components/RegistrationFinished.jsx'
 
-import { Input, Card, Button, Text, NavLink, Typography, Timeline, Image, Stepper, Group } from '@mantine/core';
+import { Input, Card, Button, Text, NavLink, Typography, Timeline, Image, Stepper, Group, Modal } from '@mantine/core';
 import { useForm, isNotEmpty, hasLength, matchesField, isEmail } from '@mantine/form'
+import { useDisclosure } from '@mantine/hooks';
 
 import { useNavigate } from 'react-router';
 
 import validator from 'validator'
-import {createAccount} from '../../api/accounts.js';
-import {login, me} from '../../api/auth.js';
-import {createFamilyMember} from '../../api/familyMembers.js';
+import { createAccount, usernameExists } from '../../api/accounts.js';
+import { login, me } from '../../api/auth.js';
+import { createFamilyMember } from '../../api/familyMembers.js';
+
 export default function RegisterPage() {
     const errorRef = useRef(null);
-    const [activeSection, setActiveSection] = useState(0)
-    const [nextBtnEnabled, setNextBtnEnabled] = useState(false)
+    const [activeSection, setActiveSection] = useState(0);
     const [registerError, setRegisterError] = useState('');
+    const [opened, { open, close }] = useDisclosure(false);
+    const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
-
-    useEffect(() => {
-        if (registerError && activeSection === 2 && errorRef.current) {
-            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }
-    }, [registerError, activeSection]);
-
-    const prevSection = () => {
-        if (activeSection === 0) {
-            navigate('/');
-        }
-        setActiveSection((current) => (current > 0 ? current - 1 : current));
-        setRegisterError('');
-    };
 
     const form = useForm({
         initialValues: {
@@ -49,6 +38,8 @@ export default function RegisterPage() {
             canada_status: '',
             household_size: 0,
             baby_or_pregnant: '',
+            language_spoken: '',
+            account_notes: '',
             addr: {
                 line1: '',
                 line2: '',
@@ -63,40 +54,100 @@ export default function RegisterPage() {
                 dob: null,
                 phone: '',
                 email: '',
-                relationship: 'Main'
+                relationship: 'owner'
             },
             family_members: []
         },
         validateInputOnBlur: true,
         validateInputOnChange: true,
         validate: {
-            username: hasLength({ min: 5 }, 'Username must be at least 5 characters'),
+            username: (value) => value.length < 5 ? 'Username must be at least 5 characters' : null,
             user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
             canada_status: (value) => value ? null : 'Please select an option.',
             baby_or_pregnant: (value) => value && value.length > 0 ? null : 'Please select an option.',
+            language_spoken: isNotEmpty('Please enter your primary language.'),
             addr: {
                 line1: isNotEmpty('Please enter your address.'),
                 city: isNotEmpty('Please enter your city.'),
                 province: isNotEmpty('Please enter your province.'),
-                postal_code: (value) => value ? (validator.isPostalCode(value, 'CA') ? null : 'Please enter a valid postal code') : 'Please enter your postal code.'
+                postal_code: (value) => value ? (validator.isPostalCode(value, 'CA') ? null : 'Please enter a valid postal code (e.g. V1M 3B5).') : 'Please enter your postal code.'
             },
             main_family_member: {
                 f_name: (value) => value && value.length > 0 ? null : 'Please enter your first name.',
                 l_name: (value) => value && value.length > 0 ? null : 'Please enter your last name.',
                 dob: (value) => value && value.length > 0 ? null : 'Please enter your date of birth.',
-                email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email.',
-                phone: (value) => value.length > 0 ? null : 'Please enter a valid phone number.'
+                email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
+                phone: (value) => value.length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
             family_members: {
-                f_name: (value) => value && value.length > 0 ? null : 'Please enter your first name.',
-                l_name: (value) => value && value.length > 0 ? null : 'Please enter your last name.',
-                dob: (value) => value && value.length > 0 ? null : 'Please enter your date of birth.',
-                email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email.',
+                f_name: (value) => value && value.length > 0 ? null : 'Please enter their first name.',
+                l_name: (value) => value && value.length > 0 ? null : 'Please enter their last name.',
+                dob: (value) => value && value.length > 0 ? null : 'Please enter their date of birth.',
+                email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
                 relationship: (value) => value.length > 0 ? null : 'Please enter your relationship to this family member.'
             }
         }
     })
+
+
+    useEffect(() => {
+        if (registerError && activeSection === 2 && errorRef.current) {
+            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+    }, [registerError, activeSection]);
+
+    const checkUsername = async () => {
+        const currentUsername = form.values.username;
+        if (currentUsername.length < 5) return;
+
+        const result = await usernameExists(currentUsername);
+
+        if (result.exists) {
+            form.setFieldError(
+                'username',
+                'Username already taken. Try a different username.'
+            );
+        }
+    };
+
+    useEffect(() => {
+
+        checkUsername();
+    }, [form.values.username])
+
+    const prevSection = () => {
+        if (activeSection === 0) {
+            navigate('/');
+        }
+        setActiveSection((current) => (current > 0 ? current - 1 : current));
+        setRegisterError('');
+    };
+
+
+    const loginNavigate = async () => {
+        const username = form.values.username;
+        const password = form.values.user_password;
+        try {
+            const result = await login(username, password);
+            if (result && result.token) {
+                sessionStorage.setItem('token', result.token);
+                // Fetch user info to determine role
+                const userInfo = await me(result.token);
+                if (userInfo && userInfo.role === 'admin') {
+                    window.location.href = '/adminDashboard';
+                } else if (userInfo && userInfo.role === 'client') {
+                    window.location.href = '/clientDashboard';
+                } else {
+                    window.location.href = '/dashboard'; // fallback
+                }
+            } else {
+                setRegisterError('Sorry, we could not log you in automatically. Please try logging in manually.');
+            }
+        } catch (err) {
+            setRegisterError('Sorry, we could not log you in automatically. Please try logging in manually.');
+        }
+    }
 
     const nextSection = async () => {
         let fieldsToValidate = [];
@@ -117,12 +168,14 @@ export default function RegisterPage() {
                 "user_password",
                 "confirm_password",
                 "baby_or_pregnant",
+                "language_spoken",
                 "main_family_member.f_name",
                 "main_family_member.l_name",
                 "main_family_member.dob",
                 "main_family_member.email",
                 "main_family_member.phone",
             ];
+            
         }
 
         if (activeSection === 2) {
@@ -135,8 +188,11 @@ export default function RegisterPage() {
             ]);
         }
 
-        let hasErrors = false;
 
+        await checkUsername();
+        if (form.errors.username) return;
+
+        let hasErrors = false;
         fieldsToValidate.forEach((field) => {
             const result = form.validateField(field);
             if (result.hasError) {
@@ -145,7 +201,8 @@ export default function RegisterPage() {
         });
 
         if (!hasErrors) {
-            if (activeSection === 2) {
+            if (activeSection === 3) {
+                setLoading(true);
                 setRegisterError('');
                 // Check for duplicate first names (including main account holder)
                 const allFirstNames = [form.values.main_family_member.f_name, ...form.values.family_members.map(m => m.f_name)];
@@ -170,6 +227,8 @@ export default function RegisterPage() {
                     household_size: householdSize,
                     addr: form.values.addr.line1 + ', ' + form.values.addr.line2 + ', ' + form.values.addr.city + ', ' + form.values.addr.province + ', ' + form.values.addr.postal_code,
                     baby_or_pregnant: form.values.baby_or_pregnant === 'true',
+                    language_spoken: form.values.language_spoken,
+                    account_notes: form.values.account_notes
                 };
                 try {
                     const result = await createAccount(accountData);
@@ -178,6 +237,8 @@ export default function RegisterPage() {
                         const loginResult = await login(accountData.username, accountData.user_password);
                         if (loginResult && loginResult.token) {
                             sessionStorage.setItem('token', loginResult.token);
+                            sessionStorage.setItem('username', accountData.username);
+                            sessionStorage.setItem('role', 'client');
                             // Add main account holder as a family member with relationship 'owner'
                             const ownerData = {
                                 username: accountData.username,
@@ -190,6 +251,7 @@ export default function RegisterPage() {
                             };
                             try {
                                 await createFamilyMember(loginResult.token, ownerData);
+                                console.log('created owner')
                                 // Add each additional family member
                                 for (const member of form.values.family_members) {
                                     const memberData = {
@@ -202,12 +264,14 @@ export default function RegisterPage() {
                                         relationship: member.relationship,
                                     };
                                     await createFamilyMember(loginResult.token, memberData);
+                                    console.log('created family member')
                                 }
-                                setActiveSection((current) => (current < 3 ? current + 1 : current));
+                                open();
                             } catch (famErr) {
                                 setRegisterError('There was a problem adding your family members. Please try again.');
                                 return;
                             }
+
                         } else {
                             setRegisterError('Sorry, we could not log you in automatically. Please try logging in manually.');
                         }
@@ -216,6 +280,8 @@ export default function RegisterPage() {
                     }
                 } catch (err) {
                     setRegisterError('Registration failed');
+                } finally {
+                    setLoading(false);
                 }
             } else {
                 setActiveSection((current) => (current < 3 ? current + 1 : current));
@@ -241,41 +307,20 @@ export default function RegisterPage() {
                         <AddFamilyMembers form={form} />
                     </Stepper.Step>
                     <Stepper.Completed>
-                        <RegistrationFinished />
+                        <RegistrationFinished form={form} />
                     </Stepper.Completed>
                 </Stepper>
                 <Group justify="space-between" align='end' mt="md">
                     <Button variant="default" onClick={prevSection}>Back</Button>
                     <Button
-                        onClick={activeSection === 3 ? async () => {
-                            const username = form.values.username;
-                            const password = form.values.user_password;
-                            try {
-                                const result = await login(username, password);
-                                if (result && result.token) {
-                                    sessionStorage.setItem('token', result.token);
-                                    // Fetch user info to determine role
-                                    const userInfo = await me(result.token);
-                                    if (userInfo && userInfo.role === 'admin') {
-                                        window.location.href = '/adminDashboard';
-                                    } else if (userInfo && userInfo.role === 'client') {
-                                        window.location.href = '/clientDashboard';
-                                    } else {
-                                        window.location.href = '/dashboard'; // fallback
-                                    }
-                                } else {
-                                    setRegisterError('Sorry, we could not log you in automatically. Please try logging in manually.');
-                                }
-                            } catch (err) {
-                                setRegisterError('Sorry, we could not log you in automatically. Please try logging in manually.');
-                            }
-                        } : nextSection}
-                        color={activeSection >= 2 ? 'rgba(3, 161, 11, 1)' : 'blue'}
+                        onClick={nextSection}
+                        color={activeSection === 3 ? 'cyan' : 'blue'}
+                        loading={loading}
                     >
-                        {activeSection === 2 ? 'Register' : activeSection === 3 ? 'Continue to Dashboard' : 'Next'}
+                        {activeSection === 2 ? 'Review' : activeSection === 3 ? 'Register' : 'Next'}
                     </Button>
                 </Group>
-                {activeSection === 2 && registerError && (
+                {activeSection === 3 && registerError && (
                     <div ref={errorRef} style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
                         <Text color="red" size="lg" style={{ textAlign: 'center', maxWidth: 400 }}>
                             {registerError === 'Registration failed' || registerError === 'Registration failed.' || registerError === 'Internal server error' ?
@@ -287,6 +332,10 @@ export default function RegisterPage() {
                     </div>
                 )}
             </Card>
+            <Modal opened={opened} onClose={close} title="Register Success" centered>
+                <Text mb={4}>Select 'Continue' to view your dashboard</Text>
+                <Button mt={4} color='cyan' onClick={() => { loginNavigate() }}>Continue</Button>
+            </Modal>
         </div>
     )
 }
