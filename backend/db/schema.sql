@@ -1,5 +1,5 @@
 -- Database schema (scaffold only).
--- Define tables for: accounts, family_members, appointments, appointment_attendees, etc.
+-- Define tables for: accounts, family_members, appointments
 
 DROP TABLE IF EXISTS public.familymember;
 DROP TABLE IF EXISTS public.appointment;

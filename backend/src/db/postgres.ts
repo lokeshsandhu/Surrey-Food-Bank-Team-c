@@ -7,7 +7,7 @@ dotenv.config({
     path: path.join(__dirname, "../../db/dev.env"),
 });
 
-
+// create a pool connection to postgres database using login info from dev.env file
 const pool = new Pool({
     user: process.env.USER,
     host: process.env.HOST,

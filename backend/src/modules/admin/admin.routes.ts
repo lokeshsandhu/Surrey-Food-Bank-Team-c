@@ -7,7 +7,7 @@ const router = Router();
 // GET /api/admin/clients — list all clients
 router.get("/clients", authenticate, requireAdmin, controller.getAllClients);
 
-// GET /api/admin/clients/:username - Obtains all of a clients details including family members and appointments
+// GET /api/admin/clients/:username — Obtains all of a clients details including family members and appointments
 router.get("/clients/:username", authenticate, requireAdmin, controller.getClientByUsername);
 
 // GET /api/admin/appointments — list all appointments

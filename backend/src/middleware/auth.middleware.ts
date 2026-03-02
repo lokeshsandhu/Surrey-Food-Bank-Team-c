@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../shared/crypto/jwt";
 
+// authenticates access for valid token holders
 export function authenticate(req: Request, res: Response, next: NextFunction) {
     const header = req.headers.authorization;
     if (!header || !header.startsWith("Bearer ")) {
@@ -18,6 +19,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
     }
 }
 
+// authenticates access for admin roles
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
     if (!req.user || req.user.role !== "admin") {
         res.status(403).json({ error: "Admin access required" });

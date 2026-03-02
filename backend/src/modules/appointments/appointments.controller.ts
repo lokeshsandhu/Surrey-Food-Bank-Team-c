@@ -22,6 +22,7 @@ export async function updateMyAppointment(req: Request, res: Response) {
         res.status(500).json({ success: false, error: err.message });
     }
 }
+
 // Update an appointment
 export async function updateAppointment(req: Request, res: Response) {
     try {
@@ -98,6 +99,7 @@ export async function createAppointmentsInTimeRange(req: Request, res: Response)
         res.status(500).json({ success: false, error: err.message });
     }
 }
+
 // Gets appointments that start in the given date range, regardless of date
 export async function getAppointmentsInDateRange(req: Request, res: Response) {
     try {
