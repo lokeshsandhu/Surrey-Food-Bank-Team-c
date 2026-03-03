@@ -37,6 +37,8 @@ export default function FamilyMembersTab({ clientUsername }) {
       l_name: (value) => value && value.length > 0 ? null : 'Please enter their last name.',
       dob: (value) => value && value.length > 0 ? null : 'Please enter their date of birth.',
       email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
+      phone: (value) => form.values.relationship === 'owner' ?
+        (value.length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).') : null,
       relationship: (value) => value.length > 0 ? null : 'Please enter your relationship to this family member.'
     }
   })
@@ -62,6 +64,7 @@ export default function FamilyMembersTab({ clientUsername }) {
       "l_name",
       "dob",
       "email",
+      "phone",
       "relationship"
     ]
     let hasErrors = false;
@@ -103,21 +106,23 @@ export default function FamilyMembersTab({ clientUsername }) {
   }
 
   const removeMember = async () => {
-    try {
-      const result = await deleteFamilyMember(token, clientUsername, form.values.f_name)
-      await getFamilyMembersInformation();
-      close();
-      notifications.show({
-        title: 'Saved',
-        message: 'Your changes have been saved.',
-        color: 'green',
-      });
-    } catch (err) {
-      notifications.show({
-        title: 'Error',
-        message: 'There was a problem when saving your changes. Please try again.',
-        color: 'green',
-      });
+    if (form.values.relationship !== 'owner') {
+      try {
+        const result = await deleteFamilyMember(token, clientUsername, form.values.f_name)
+        await getFamilyMembersInformation();
+        close();
+        notifications.show({
+          title: 'Saved',
+          message: 'Your changes have been saved.',
+          color: 'green',
+        });
+      } catch (err) {
+        notifications.show({
+          title: 'Error',
+          message: 'There was a problem when saving your changes. Please try again.',
+          color: 'green',
+        });
+      }
     }
   }
 
@@ -212,6 +217,7 @@ export default function FamilyMembersTab({ clientUsername }) {
             component={IMaskInput}
             mask='(000) 000-0000'
             w={'45%'}
+            withAsterisk={form.values.relationship === 'owner'}
           />
           <TextInput
             variant={form.values.relationship === 'owner' ? "unstyled" : "default"}
@@ -226,7 +232,7 @@ export default function FamilyMembersTab({ clientUsername }) {
         </Stack>
         <Group w='100%' display={'flex'} mt={20}
           style={{ justifyContent: 'space-between' }}>
-          <Button color='red' onClick={removeMember}>Remove</Button>
+          <Button color='red' disabled={form.values.relationship === 'owner'} onClick={removeMember}>Remove</Button>
           <Button onClick={updateMember}>Save</Button>
         </Group>
       </Modal>
