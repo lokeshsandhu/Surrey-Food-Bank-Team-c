@@ -159,9 +159,8 @@ export default function AdminDashboard() {
             <SimpleGrid cols={3} spacing="xs" verticalspacing="xs" style={{ height: '100%' }}>
                 <div className="box" style={{height: '100%'}}>
                     <Text>
-                        Welcome back {sessionStorage.getItem('username')}! You have a booking for _____, click here to edit/cancel your booking.
+                        Welcome back {sessionStorage.getItem('username')}!
                     </Text>
-                    <Button justify='end' mt={20} onClick={() => navigate('/adminDashboard/clientList')}>View Client List</Button>
                 </div>
                 <div className="box">
                     <DatePickerInput

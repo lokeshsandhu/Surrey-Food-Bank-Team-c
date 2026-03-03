@@ -3,6 +3,7 @@ import { Container, Divider, Group } from '@mantine/core';
 import styles from '../styles/navBar.module.css';
 import LogoHome from './logoHome';
 import ProfileButton from './profileButton';
+import calendar_icon from '../assets/calendar.svg';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
@@ -50,9 +51,7 @@ export function AdminNavBar() {
             <Divider orientation="vertical" size="sm" mx="sm" />
             <a className={styles.link} onClick={() => navigate('/adminDashboard/clientList')}> <h2 style={{ textAlign: 'center', cursor: 'pointer' }}> Client List </h2> </a>
             <Divider orientation="vertical" size="sm" mx="sm" />
-            <a className={styles.link} onClick={() => navigate('/adminDashboard')}> <h2 style={{ textAlign: 'center', cursor: 'pointer' }}> View Bookings </h2> </a>
-            <Divider orientation="vertical" size="sm" mx="sm" />
-            <a className={styles.link} onClick={() => navigate('/adminDashboard')}> <h2 style={{ textAlign: 'center', cursor: 'pointer' }}> Schedule Timeslots </h2> </a>
+            <a className={styles.link} onClick={() => navigate('/adminDashboard/timeslots')}> <div style={{ display: 'flex', alignItems: 'center' }}><img src={calendar_icon} width={20} height={20} className={styles.icons} style={{cursor: 'pointer'}}/> <h2 style={{ textAlign: 'center', cursor: 'pointer', marginLeft: '8px' }}> Timeslots Page </h2> </div> </a>
             <Divider orientation="vertical" size="sm" mx="sm" />
             <ProfileButton/>
           </div>
