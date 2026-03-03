@@ -95,10 +95,11 @@ export default function TimeslotPage() {
                 withAllDaySlots={false}
                 slotLabelFormat="h:mm A"
                 slotHeight={50}
+                styles={{
+                    viewSelect: {visibility: 'hidden'},
+                    weekViewDaySlots: {backgroundColor: '#f2f2f2'},
+                }}
                 style={{
-                    weekViewRoot: { width: '100%', height: '100%' },
-                    weekViewHeader: {width: '100%', backgroundColor: '#f0f0f0', borderBottom: '1px solid #ccc' },
-                    weekViewInner: { width: '100%', height: '100%' },
                     background: 'rgba(255, 255, 255, 0.8)',
                     borderRadius: '10px',
                     padding: '20px',
