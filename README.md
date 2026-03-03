@@ -44,12 +44,15 @@ We recommend using the latest versions and cannot guarantee functionality on old
 
     Example with **pgAdmin**:
 > Right-click on Databases and create a new database.
+
 > ![Right-click on Databases and create a new database](/setup-images/pgAdmin1.png)
 
 > Enter `sfb_db` as the name and click save.
+
 > ![Enter sfb_db as the name and click save](/setup-images/pgAdmin2.png)
 
 > The database should now be initialized.
+
 > ![Database initialized](/setup-images/pgAdmin3.png)
 
 
@@ -81,9 +84,11 @@ We recommend using the latest versions and cannot guarantee functionality on old
 
     Example:
 > Right-click sfb_db and open the Query Tool.
+
 > ![Right-click sfb_db and open the Query Tool](/setup-images/pgAdmin4.png)
 
 > Write your queries and click the play button to execute. The Data Output section below will show the result of the queries, which for now should be empty tables with column names.
+
 > ![Write your queries and click the execute query button to execute](/setup-images/pgAdmin5.png)
 
 
@@ -104,6 +109,7 @@ The following instructions will go over how to run the application.
     This message will print to console if successful: `Server running on http://localhost:3000`.
 
     Example:
+
     ![Backend server example](/setup-images/vscode2.png)
 
 4. Open a new terminal and cd into the frontend folder: `cd frontend`.
@@ -115,20 +121,10 @@ The following instructions will go over how to run the application.
     This message will print to console if successful: `➜  Local:   http://localhost:5173/`
 
     Example:
+
     ![Frontend example](/setup-images/vscode3.png)
 
 6. Click on the localhost link to access the frontend interface.
-
-### Common Issues
-If the backend or frontend server fail to start or are unresponsive:
-- Ensure all dependencies are installed (`npm install`).
-- Ensure your software versions are up to date.
-- Ensure you are using separate terminals to run the backend and frontend at the same time.
-- Ensure your **Postgres** credentials are correct and the database is running and responsive to queries.
-- Ensure you have cloned the proper commit. 
-
-If the frontend interface is not loading/taking a while to load:
-- Close the localhost window, quit out of the frontend server (ex. ctrl+c), re-install dependencies (`npm install`), and re-start the server (`npm run dev`).
 
 
 # Testing Instructions
@@ -193,7 +189,9 @@ Available Appointment Time Slots
 - Feb 25 from 08:00 to 16:00 in 15 minute time slots
 - March 1 to 31 from 08:00 to 16:00 in 15 minute time slots
 
-### Common Issues
+# Common Issues
+### Postgres Database & Sample Data
+
 If the resetDB.js script is unable to run:
 - Ensure all dependencies are installed (`npm install`).
 - Ensure your **Postgres** credentials are correct and the database is running and responsive to queries.
@@ -204,3 +202,29 @@ If the sampleDB.ts script is unable to run:
 - Ensure you have ts-node installed (`npm install -D ts-node`).
 - Ensure your **Postgres** credentials are correct and the database is running and responsive to queries.
 - Ensure you have reset the database to blank.
+
+If you recieve a timeout error and are unable to log in to Postgres:
+- Ensure the Postgres server is running
+
+Example in **pgAdmin**:
+
+![Postgres timeout error](/setup-images/pgadmin_error1.png)
+
+Example [solution](https://stackoverflow.com/questions/60532791/timeout-expired-pgadmin-unable-to-connect-to-server) for Windows:
+1. Click Win+R keys to open **Windows Run**
+2. Type `services.msc` and click enter
+3. In the **Services** window, find the Postgres server (ex.`postgresql-x64-16 - PostgreSQL Server 16`) and ensure it is running.
+
+![Postgres timeout error solution](/setup-images/pgadmin_error2.png)
+
+### Running Application
+
+If the backend or frontend server fail to start or are unresponsive:
+- Ensure all dependencies are installed (`npm install`).
+- Ensure your software versions are up to date.
+- Ensure you are using separate terminals to run the backend and frontend at the same time.
+- Ensure your **Postgres** credentials are correct and the database is running and responsive to queries.
+- Ensure you have cloned the proper commit. 
+
+If the frontend interface is not loading/taking a while to load:
+- Close the localhost window, quit out of the frontend server (ex. ctrl+c), re-install dependencies (`npm install`), and re-start the server (`npm run dev`).
