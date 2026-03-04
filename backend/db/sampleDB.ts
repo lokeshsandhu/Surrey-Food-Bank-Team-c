@@ -120,7 +120,7 @@ async function sampleApptData() {
     const feb28FullSlot = {
         appt_date: '2026-02-28',
         start_time: '08:00',
-        end_time: '08:20',
+        end_time: '08:30',
         appt_notes: undefined
     }
 
