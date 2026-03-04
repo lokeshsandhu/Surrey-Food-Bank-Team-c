@@ -47,7 +47,7 @@ export default function ElegibilityQuestions({ form }) {
                     <Radio value="Other" label="Other" />
                 </Group>
             </Radio.Group>
-            {form.getValues().canada_status === 'ineligible' &&
+            {form.getValues().canada_status === '(Ineligible) Visitor or International student with less than 6 months in Canada' &&
                 <Alert variant="light" color="red" title="You may not be eligible for this program" icon={<IconInfoCircle />}>Visitors or international students that have stayed in Canada for less than 6 months do not qualify for this program.</Alert>
             }
             <Fieldset legend="2. Address" variant='unstyled'>
