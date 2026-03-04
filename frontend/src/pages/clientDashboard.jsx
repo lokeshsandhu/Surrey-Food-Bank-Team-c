@@ -182,7 +182,7 @@ export default function ClientDashboard() {
 
                 </div>
                 <div className="box">
-                    lorem ipsum dolor sit amet
+                    
                 </div>
             </SimpleGrid>
             <Grid verticalspacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
