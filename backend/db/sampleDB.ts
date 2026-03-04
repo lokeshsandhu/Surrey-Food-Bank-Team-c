@@ -88,7 +88,7 @@ async function sampleJeffData(){
         user_password: 'big_J3ff',
         canada_status: 'Permanent Resident',
         household_size: 1,
-        addr: 'Jeff RD, Surrey, BC, V1M 3B5',
+        addr: 'Jeff RD, , Surrey, BC, V1M 3B5',
         baby_or_pregnant: false,
         language_spoken: `English`,
         account_notes: `Sample account for Jeff Smith`,
@@ -140,17 +140,22 @@ async function sampleApptData() {
     await appointment.bookAppointment(jeffBookingFeb28, 'big_jeff');
 }
 
-// create available time slots for the month of March 2026
+// create available time slots for the month of March 2026, excluding weekends
 async function marchTimeSlots() {
     for(let i=1; i<32; i++) {
-        const date = '2026-03-' + String(i).padStart(2, '0');;
-        const slot = {
-            appt_date: date,
-            start_time: '08:00',
-            end_time: '16:00',
-            appt_notes: undefined
+        const weekends: number[] = [7, 8, 14, 15, 21, 22, 28, 29];
+
+        if (!weekends.includes(i)) {
+            const date = '2026-03-' + String(i).padStart(2, '0');;
+            const slot = {
+                appt_date: date,
+                start_time: '08:00',
+                end_time: '16:00',
+                appt_notes: undefined
+            }
+            appointment.createAppointmentsInTimeRange(slot);
         }
-        appointment.createAppointmentsInTimeRange(slot);
+        
     }
 }
 
