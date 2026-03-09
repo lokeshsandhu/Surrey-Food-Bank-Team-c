@@ -374,14 +374,14 @@ export default function FamilyMembersTab({ clientUsername }) {
             withAsterisk={form.values.relationship === 'owner'}
           />
           <TextInput
-            variant={form.values.relationship === 'owner' ? "unstyled" : "default"}
+            variant={form.values.relationship === 'owner' && isMemberOwner() ? "unstyled" : "default"}
             label="Relationship"
             placeholder="e.g. Daughter, Son"
             key={form.key(`relationship`)}
             {...form.getInputProps(`relationship`)}
             withAsterisk
             w={'45%'}
-            readOnly={form.values.relationship === 'owner'}
+            readOnly={form.values.relationship === 'owner' && isMemberOwner()}
           />
         </Stack>
         <Group w='100%' display={'flex'} mt={20}
