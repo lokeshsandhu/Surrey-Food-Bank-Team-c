@@ -76,6 +76,11 @@ export default function FamilyMembersTab({ clientUsername }) {
     }
   }
 
+  const handleAddMember = () => {
+    form.reset();
+    addModalHandlers.open();
+  }
+
   const handleEditMember = (member) => {
     setCurrentMember(member);
     form.setValues(member);
@@ -244,7 +249,7 @@ export default function FamilyMembersTab({ clientUsername }) {
                 <Button
                   color='green'
                   leftSection={<IconUserPlus />}
-                  onClick={addModalHandlers.open}
+                  onClick={handleAddMember}
                 >
                   Add
                 </Button>
