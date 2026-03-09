@@ -59,9 +59,9 @@ export default function AccountInformationTab({ clientUsername }) {
         validateInputOnChange: true,
         validate: {
             accountInformation: {
-                username: (value) => value.length < 5 ? 'Username must be at least 5 characters' : null,
+                username: (value) => value.trim().length < 5 ? 'Username must be at least 5 characters' : null,
                 canada_status: (value) => value ? null : 'Please select an option.',
-                baby_or_pregnant: (value) => value && value.length > 0 ? null : 'Please select an option.',
+                baby_or_pregnant: (value) => value && value.trim().length > 0 ? null : 'Please select an option.',
                 language_spoken: isNotEmpty('Please enter your primary language.'),
                 addr: {
                     line1: isNotEmpty('Please enter your address.'),
@@ -71,11 +71,11 @@ export default function AccountInformationTab({ clientUsername }) {
                 },
             },
             accountOwner: {
-                f_name: (value) => value && value.length > 0 ? null : 'Please enter your first name.',
-                l_name: (value) => value && value.length > 0 ? null : 'Please enter your last name.',
-                dob: (value) => value && value.length > 0 ? null : 'Please enter your date of birth.',
-                email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
-                phone: (value) => value.length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
+                f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your first name.',
+                l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your last name.',
+                dob: (value) => value && value.trim().length > 0 ? null : 'Please enter your date of birth.',
+                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
+                phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             }
         }
     })
