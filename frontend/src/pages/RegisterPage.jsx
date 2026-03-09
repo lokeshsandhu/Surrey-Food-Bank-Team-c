@@ -30,30 +30,58 @@ export default function RegisterPage() {
 
     const navigate = useNavigate();
 
+    // initialValues: {
+    //     username: '',
+    //         user_password: '',
+    //             confirm_password: '',
+    //                 canada_status: '',
+    //                     household_size: 0,
+    //                         baby_or_pregnant: '',
+    //                             language_spoken: '',
+    //                                 account_notes: '',
+    //                                     addr: {
+    //         line1: '',
+    //             line2: '',
+    //                 city: '',
+    //                     province: '',
+    //                         postal_code: ''
+    //     },
+    //     main_family_member:
+    //     {
+    //         f_name: '',
+    //             l_name: '',
+    //                 dob: null,
+    //                     phone: '',
+    //                         email: '',
+    //                             relationship: 'owner'
+    //     },
+    //     family_members: []
+    // },
+
     const form = useForm({
         initialValues: {
-            username: '',
-            user_password: '',
-            confirm_password: '',
-            canada_status: '',
+            username: 'allison',
+            user_password: 'Abc1234$',
+            confirm_password: 'Abc1234$',
+            canada_status: 'Canadian Citizen',
             household_size: 0,
-            baby_or_pregnant: '',
-            language_spoken: '',
+            baby_or_pregnant: 'true',
+            language_spoken: 'English',
             account_notes: '',
             addr: {
-                line1: '',
+                line1: '1234 W 4',
                 line2: '',
-                city: '',
-                province: '',
-                postal_code: ''
+                city: 'Surrey',
+                province: 'BC',
+                postal_code: 'V6T 1Z1'
             },
             main_family_member:
             {
-                f_name: '',
-                l_name: '',
+                f_name: 'Allison',
+                l_name: 'test',
                 dob: null,
-                phone: '',
-                email: '',
+                phone: '(111) 111-111',
+                email: 'email@email.com',
                 relationship: 'owner'
             },
             family_members: []
@@ -81,7 +109,24 @@ export default function RegisterPage() {
                 phone: (value) => value.length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
             family_members: {
-                f_name: (value) => value && value.length > 0 ? null : 'Please enter their first name.',
+                f_name: (value, values, path) => {
+                    if (value.trim().length === 0) {
+                        return 'Please enter their first name.'
+                    }
+
+                    const ownerFName = form.values.main_family_member.f_name.toLowerCase();
+                    const familyFNames = values.family_members.map(m => m.f_name.toLowerCase());
+
+                    const index = Number(path.split('.')[1]);
+                    const currentFName = value.toLowerCase();
+
+                    const duplicates = familyFNames.filter((fName, i) => i !== index && fName === currentFName).length > 0 || currentFName === ownerFName;
+
+                    if (duplicates) {
+                        return 'First name already taken. Please enter a unique name for this family member.'
+                    }
+                    return null;
+                },
                 l_name: (value) => value && value.length > 0 ? null : 'Please enter their last name.',
                 dob: (value) => value && value.length > 0 ? null : 'Please enter their date of birth.',
                 email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
@@ -112,7 +157,6 @@ export default function RegisterPage() {
     };
 
     useEffect(() => {
-
         checkUsername();
     }, [form.values.username])
 
@@ -175,7 +219,7 @@ export default function RegisterPage() {
                 "main_family_member.email",
                 "main_family_member.phone",
             ];
-            
+
         }
 
         if (activeSection === 2) {
@@ -190,7 +234,7 @@ export default function RegisterPage() {
 
 
         await checkUsername();
-        if (form.errors.username) return;
+        if (form.errors.username || form.errors.family_members) return;
 
         let hasErrors = false;
         fieldsToValidate.forEach((field) => {
@@ -205,20 +249,20 @@ export default function RegisterPage() {
                 setLoading(true);
                 setRegisterError('');
                 // Check for duplicate first names (including main account holder)
-                const allFirstNames = [form.values.main_family_member.f_name, ...form.values.family_members.map(m => m.f_name)];
-                const nameSet = new Set();
-                let duplicateFound = false;
-                for (const name of allFirstNames) {
-                    if (nameSet.has(name)) {
-                        duplicateFound = true;
-                        break;
-                    }
-                    nameSet.add(name);
-                }
-                if (duplicateFound) {
-                    setRegisterError('You cannot add two family members with the same first name. Please use a unique first name for each family member.');
-                    return;
-                }
+                // const allFirstNames = [form.values.main_family_member.f_name, ...form.values.family_members.map(m => m.f_name)];
+                // const nameSet = new Set();
+                // let duplicateFound = false;
+                // for (const name of allFirstNames) {
+                //     if (nameSet.has(name)) {
+                //         duplicateFound = true;
+                //         break;
+                //     }
+                //     nameSet.add(name);
+                // }
+                // if (duplicateFound) {
+                //     setRegisterError('You cannot add two family members with the same first name. Please use a unique first name for each family member.');
+                //     return;
+                // }
                 const householdSize = 1 + form.values.family_members.length;
                 const accountData = {
                     username: form.values.username,
