@@ -60,7 +60,7 @@ export default function RegisterPage() {
 
     const form = useForm({
         initialValues: {
-            username: 'allison',
+            username: '',
             user_password: 'Abc1234$',
             confirm_password: 'Abc1234$',
             canada_status: 'Canadian Citizen',
@@ -77,7 +77,7 @@ export default function RegisterPage() {
             },
             main_family_member:
             {
-                f_name: 'Allison',
+                f_name: '',
                 l_name: 'test',
                 dob: null,
                 phone: '(111) 111-111',
@@ -89,7 +89,7 @@ export default function RegisterPage() {
         validateInputOnBlur: true,
         validateInputOnChange: true,
         validate: {
-            username: (value) => value.length < 5 ? 'Username must be at least 5 characters' : null,
+            username: (value) => value.trim().length < 5 ? 'Username must be at least 5 characters' : null,
             user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
             canada_status: (value) => value ? null : 'Please select an option.',
@@ -102,11 +102,11 @@ export default function RegisterPage() {
                 postal_code: (value) => value ? (validator.isPostalCode(value, 'CA') ? null : 'Please enter a valid postal code (e.g. V1M 3B5).') : 'Please enter your postal code.'
             },
             main_family_member: {
-                f_name: (value) => value && value.length > 0 ? null : 'Please enter your first name.',
-                l_name: (value) => value && value.length > 0 ? null : 'Please enter your last name.',
-                dob: (value) => value && value.length > 0 ? null : 'Please enter your date of birth.',
-                email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
-                phone: (value) => value.length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
+                f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your first name.',
+                l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your last name.',
+                dob: (value) => value && value.trim().length > 0 ? null : 'Please enter your date of birth.',
+                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
+                phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
             family_members: {
                 f_name: (value, values, path) => {
@@ -127,10 +127,10 @@ export default function RegisterPage() {
                     }
                     return null;
                 },
-                l_name: (value) => value && value.length > 0 ? null : 'Please enter their last name.',
-                dob: (value) => value && value.length > 0 ? null : 'Please enter their date of birth.',
-                email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
-                relationship: (value) => value.length > 0 ? null : 'Please enter your relationship to this family member.'
+                l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
+                dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
+                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
+                relationship: (value) => value.trim().length > 0 ? null : 'Please enter your relationship to this family member.'
             }
         }
     })
