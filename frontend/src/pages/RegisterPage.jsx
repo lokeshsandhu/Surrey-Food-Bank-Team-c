@@ -61,7 +61,7 @@ export default function RegisterPage() {
         validateInputOnBlur: true,
         validateInputOnChange: true,
         validate: {
-            username: (value) => value.length < 5 ? 'Username must be at least 5 characters' : null,
+            username: (value) => value.trim().length < 5 ? 'Username must be at least 5 characters' : null,
             user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
             canada_status: (value) => value ? null : 'Please select an option.',
@@ -74,18 +74,37 @@ export default function RegisterPage() {
                 postal_code: (value) => value ? (validator.isPostalCode(value, 'CA') ? null : 'Please enter a valid postal code (e.g. V1M 3B5).') : 'Please enter your postal code.'
             },
             main_family_member: {
-                f_name: (value) => value && value.length > 0 ? null : 'Please enter your first name.',
-                l_name: (value) => value && value.length > 0 ? null : 'Please enter your last name.',
-                dob: (value) => value && value.length > 0 ? null : 'Please enter your date of birth.',
-                email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
-                phone: (value) => value.length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
+                f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your first name.',
+                l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your last name.',
+                dob: (value) => value && value.trim().length > 0 ? null : 'Please enter your date of birth.',
+                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
+                phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
             family_members: {
-                f_name: (value) => value && value.length > 0 ? null : 'Please enter their first name.',
-                l_name: (value) => value && value.length > 0 ? null : 'Please enter their last name.',
-                dob: (value) => value && value.length > 0 ? null : 'Please enter their date of birth.',
-                email: (value) => value && value.length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
-                relationship: (value) => value.length > 0 ? null : 'Please enter your relationship to this family member.'
+                f_name: (value, values, path) => {
+                    if (value.trim().length === 0) {
+                        return 'Please enter their first name.'
+                    }
+
+                    const ownerFName = form.values.main_family_member.f_name.toLowerCase();
+                    const familyFNames = values.family_members.map(m => m.f_name.toLowerCase());
+
+                    const index = Number(path.split('.')[1]);
+                    const currentFName = value.toLowerCase();
+
+                    const duplicates = familyFNames.filter((fName, i) =>
+                        i !== index && fName === currentFName).length > 0
+                        || currentFName === ownerFName;
+
+                    if (duplicates) {
+                        return 'First name already taken. Please enter a unique name for this family member.';
+                    }
+                    return null;
+                },
+                l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
+                dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
+                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
+                relationship: (value) => value.trim().length > 0 ? null : 'Please enter your relationship to this family member.'
             }
         }
     })
@@ -112,7 +131,6 @@ export default function RegisterPage() {
     };
 
     useEffect(() => {
-
         checkUsername();
     }, [form.values.username])
 
@@ -175,7 +193,7 @@ export default function RegisterPage() {
                 "main_family_member.email",
                 "main_family_member.phone",
             ];
-            
+
         }
 
         if (activeSection === 2) {
@@ -190,7 +208,7 @@ export default function RegisterPage() {
 
 
         await checkUsername();
-        if (form.errors.username) return;
+        if (form.errors.username || form.errors.family_members) return;
 
         let hasErrors = false;
         fieldsToValidate.forEach((field) => {
@@ -205,20 +223,20 @@ export default function RegisterPage() {
                 setLoading(true);
                 setRegisterError('');
                 // Check for duplicate first names (including main account holder)
-                const allFirstNames = [form.values.main_family_member.f_name, ...form.values.family_members.map(m => m.f_name)];
-                const nameSet = new Set();
-                let duplicateFound = false;
-                for (const name of allFirstNames) {
-                    if (nameSet.has(name)) {
-                        duplicateFound = true;
-                        break;
-                    }
-                    nameSet.add(name);
-                }
-                if (duplicateFound) {
-                    setRegisterError('You cannot add two family members with the same first name. Please use a unique first name for each family member.');
-                    return;
-                }
+                // const allFirstNames = [form.values.main_family_member.f_name, ...form.values.family_members.map(m => m.f_name)];
+                // const nameSet = new Set();
+                // let duplicateFound = false;
+                // for (const name of allFirstNames) {
+                //     if (nameSet.has(name)) {
+                //         duplicateFound = true;
+                //         break;
+                //     }
+                //     nameSet.add(name);
+                // }
+                // if (duplicateFound) {
+                //     setRegisterError('You cannot add two family members with the same first name. Please use a unique first name for each family member.');
+                //     return;
+                // }
                 const householdSize = 1 + form.values.family_members.length;
                 const accountData = {
                     username: form.values.username,
