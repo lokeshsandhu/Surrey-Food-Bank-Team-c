@@ -23,7 +23,6 @@ export default function ClientList() {
         return null;
     }
 
-    // TODO: Replace with API call to get all family members with relationship="owner"
     const getAllAccountOwners = async () => {
         const result = await getOwnerFamilyMembers(token);
         console.log(result)
@@ -31,7 +30,6 @@ export default function ClientList() {
     }
 
     const searchClients = async () => {
-        //TODO: Maybe remove if backend can handle upper/lower case
         const uppercaseSearchText = searchText.charAt(0).toUpperCase() + searchText.slice(1);
 
         const byFName = await getFamilyMembersByFName(token, uppercaseSearchText);
@@ -83,6 +81,9 @@ export default function ClientList() {
                     value={searchText}
                     onChange={e => {
                         setSearchText(e.target.value);
+                        if (e.target.value.length === 0) {
+                            getAllAccountOwners();
+                        } // TODO: SEARCH ON INPUT
                     }}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {

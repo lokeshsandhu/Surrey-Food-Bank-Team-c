@@ -351,7 +351,7 @@ export default function RegisterPage() {
                 )}
             </Card>
             <Modal opened={opened} onClose={close} title="Register Success" centered>
-                <Text mb={4}>Select 'Continue' to view your dashboard</Text>
+                <Text mb={10}>Select 'Continue' to view your dashboard</Text>
                 <Button mt={4} color='cyan' onClick={() => { loginNavigate() }}>Continue</Button>
             </Modal>
         </div>

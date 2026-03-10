@@ -13,6 +13,16 @@ export default function ElegibilityQuestions({ form }) {
     const provinceOptions = ['NL', 'PE', 'NS', 'NB', 'QC', 'ON', 'MB', 'SK', 'AB', 'BC', 'YT', 'NT', 'NU']
     provinceOptions.sort();
 
+    useEffect(() => {
+        if (form.values.addr.city.trim().length > 0) {
+            checkIsCityEligible();
+        }
+
+        if (form.values.addr.postal_code.trim().length > 0) {
+            checkIsProvinceEligible();
+        }
+    }, [form.values.addr.city, form.values.addr.postal_code])
+
     const checkIsCityEligible = () => {
         const city = form.getValues().addr.city.toLowerCase()
         const isEligible =
@@ -79,6 +89,10 @@ export default function ElegibilityQuestions({ form }) {
                             form.getInputProps('addr.city').onBlur(e);
                             checkIsCityEligible();
                         }}
+                        onChange={(e) => {
+                            form.getInputProps('addr.city').onChange(e);
+                            setIsCityEligible(true)
+                        }}
                     />
                     <Select
                         label='Province'
@@ -109,9 +123,15 @@ export default function ElegibilityQuestions({ form }) {
             </Fieldset>
             {(!isCityEligible || !isProvinceEligible)
                 &&
-                <Alert variant="light" color="red" title="You may not be eligible for this program" icon={<IconInfoCircle />}>
+                <Alert
+                    variant="light"
+                    color="red"
+                    title="Reminder: To be eligible for Surrey Food Bank:"
+                    icon={<IconInfoCircle />}
+                    w={582}
+                >
                     {!isProvinceEligible && <Text size='sm' my={0}>
-                        Clients must reside in British Columbia (BC)
+                        Clients must reside in British Columbia (BC), Canada
                     </Text>}
                     {!isCityEligible &&
                         <Text size='sm' my={0}>
