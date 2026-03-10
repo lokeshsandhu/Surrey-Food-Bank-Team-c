@@ -305,7 +305,7 @@ export default function FamilyMembersTab({ clientUsername }) {
             component={IMaskInput}
             mask='(000) 000-0000'
             w={'45%'}
-            withAsterisk={form.values.relationship === 'owner'}
+            withAsterisk={form.values.relationship === 'owner' && isMemberOwner()}
           />
           <TextInput
             variant={form.values.relationship === 'owner' && isMemberOwner() ? "unstyled" : "default"}
@@ -320,7 +320,7 @@ export default function FamilyMembersTab({ clientUsername }) {
         </Stack>
         <Group w='100%' display={'flex'} mt={20}
           style={{ justifyContent: 'space-between' }}>
-          <Button color='red' disabled={form.values.relationship === 'owner'} onClick={removeMember} >Remove</Button>
+          <Button color='red' disabled={form.values.relationship === 'owner' && isMemberOwner()} onClick={removeMember} >Remove</Button>
           <Button color='teal' onClick={updateMember}>Save</Button>
         </Group>
       </Modal>
