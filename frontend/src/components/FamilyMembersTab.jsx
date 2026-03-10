@@ -55,9 +55,9 @@ export default function FamilyMembersTab({ clientUsername }) {
       l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
       dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
       email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
-      phone: (value) => form.values.relationship === 'owner' ?
+      phone: (value) => form.values.relationship === 'owner' && isMemberOwner()?
         (value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).') : null,
-      relationship: (value) => value.trim().length > 0 ? (value.toLowerCase() === 'owner' && !isMemberOwner() ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
+      relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' && !isMemberOwner() ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
     }
   })
 
@@ -305,7 +305,7 @@ export default function FamilyMembersTab({ clientUsername }) {
             component={IMaskInput}
             mask='(000) 000-0000'
             w={'45%'}
-            withAsterisk={form.values.relationship === 'owner'}
+            withAsterisk={form.values.relationship === 'owner' && isMemberOwner()}
           />
           <TextInput
             variant={form.values.relationship === 'owner' && isMemberOwner() ? "unstyled" : "default"}
@@ -320,7 +320,7 @@ export default function FamilyMembersTab({ clientUsername }) {
         </Stack>
         <Group w='100%' display={'flex'} mt={20}
           style={{ justifyContent: 'space-between' }}>
-          <Button color='red' disabled={form.values.relationship === 'owner'} onClick={removeMember} >Remove</Button>
+          <Button color='red' disabled={form.values.relationship === 'owner' && isMemberOwner()} onClick={removeMember} >Remove</Button>
           <Button color='teal' onClick={updateMember}>Save</Button>
         </Group>
       </Modal>
