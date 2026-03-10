@@ -126,7 +126,7 @@ export default function ElegibilityQuestions({ form }) {
                 <Alert
                     variant="light"
                     color="red"
-                    title="Reminder: To be eligible for Surrey Food Bank:"
+                    title="Reminder - To be eligible for Surrey Food Bank:"
                     icon={<IconInfoCircle />}
                     w={582}
                 >
