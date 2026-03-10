@@ -55,7 +55,7 @@ export default function FamilyMembersTab({ clientUsername }) {
       l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
       dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
       email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
-      phone: (value) => form.values.relationship === 'owner' && isMemberOwner()?
+      phone: (value) => form.values.relationship === 'owner' && isMemberOwner() ?
         (value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).') : null,
       relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' && !isMemberOwner() ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
     }
@@ -215,7 +215,7 @@ export default function FamilyMembersTab({ clientUsername }) {
       <Table.Td>{FM.f_name}</Table.Td>
       <Table.Td>{FM.l_name}</Table.Td>
       <Table.Td>{FM.dob.slice(0, 10)}</Table.Td>
-      <Table.Td>{FM.email}</Table.Td>
+      <Table.Td><a href={`mailto:${FM.email}`}>{FM.email}</a></Table.Td>
       <Table.Td>{FM.phone}</Table.Td>
       <Table.Td>{FM.relationship}</Table.Td>
       <Table.Td>
@@ -241,7 +241,7 @@ export default function FamilyMembersTab({ clientUsername }) {
             <Table.Tr>
               <Table.Th>First Name</Table.Th>
               <Table.Th>Last Name</Table.Th>
-              <Table.Th>DOB</Table.Th>
+              <Table.Th>Date of Birth</Table.Th>
               <Table.Th>Email</Table.Th>
               <Table.Th>Phone</Table.Th>
               <Table.Th>Relationship</Table.Th>
@@ -371,7 +371,7 @@ export default function FamilyMembersTab({ clientUsername }) {
             component={IMaskInput}
             mask='(000) 000-0000'
             w={'45%'}
-            withAsterisk={form.values.relationship === 'owner'}
+            withAsterisk={form.values.relationship === 'owner' && isMemberOwner()}
           />
           <TextInput
             variant={form.values.relationship === 'owner' && isMemberOwner() ? "unstyled" : "default"}

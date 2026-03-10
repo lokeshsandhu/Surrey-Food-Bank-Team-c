@@ -23,19 +23,22 @@ export default function ClientList() {
         return null;
     }
 
-    // TODO: Replace with API call to get all family members with relationship="owner"
     const getAllAccountOwners = async () => {
         const result = await getOwnerFamilyMembers(token);
-        console.log(result)
         setAccountOwners(result);
     }
 
-    const searchClients = async () => {
-        //TODO: Maybe remove if backend can handle upper/lower case
-        const uppercaseSearchText = searchText.charAt(0).toUpperCase() + searchText.slice(1);
+    const searchClients = async (input) => {
+        let searchQuery = '';
+        if (input && input.trim().length > 0) {
+            searchQuery = input;
+        } else {
+            searchQuery = searchText;
+        }
+        const lowercaseSearchText = searchQuery.toLowerCase();
 
-        const byFName = await getFamilyMembersByFName(token, uppercaseSearchText);
-        const byLName = await getFamilyMembersByLName(token, uppercaseSearchText);
+        const byFName = await getFamilyMembersByFName(token, lowercaseSearchText);
+        const byLName = await getFamilyMembersByLName(token, lowercaseSearchText);
 
         const temp = byFName.concat(byLName);
         const filteredOwners = temp.filter(client => client.relationship === 'owner')
@@ -83,13 +86,18 @@ export default function ClientList() {
                     value={searchText}
                     onChange={e => {
                         setSearchText(e.target.value);
+                        if (e.target.value.length === 0) {
+                            getAllAccountOwners();
+                        } else {
+                            searchClients(e.target.value);
+                        }
                     }}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                             if (e.target.value.length === 0) {
                                 getAllAccountOwners();
                             } else {
-                                searchClients();
+                                searchClients(e.target.value);
                             }
                         }
                     }}
