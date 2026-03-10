@@ -11,13 +11,16 @@ import { LoadingOverlay } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { BookingForm } from '../components/bookingForm';
+import { TimeslotForm } from '../components/timeslotForm.jsx';
 
 export default function TimeslotPage() {
     const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
     const [events, setEvents] = useState([]); // Placeholder for fetched timeslots
     const [loadingTimeslots, setLoadingTimeslots] = useState(false);
     const [bookingModalOpened, bookingModalHandlers] = useDisclosure(false);
+    const [timeslotModalOpened, timeslotModalHandlers] = useDisclosure(false);
     const [selectedBookingData, setSelectedBookingData] = useState(null);
+    const [selectedTimeslotData, setSelectedTimeslotData] = useState(null);
 
     const token = sessionStorage.getItem('token');
     const navigate = useNavigate();
@@ -29,11 +32,38 @@ export default function TimeslotPage() {
         return null;
     }
 
+    const handleTimeslotClick = (date, time) => {
+        setSelectedTimeslotData({date: date, time: time})
+        timeslotModalHandlers.open();
+    }
+
     const handleEventClick = (event) => {
         setSelectedBookingData(event);
         bookingModalHandlers.open();
     }
+
+    const handleDeleteBooking = async (values) => {
+        const bookingDate = dayjs(values.start).format('YYYY-MM-DD');
+        const bookingTime = dayjs(values.start, 'YYYY-MM-DD HH:mm').format('HH:mm');
         
+        const res = await updateAppointment(token, bookingDate, bookingTime, { username: null, appt_notes: null });
+
+        if (res.error) {
+            notifications.show({
+                title: 'Error',
+                message: 'Failed to delete booking: ' + (res?.error || ''),
+                color: 'red'
+            });
+        } else {
+            notifications.show({
+                title: 'Success',
+                message: 'Booking successfully deleted',
+                color: 'green'
+            });
+
+            await fetchTimeslots();
+        }
+    }
 
     useEffect(() => {
         fetchTimeslots();
@@ -126,6 +156,10 @@ export default function TimeslotPage() {
         }
     }
 
+    const handleTimeslotFormSubmit = async (values) => {
+        console.log('Timeslot form submit with values:', values);
+    }
+
 
     return (
         <div className="page">
@@ -136,9 +170,10 @@ export default function TimeslotPage() {
                 onDateChange={setDate}
                 events={events}
                 onEventClick={handleEventClick}
+                onTimeSlotClick={handleTimeslotClick}
                 startTime={'08:00'}
                 endTime={'16:00'}
-                intervalMinutes={30}
+                intervalMinutes={15}
                 withWeekNumber={false}
                 withAllDaySlots={false}
                 slotLabelFormat="h:mm A"
@@ -157,7 +192,8 @@ export default function TimeslotPage() {
                     justifySelf: 'top',
                 }}
                 />
-                <BookingForm opened={bookingModalOpened} onClose={bookingModalHandlers.close} values={selectedBookingData} onSubmit={handleBookingFormSubmit}/>
+                <TimeslotForm opened={timeslotModalOpened} onClose={timeslotModalHandlers.close} values={selectedTimeslotData} onSubmit={handleTimeslotFormSubmit}/>
+                <BookingForm opened={bookingModalOpened} onClose={bookingModalHandlers.close} onDelete={handleDeleteBooking} values={selectedBookingData} onSubmit={handleBookingFormSubmit}/>
         </div>
     );
 }
