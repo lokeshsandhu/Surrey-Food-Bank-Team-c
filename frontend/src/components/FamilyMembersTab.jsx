@@ -38,6 +38,23 @@ export default function FamilyMembersTab({ clientUsername }) {
     validateInputOnChange: true,
     validate: {
       f_name: (value) => {
+        // TODO: trying to let user edit f_name
+        // if (value.trim().length === 0) {
+        //   return 'Please enter their first name.'
+        // }
+
+        // const currentFName = value.toLowerCase();
+
+        // const duplicates = familyMemberInfo.some((member) => {
+        //   const isSameName = member.f_name.toLowerCase() === currentFName;
+        //   const isCurrentMember =
+        //     member.f_name === currentMember.f_name
+        //     && member.l_name === currentMember.l_name
+        //     && member.dob === currentMember.dob
+        //     && member.email === currentMember.email
+        //     && member.relationship === currentMember.relationship;
+
+        //   return isSameName && !isCurrentMember;
         if (value.trim().length === 0) {
           return 'Please enter their first name.'
         }
