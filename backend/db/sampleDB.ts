@@ -153,7 +153,7 @@ async function marchTimeSlots() {
                 end_time: '16:00',
                 appt_notes: undefined
             }
-            appointment.createAppointmentsInTimeRange(slot);
+            await appointment.createAppointmentsInTimeRange(slot);
         }
         
     }
@@ -165,8 +165,8 @@ async function runSample() {
         await sampleAdminData();
         await sampleJaneData();
         await sampleJeffData();
-        sampleApptData();
-        marchTimeSlots();
+        await sampleApptData();
+        await marchTimeSlots();
         console.log('Sample data successfully initialized.')
     } catch (err) {
         console.log('Unable to initialize sample data: ', err);

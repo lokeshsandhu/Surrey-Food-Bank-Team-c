@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - CICD
+  pull_request:
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: cpsc319
+          POSTGRES_DB: sfb_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d sfb_db"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DB_USER: postgres
+      DB_HOST: 127.0.0.1
+      DB_NAME: sfb_db
+      DB_PASSWORD: cpsc319
+      DB_PORT: 5432
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            nc -z 127.0.0.1 5432 && exit 0
+            sleep 1
+          done
+          echo "Postgres did not become ready in time"
+          exit 1
+
+      - name: Reset database schema
+        run: node db/resetDB.js
+
+      - name: Run backend tests
+        run: npm test -- --runInBand
+
+      - name: Build backend
+        run: npm run build
+
+  frontend-checks:
+    name: Frontend Checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      # - name: Lint frontend
+      #   run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
