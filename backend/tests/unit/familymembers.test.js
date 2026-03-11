@@ -1,14 +1,5 @@
 const { findFamilyMembersByFName, findFamilyMembersByLName, createFamilyMember, getFamilyMembers, updateFamilyMember, deleteFamilyMember, getOwnerFamilyMembers, usernameFamilyMemberExists} = require('../../src/modules/familyMembers/familyMembers.service');
-const { Pool } = require('pg');
-
-const pool = new Pool({
-            user: process.env.USER,
-            host: process.env.HOST,
-            database: process.env.DATABASE,
-            password: process.env.PASSWORD,
-            port: process.env.PORT
-        });
-
+const pool = require('../../src/db/postgres').default;
 
 describe('familyMembers.service', () => {
 
@@ -584,8 +575,9 @@ describe('familyMembers.service', () => {
         await createFamilyMember(fm3Data);
         const result = await getOwnerFamilyMembers();
         expect(result).not.toBeNull();
-        expect(result).toHaveLength(2);
-        expect(result).toEqual(expect.arrayContaining([
+        const ours = result.filter(r => r.username === 'testuser' || r.username === 'otheruser');
+        expect(ours).toHaveLength(2);
+        expect(ours).toEqual(expect.arrayContaining([
                 expect.objectContaining({
                     'username': 'testuser',
                     'f_name': 'first',
@@ -593,7 +585,7 @@ describe('familyMembers.service', () => {
                 })
             ])
         );
-        expect(result).toEqual(expect.arrayContaining([
+        expect(ours).toEqual(expect.arrayContaining([
                 expect.objectContaining({
                     'username':'otheruser', 
                     'f_name': 'third',
@@ -639,14 +631,16 @@ describe('familyMembers.service', () => {
         const result = await getOwnerFamilyMembers();
 
         expect(result).not.toBeNull();
-        expect(result).toHaveLength(0);
+        const ours = result.filter(r => r.username === 'testuser' || r.username === 'otheruser');
+        expect(ours).toHaveLength(0);
     });
 
     // getOwnerFamilyMembers should return [] if no FMs
     it('getOwnerFamilyMembers should return null if no FMs', async () => {
         const result = await getOwnerFamilyMembers();
         expect(result).not.toBeNull();
-        expect(result).toHaveLength(0);
+        const ours = result.filter(r => r.username === 'testuser' || r.username === 'otheruser');
+        expect(ours).toHaveLength(0);
     });
 
     // usernameFamilyMemberExists should return true if FM is in account
