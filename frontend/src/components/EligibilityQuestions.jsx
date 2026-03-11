@@ -38,7 +38,9 @@ export default function ElegibilityQuestions({ form }) {
 
     return (
         <Group>
-            <h2 className='login-title'>Eligibility Questions</h2>
+            <div style={{width: '100%'}}>
+                <h2 className='login-title'>Eligibility Questions</h2>
+            </div>
             <Radio.Group
                 name="status-in-canada"
                 label="1. Immigration Status"
