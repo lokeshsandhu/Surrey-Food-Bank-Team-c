@@ -60,7 +60,7 @@ export default function FamilyMembersTab({ clientUsername }) {
         }
 
         const allFNames = familyMemberInfo.map(m => m.f_name.toLowerCase());
-        const currentFName = value.toLowerCase();
+        const currentFName = value.trim().toLowerCase();
 
         const duplicates = allFNames.filter((fName, i) => fName === currentFName).length > 0;
 
@@ -124,7 +124,7 @@ export default function FamilyMembersTab({ clientUsername }) {
     if (!hasErrors) {
       const member = form.values
       const memberData = {
-        l_name: member.l_name,
+        l_name: member.l_name.trim(),
         dob: member.dob,
         phone: member.phone,
         email: member.email,
