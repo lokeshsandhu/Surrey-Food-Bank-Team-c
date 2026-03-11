@@ -38,12 +38,29 @@ export default function FamilyMembersTab({ clientUsername }) {
     validateInputOnChange: true,
     validate: {
       f_name: (value) => {
+        // TODO: trying to let user edit f_name
+        // if (value.trim().length === 0) {
+        //   return 'Please enter their first name.'
+        // }
+
+        // const currentFName = value.toLowerCase();
+
+        // const duplicates = familyMemberInfo.some((member) => {
+        //   const isSameName = member.f_name.toLowerCase() === currentFName;
+        //   const isCurrentMember =
+        //     member.f_name === currentMember.f_name
+        //     && member.l_name === currentMember.l_name
+        //     && member.dob === currentMember.dob
+        //     && member.email === currentMember.email
+        //     && member.relationship === currentMember.relationship;
+
+        //   return isSameName && !isCurrentMember;
         if (value.trim().length === 0) {
           return 'Please enter their first name.'
         }
 
         const allFNames = familyMemberInfo.map(m => m.f_name.toLowerCase());
-        const currentFName = value.toLowerCase();
+        const currentFName = value.trim().toLowerCase();
 
         const duplicates = allFNames.filter((fName, i) => fName === currentFName).length > 0;
 
@@ -107,7 +124,7 @@ export default function FamilyMembersTab({ clientUsername }) {
     if (!hasErrors) {
       const member = form.values
       const memberData = {
-        l_name: member.l_name,
+        l_name: member.l_name.trim(),
         dob: member.dob,
         phone: member.phone,
         email: member.email,

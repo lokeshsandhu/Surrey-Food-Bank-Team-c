@@ -12,22 +12,24 @@ import { usernameExists } from '../../api/accounts';
 export default function AccountInformation({ form }) {
 
     const checkUsername = async () => {
-            const currentUsername = form.values.username;
-            if (currentUsername.length < 5) return;
-    
-            const result = await usernameExists(currentUsername);
-    
-            if (result.exists) {
-                form.setFieldError(
-                    'username',
-                    'Username already taken. Try a different username.'
-                );
-            }
-        };
+        const currentUsername = form.values.username;
+        if (currentUsername.length < 5) return;
+
+        const result = await usernameExists(currentUsername);
+
+        if (result.exists) {
+            form.setFieldError(
+                'username',
+                'Username already taken. Try a different username.'
+            );
+        }
+    };
     return (
         <div>
-            <h2 className='login-title'>Account Information</h2>
-            <Text size='sm'>Please enter a username and password to set up your account.</Text>
+            <div style={{ width: '100%' }}>
+                <h2 className='login-title'>Account Information</h2>
+                <Text size='sm'>Please enter a username and password to set up your account.</Text>
+            </div>
             <Group className='registration-section'>
                 <TextInput
                     label="Username"
