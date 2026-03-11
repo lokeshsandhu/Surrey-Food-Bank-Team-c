@@ -13,7 +13,7 @@ const envFileCandidates = [
 
 for (const envFile of envFileCandidates) {
     if (fs.existsSync(envFile)) {
-        dotenv.config({ path: envFile });
+        dotenv.config({ path: envFile, override: true });
         break;
     }
 }
