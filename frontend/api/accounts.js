@@ -1,7 +1,9 @@
 
+import { apiUrl } from "./baseUrl";
+
 // API functions for accounts endpoints
 
-const API_BASE = "http://localhost:3000/api/accounts";
+const API_BASE = apiUrl("/api/accounts");
 
 
 /**

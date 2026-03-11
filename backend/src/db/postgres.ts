@@ -1,19 +1,22 @@
-import { Pool } from "pg";
-import path from "path";
-import dotenv from "dotenv";
+import { Pool, PoolConfig } from "pg";
+import { env } from "../config/env";
 
-dotenv.config({
-    override: true,
-    path: path.join(__dirname, "../../db/dev.env"),
-});
+const poolConfig: PoolConfig = env.DATABASE_URL
+  ? {
+      connectionString: env.DATABASE_URL,
+    }
+  : {
+      user: env.DB_USER,
+      host: env.DB_HOST,
+      database: env.DB_NAME,
+      password: env.DB_PASSWORD,
+      port: env.DB_PORT,
+    };
 
-// create a pool connection to postgres database using login info from dev.env file
-const pool = new Pool({
-    user: process.env.USER,
-    host: process.env.HOST,
-    database: process.env.DATABASE,
-    password: process.env.PASSWORD,
-    port: Number(process.env.DB_PORT) || 5432,
-});
+if (env.DB_SSL) {
+  poolConfig.ssl = { rejectUnauthorized: false };
+}
+
+const pool = new Pool(poolConfig);
 
 export default pool;

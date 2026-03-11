@@ -1,6 +1,8 @@
+import { apiUrl } from "./baseUrl";
+
 // API functions for family members endpoints
 
-const API_BASE = "http://localhost:3000/api/family-members";
+const API_BASE = apiUrl("/api/family-members");
 
 
 /**

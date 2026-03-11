@@ -10,7 +10,7 @@
     "start": "node dist/server.js",
     "test": "jest",
     "lint": "echo \"No lint configured\"",
-    "db:migrate": "echo \"No migration runner configured (raw SQL)\""
+    "db:migrate": "node db/applySchema.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
