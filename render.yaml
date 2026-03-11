@@ -23,7 +23,7 @@ services:
     region: oregon
     rootDir: backend
     buildCommand: npm install --include=dev && npm run build
-    startCommand: npm run db:migrate && npm run start
+    startCommand: npm run db:reset-seed && npm run start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV

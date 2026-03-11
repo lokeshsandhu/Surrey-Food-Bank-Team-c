@@ -10,7 +10,10 @@
     "start": "node dist/src/server.js",
     "test": "jest",
     "lint": "echo \"No lint configured\"",
-    "db:migrate": "node db/applySchema.js"
+    "db:migrate": "node db/applySchema.js",
+    "db:reset": "node db/resetDB.js",
+    "db:sample": "tsx db/sampleDB.ts",
+    "db:reset-seed": "npm run db:reset && npm run db:sample"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
