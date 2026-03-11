@@ -86,11 +86,11 @@ export default function RegisterPage() {
                         return 'Please enter their first name.'
                     }
 
-                    const ownerFName = form.values.main_family_member.f_name.toLowerCase();
-                    const familyFNames = values.family_members.map(m => m.f_name.toLowerCase());
+                    const ownerFName = form.values.main_family_member.f_name.trim().toLowerCase();
+                    const familyFNames = values.family_members.map(m => m.f_name.trim().toLowerCase());
 
                     const index = Number(path.split('.')[1]);
-                    const currentFName = value.toLowerCase();
+                    const currentFName = value.trim().toLowerCase();
 
                     const duplicates = familyFNames.filter((fName, i) =>
                         i !== index && fName === currentFName).length > 0
@@ -104,7 +104,7 @@ export default function RegisterPage() {
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
                 dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
                 email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
-                relationship: (value) => value.trim().length > 0 ? null : 'Please enter your relationship to this family member.'
+                relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
             }
         }
     })
@@ -222,21 +222,6 @@ export default function RegisterPage() {
             if (activeSection === 3) {
                 setLoading(true);
                 setRegisterError('');
-                // Check for duplicate first names (including main account holder)
-                // const allFirstNames = [form.values.main_family_member.f_name, ...form.values.family_members.map(m => m.f_name)];
-                // const nameSet = new Set();
-                // let duplicateFound = false;
-                // for (const name of allFirstNames) {
-                //     if (nameSet.has(name)) {
-                //         duplicateFound = true;
-                //         break;
-                //     }
-                //     nameSet.add(name);
-                // }
-                // if (duplicateFound) {
-                //     setRegisterError('You cannot add two family members with the same first name. Please use a unique first name for each family member.');
-                //     return;
-                // }
                 const householdSize = 1 + form.values.family_members.length;
                 const accountData = {
                     username: form.values.username,
@@ -260,8 +245,8 @@ export default function RegisterPage() {
                             // Add main account holder as a family member with relationship 'owner'
                             const ownerData = {
                                 username: accountData.username,
-                                f_name: form.values.main_family_member.f_name,
-                                l_name: form.values.main_family_member.l_name,
+                                f_name: form.values.main_family_member.f_name.trim(),
+                                l_name: form.values.main_family_member.l_name.trim(),
                                 dob: form.values.main_family_member.dob,
                                 phone: form.values.main_family_member.phone,
                                 email: form.values.main_family_member.email,
@@ -274,8 +259,8 @@ export default function RegisterPage() {
                                 for (const member of form.values.family_members) {
                                     const memberData = {
                                         username: accountData.username,
-                                        f_name: member.f_name,
-                                        l_name: member.l_name,
+                                        f_name: member.f_name.trim(),
+                                        l_name: member.l_name.trim(),
                                         dob: member.dob,
                                         phone: member.phone,
                                         email: member.email,
@@ -351,7 +336,7 @@ export default function RegisterPage() {
                 )}
             </Card>
             <Modal opened={opened} onClose={close} title="Register Success" centered>
-                <Text mb={4}>Select 'Continue' to view your dashboard</Text>
+                <Text mb={10}>Select 'Continue' to view your dashboard</Text>
                 <Button mt={4} color='cyan' onClick={() => { loginNavigate() }}>Continue</Button>
             </Modal>
         </div>
