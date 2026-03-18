@@ -46,6 +46,22 @@ export default function AdminDashboard() {
         return null;
     }
 
+    const normalizeApptDate = (apptDate) => {
+        if (!apptDate) return apptDate;
+        if (typeof apptDate === 'string') return apptDate.includes('T') ? apptDate.slice(0, 10) : apptDate;
+        if (apptDate instanceof Date) return apptDate.toISOString().slice(0, 10);
+        const asString = String(apptDate);
+        return asString.includes('T') ? asString.slice(0, 10) : asString;
+    };
+
+    const parseApptDate = (apptDate) => dayjs(normalizeApptDate(apptDate), 'YYYY-MM-DD', true);
+
+    const normalizePickerDate = (value) => {
+        if (!value) return null;
+        if (typeof value === 'string') return normalizeApptDate(value);
+        return dayjs(value).format('YYYY-MM-DD');
+    };
+
     const findBookingsForDate = async (date, onlyBooked = showOnlyBooked) => {
         setLoadingTimeList(true);
         setCurrWeek(dayjs(date));
@@ -60,7 +76,7 @@ export default function AdminDashboard() {
             const dateToCheck = dayjs(startOfWeek(date)).add(i, 'day').format('YYYY-MM-DD');
             console.log('Checking date:', dateToCheck);
 
-            const slotsForDate = timeslots.filter(slot => dayjs(slot.appt_date).format('YYYY-MM-DD') === dateToCheck);
+            const slotsForDate = timeslots.filter(slot => normalizeApptDate(slot.appt_date) === dateToCheck);
             console.log(`Found ${slotsForDate.length} slots for date ${dateToCheck}:`, slotsForDate);
 
             if (timeslots) {
@@ -81,10 +97,11 @@ export default function AdminDashboard() {
 
     const createTimeslot = async () => {
 
-        console.log('Creating timeslot with date:', dayjs(createTimeslotDate).format('YYYY-MM-DD'), 'start:', dayjs(createTimeslotStart, 'HH:mm:ss').format('HH:mm'), 'end:', dayjs(createTimeslotEnd, 'HH:mm:ss').format('HH:mm'));
+        const apptDate = normalizePickerDate(createTimeslotDate);
+        console.log('Creating timeslot with date:', apptDate, 'start:', dayjs(createTimeslotStart, 'HH:mm:ss').format('HH:mm'), 'end:', dayjs(createTimeslotEnd, 'HH:mm:ss').format('HH:mm'));
 
         const res = await createAppointmentsInTimeRange(token, {
-            appt_date: dayjs(createTimeslotDate).format('YYYY-MM-DD'),
+            appt_date: apptDate,
             start_time: dayjs(createTimeslotStart, 'HH:mm:ss').format('HH:mm'),
             end_time: dayjs(createTimeslotEnd, 'HH:mm:ss').format('HH:mm'),
             appt_notes: ""
@@ -110,9 +127,10 @@ export default function AdminDashboard() {
 
     const makeBooking = async (bookingDate = createBookingDate, bookingTime = createBookingTime) => {
 
-        console.log('Creating booking with date:', dayjs(bookingDate).format('YYYY-MM-DD'), 'start:', dayjs(bookingTime, 'HH:mm:ss').format('HH:mm'));
+        const apptDate = normalizePickerDate(bookingDate);
+        console.log('Creating booking with date:', apptDate, 'start:', dayjs(bookingTime, 'HH:mm:ss').format('HH:mm'));
 
-        const times = await getAppointmentsInDateTimeRange(token, dayjs(bookingDate).format('YYYY-MM-DD'), dayjs(bookingTime, 'HH:mm:ss').format('HH:mm'), dayjs(bookingTime, 'HH:mm:ss').add(15, 'minutes').format('HH:mm'));
+        const times = await getAppointmentsInDateTimeRange(token, apptDate, dayjs(bookingTime, 'HH:mm:ss').format('HH:mm'), dayjs(bookingTime, 'HH:mm:ss').add(15, 'minutes').format('HH:mm'));
         console.log('Received timeslots for booking:', times);
         
         if (times.length === 0) {
@@ -131,7 +149,7 @@ export default function AdminDashboard() {
             return;
         }
 
-        const res = await updateAppointment(token, dayjs(bookingDate).format('YYYY-MM-DD'), dayjs(bookingTime, 'HH:mm:ss').format('HH:mm'), { username: "admin" });
+        const res = await updateAppointment(token, apptDate, dayjs(bookingTime, 'HH:mm:ss').format('HH:mm'), { username: "admin" });
         console.log('Make booking response:', res);
 
         if (res.error) {
@@ -226,7 +244,7 @@ export default function AdminDashboard() {
                                 <div key={i} style={{ marginBottom: '20px' }}>
                                     {day.length > 0 && (
                                         <Text size="lg" weight={500} style={{ marginBottom: '10px' }}>
-                                            {dayjs(day[0].appt_date).format('dddd, MMMM D, YYYY')}
+                                            {parseApptDate(day[0].appt_date).format('dddd, MMMM D, YYYY')}
                                         </Text>
                                     )}
                                     {day.map(slot => (
@@ -238,12 +256,12 @@ export default function AdminDashboard() {
                                             <Menu key={`${slot.appt_date}-${slot.start_time}-menu`} shadow="md" width={200} withArrow>
                                                 <Menu.Target>
                                                     <Button key={`${slot.appt_date}-${slot.start_time}`} variant="filled" style={{ width: "100%", marginBottom: '10px' }} color="green">
-                                                        {dayjs(slot.appt_date).format('YYYY-MM-DD')} {dayjs(slot.start_time, 'HH:mm:ss').format('h:mm A')} - {slot.username ? `Booked by ${slot.username}` : 'Available'}
+                                                        {normalizeApptDate(slot.appt_date)} {dayjs(slot.start_time, 'HH:mm:ss').format('h:mm A')} - {slot.username ? `Booked by ${slot.username}` : 'Available'}
                                                     </Button>
                                                 </Menu.Target>
                                                 <Menu.Dropdown>
                                                     <Menu.Item key={`${slot.appt_date}-${slot.start_time}-create`} onClick={() => {
-                                                        makeBooking(dayjs(slot.appt_date).format('YYYY-MM-DD'), dayjs(slot.start_time, 'HH:mm:ss').format('HH:mm:ss'));
+                                                        makeBooking(normalizeApptDate(slot.appt_date), dayjs(slot.start_time, 'HH:mm:ss').format('HH:mm:ss'));
                                                     }}>
                                                         Create Booking
                                                     </Menu.Item>
