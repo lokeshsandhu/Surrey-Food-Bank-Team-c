@@ -47,11 +47,9 @@ async function resetDB() {
         }
 
         console.log(`Database initialized: ${successCount} successful, ${errorCount} errors`);
-        pool.end();
         return { success: true, message: `Database reset successfully` };
     } catch (err) {
         console.error('Initialization error:', err.message);
-        pool.end();
         return { success: false, message: err.message };
     }
 }
