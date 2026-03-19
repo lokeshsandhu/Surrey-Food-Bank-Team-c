@@ -42,6 +42,16 @@ export default function ClientDashboard() {
         return null;
     }
 
+    const normalizeApptDate = (apptDate) => {
+        if (!apptDate) return apptDate;
+        if (typeof apptDate === 'string') return apptDate.includes('T') ? apptDate.slice(0, 10) : apptDate;
+        if (apptDate instanceof Date) return apptDate.toISOString().slice(0, 10);
+        const asString = String(apptDate);
+        return asString.includes('T') ? asString.slice(0, 10) : asString;
+    };
+
+    const parseApptDate = (apptDate) => dayjs(normalizeApptDate(apptDate), 'YYYY-MM-DD', true);
+
     const handleBooking = async () => {
         if (myAppointment && myAppointment.appt_date) {
             notifications.show({
@@ -108,7 +118,7 @@ export default function ClientDashboard() {
 
     const handleCancelBooking = async (appointment) => {
         setModalLoading(true);
-        const res = await cancelAppointment(token, appointment.appt_date, appointment.start_time);
+        const res = await cancelAppointment(token, normalizeApptDate(appointment.appt_date), appointment.start_time);
         if (res && res.success) {
             notifications.show({
                 title: 'Success',
@@ -137,7 +147,7 @@ export default function ClientDashboard() {
 
     const fetchMyAppointment = async () => {
         const myAppointment = await getMyAppointments(token);
-        const earliestAppointment = myAppointment.filter(appointment => appointment.appt_date >= dayjs().format('YYYY-MM-DD'));
+        const earliestAppointment = myAppointment.filter(appointment => normalizeApptDate(appointment.appt_date) >= dayjs().format('YYYY-MM-DD'));
         setMyAppointment(earliestAppointment[0]);
     };
 
@@ -170,7 +180,7 @@ export default function ClientDashboard() {
             <ClientNavBar />
             <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs">
                 <div className="box">
-                    {myAppointment && myAppointment.appt_date ? `You have a booking for ${dayjs(myAppointment.appt_date).format('MMMM D, YYYY')} at ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')}, ` : 'You do not have any upcoming bookings. '}
+                    {myAppointment && myAppointment.appt_date ? `You have a booking for ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} at ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')}, ` : 'You do not have any upcoming bookings. '}
                     {myAppointment && myAppointment.appt_date && <a onClick={open} style={{cursor: 'pointer', textDecoration: 'underline'}}>click here to edit/cancel your booking.</a>}
                 </div>
                 <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
@@ -199,7 +209,7 @@ export default function ClientDashboard() {
                             excludeDate={(date) =>{
                                 if (excludedDays.includes(new Date(date).getDay())) {
                                     return true;
-                                } else if (!allTimeslots.some(timeslot => dayjs(timeslot.appt_date).format('YYYY-MM-DD') === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
+                                } else if (!allTimeslots.some(timeslot => normalizeApptDate(timeslot.appt_date) === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
                                     return true;
                                 // } else if (dayjs(date).format('YYYY-MM-DD') < dayjs().format('YYYY-MM-DD')) { // Disable past dates
                                 //     return true;
@@ -246,7 +256,7 @@ export default function ClientDashboard() {
             <Modal opened={modalState} onClose={close} title="Booking Information" centered>
                 <LoadingOverlay visible={modalLoading}/>
                 <div className="modal-content">
-                    <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? dayjs(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
+                    <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
                     <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
                     <p><strong>Notes:</strong> {myAppointment && myAppointment.appt_notes ? myAppointment.appt_notes : 'N/A'}</p>
                     <div>

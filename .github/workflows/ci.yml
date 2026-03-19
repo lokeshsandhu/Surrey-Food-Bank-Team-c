@@ -6,6 +6,7 @@ on:
       - main
       - CICD
   pull_request:
+  workflow_dispatch:
 
 jobs:
   backend-tests:
@@ -91,3 +92,31 @@ jobs:
 
       - name: Build frontend
         run: npm run build
+
+  deploy-render:
+    name: Deploy (Render)
+    runs-on: ubuntu-latest
+    needs:
+      - backend-tests
+      - frontend-checks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Trigger Render deploy (API)
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_API_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "Missing secret: RENDER_API_DEPLOY_HOOK_URL"
+            exit 1
+          fi
+          curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
+
+      - name: Trigger Render deploy (Frontend)
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "Missing secret: RENDER_FRONTEND_DEPLOY_HOOK_URL"
+            exit 1
+          fi
+          curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
