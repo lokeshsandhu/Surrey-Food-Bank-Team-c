@@ -37,7 +37,7 @@ describe('familyMembers.service', () => {
         expect(newMember.f_name).toBe('test');
         expect(newMember.l_name).toBe('user');
         const expectedDate = new Date('1990/01/01');
-        expect(newMember.dob.toISOString()).toBe(expectedDate.toISOString());
+        expect(newMember.dob).toEqual(expectedDate);
         expect(newMember.phone).toBe('(111) 111-111');
         expect(newMember.email).toBe('email@email.com');
         expect(newMember.relationship).toBe('owner');
@@ -352,7 +352,7 @@ describe('familyMembers.service', () => {
         expect(initial.f_name).toBe('first');
         expect(initial.l_name).toBe('user');
         const initialDate = new Date('1990/01/01');
-        expect(initial.dob.toISOString()).toBe(initialDate.toISOString());
+        expect(initial.dob).toEqual(initialDate);
         expect(initial.phone).toBe('(111) 111-111');
         expect(initial.email).toBe('email@email.com');
         expect(initial.relationship).toBe('owner');
@@ -363,7 +363,7 @@ describe('familyMembers.service', () => {
         expect(result.f_name).toBe('newfirst');
         expect(result.l_name).toBe('newuser');
         const updatedDate = new Date('2000/12/12');
-        expect(result.dob.toISOString()).toBe(updatedDate.toISOString());
+        expect(result.dob).toEqual(updatedDate);
         expect(result.phone).toBe('(222) 222-222');
         expect(result.email).toBe('newemail@email.com');
         expect(result.relationship).toBe('newRelation');
@@ -392,7 +392,7 @@ describe('familyMembers.service', () => {
         expect(initial.f_name).toBe('first');
         expect(initial.l_name).toBe('user');
         const initialDate = new Date('1990/01/01');
-        expect(initial.dob.toISOString()).toBe(initialDate.toISOString());
+        expect(initial.dob).toEqual(initialDate);
         expect(initial.phone).toBe('(111) 111-111');
         expect(initial.email).toBe('email@email.com');
         expect(initial.relationship).toBe('owner');
@@ -402,7 +402,7 @@ describe('familyMembers.service', () => {
         expect(initial.username).toBe('testuser');
         expect(initial.f_name).toBe('first');
         expect(result.l_name).toBe('newuser');
-        expect(initial.dob.toISOString()).toBe(initialDate.toISOString());
+        expect(initial.dob).toEqual(initialDate);
         expect(result.phone).toBe('(222) 222-222');
         expect(initial.email).toBe('email@email.com');
         expect(result.relationship).toBe('newRelation');
@@ -428,7 +428,7 @@ describe('familyMembers.service', () => {
         expect(initial.f_name).toBe('first');
         expect(initial.l_name).toBe('user');
         const initialDate = new Date('1990/01/01');
-        expect(initial.dob.toISOString()).toBe(initialDate.toISOString());
+        expect(initial.dob).toEqual(initialDate);
         expect(initial.phone).toBe('(111) 111-111');
         expect(initial.email).toBe('email@email.com');
         expect(initial.relationship).toBe('owner');
@@ -438,7 +438,7 @@ describe('familyMembers.service', () => {
         expect(initial.username).toBe('testuser');
         expect(initial.f_name).toBe('first');
         expect(initial.l_name).toBe('user');
-        expect(initial.dob.toISOString()).toBe(initialDate.toISOString());
+        expect(initial.dob).toEqual(initialDate);
         expect(initial.phone).toBe('(111) 111-111');
         expect(initial.email).toBe('email@email.com');
         expect(initial.relationship).toBe('owner');
