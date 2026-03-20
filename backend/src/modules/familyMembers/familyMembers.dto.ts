@@ -1,4 +1,5 @@
 export interface FamilyMemberDTO {
+    id?: number;
     username: string;
     f_name: string;
     l_name?: string;

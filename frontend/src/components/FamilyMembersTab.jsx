@@ -131,7 +131,7 @@ export default function FamilyMembersTab({ clientUsername }) {
         relationship: member.relationship
       }
       try {
-        const result = await updateFamilyMember(token, clientUsername, form.values.f_name, memberData)
+        const result = await updateFamilyMember(token, clientUsername, currentMember.id, memberData)
         await getFamilyMembersInformation();
         close();
         form.reset();
@@ -204,7 +204,7 @@ export default function FamilyMembersTab({ clientUsername }) {
   const removeMember = async () => {
     if (form.values.relationship !== 'owner') {
       try {
-        const result = await deleteFamilyMember(token, clientUsername, form.values.f_name)
+        const result = await deleteFamilyMember(token, clientUsername, currentMember.id)
         await getFamilyMembersInformation();
         close();
         form.reset();
@@ -228,7 +228,7 @@ export default function FamilyMembersTab({ clientUsername }) {
   }, [])
 
   const rows = familyMemberInfo.map((FM) => (
-    <Table.Tr key={FM.f_name}>
+    <Table.Tr key={FM.id}>
       <Table.Td>{FM.f_name}</Table.Td>
       <Table.Td>{FM.l_name}</Table.Td>
       <Table.Td>{FM.dob.slice(0, 10)}</Table.Td>

@@ -51,7 +51,7 @@ export async function getFamilyMembers(username: string) {
 // Only the fields you specify are updated
 export async function updateFamilyMember(
     username: string,
-    f_name: string,
+    id: number,
     data: UpdateFamilyMemberDTO
 ) {
     const fields: string[] = [];
@@ -85,31 +85,31 @@ export async function updateFamilyMember(
 
     if (fields.length === 0) {
         const { rows } = await pool.query(
-            `SELECT * FROM familymember WHERE username = $1 AND f_name = LOWER($2)`,
-            [username, f_name]
+            `SELECT * FROM familymember WHERE username = $1 AND id = $2`,
+            [username, id]
         );
         return rows[0] ?? null;
     }
 
-    values.push(username, f_name);
+    values.push(username, id);
     const text = `
         UPDATE familymember
         SET ${fields.join(", ")}
-        WHERE username = $${idx} AND f_name = LOWER($${idx + 1})
+        WHERE username = $${idx} AND id = $${idx + 1}
         RETURNING *
     `;
     const { rows } = await pool.query(text, values);
     return rows[0] ?? null;
 }
 
-// Delete row from familymember table with given username and first name, return row
-export async function deleteFamilyMember(username: string, f_name: string) {
+// Delete row from familymember table with given username and id, return row
+export async function deleteFamilyMember(username: string, id: number) {
     const text = `
         DELETE FROM familymember
-        WHERE username = $1 AND f_name = LOWER($2)
+        WHERE username = $1 AND id = $2
         RETURNING *
     `;
-    const { rows } = await pool.query(text, [username, f_name]);
+    const { rows } = await pool.query(text, [username, id]);
     return rows[0] ?? null;
 }
 
@@ -120,9 +120,9 @@ export async function getOwnerFamilyMembers() {
     return rows;
 }
 
-// Select from familymember table with given username and f_name, return boolean
-export async function usernameFamilyMemberExists(username: string, f_name:string): Promise<boolean> {
-    const text = `SELECT * FROM familymember WHERE username = $1 AND f_name = $2`;
-    const { rows } = await pool.query(text, [username, f_name]);
+// Select from familymember table with given username and id, return boolean
+export async function usernameFamilyMemberExists(username: string, id: number): Promise<boolean> {
+    const text = `SELECT * FROM familymember WHERE username = $1 AND id = $2`;
+    const { rows } = await pool.query(text, [username, id]);
     return rows.length > 0;
 }

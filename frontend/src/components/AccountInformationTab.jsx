@@ -16,6 +16,7 @@ export default function AccountInformationTab({ clientUsername }) {
     const navigate = useNavigate();
     const role = sessionStorage.getItem('role');
     const username = sessionStorage.getItem("username")
+    const [ownerId, setOwnerId] = useState(null);
 
     const provinceOptions = ['NL', 'PE', 'NS', 'NB', 'QC', 'ON', 'MB', 'SK', 'AB', 'BC', 'YT', 'NT', 'NU']
     provinceOptions.sort();
@@ -88,6 +89,7 @@ export default function AccountInformationTab({ clientUsername }) {
         const address = splitAddress(result.addr)
         // TODO: Rewrite (better practices)
         if (result && owner) {
+            setOwnerId(owner.id);
             form.setValues({
                 accountInformation: {
                     username: result.username,
@@ -194,7 +196,7 @@ export default function AccountInformationTab({ clientUsername }) {
             }
             try {
                 const accountResult = await updateAccount(token, clientUsername, accountData)
-                const ownerResult = await updateFamilyMember(token, clientUsername, form.values.accountOwner.f_name, ownerData)
+                const ownerResult = await updateFamilyMember(token, clientUsername, ownerId, ownerData)
                 notifications.show({
                     title: 'Saved',
                     message: 'Your changes to Account Information have been saved.',
