@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS public.account
 
 CREATE TABLE IF NOT EXISTS public.familymember
 (
+    id integer GENERATED ALWAYS AS IDENTITY,
     username varchar NOT NULL,
     f_name varchar NOT NULL,
     l_name varchar,
@@ -26,7 +27,7 @@ CREATE TABLE IF NOT EXISTS public.familymember
     phone varchar,
     email varchar,
     relationship varchar,
-    CONSTRAINT familymember_pkey PRIMARY KEY (username, f_name),
+    CONSTRAINT familymember_pkey PRIMARY KEY (username, id),
     CONSTRAINT familymember_fkey_username FOREIGN KEY (username)
         REFERENCES public.account (username) MATCH SIMPLE
         ON UPDATE CASCADE

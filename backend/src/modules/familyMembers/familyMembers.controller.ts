@@ -54,8 +54,13 @@ export async function getFamilyMembers(req: Request, res: Response) {
 // Update family member's details
 export async function updateFamilyMember(req: Request, res: Response) {
     try {
-        const { username, f_name } = req.params;
-        const updated = await service.updateFamilyMember(username, f_name, req.body);
+        const { username } = req.params;
+        const id = Number(req.params.id);
+        if (Number.isNaN(id)) {
+            res.status(400).json({ error: "Invalid family member id" });
+            return;
+        }
+        const updated = await service.updateFamilyMember(username, id, req.body);
         if (!updated) {
             res.status(404).json({ error: "Family member not found" });
             return;
@@ -69,8 +74,13 @@ export async function updateFamilyMember(req: Request, res: Response) {
 //delete this family member from an account
 export async function deleteFamilyMember(req: Request, res: Response) {
     try {
-        const { username, f_name } = req.params;
-        const deleted = await service.deleteFamilyMember(username, f_name);
+        const { username } = req.params;
+        const id = Number(req.params.id);
+        if (Number.isNaN(id)) {
+            res.status(400).json({ error: "Invalid family member id" });
+            return;
+        }
+        const deleted = await service.deleteFamilyMember(username, id);
         if (!deleted) {
             res.status(404).json({ error: "Family member not found" });
             return;
@@ -91,12 +101,16 @@ export async function getOwnerFamilyMembers(req: Request, res: Response) {
     }
 }
 
-// Check if family member with given username and first name already exists
+// Check if family member with given username and id already exists
 export async function checkUsernameFamilyMemberExists(req: Request, res: Response) {
     try {
         const username = req.params.username;
-        const f_name = req.params.f_name;
-        const exists = await service.usernameFamilyMemberExists(username, f_name);
+        const id = Number(req.params.id);
+        if (Number.isNaN(id)) {
+            res.status(400).json({ error: "Invalid family member id" });
+            return;
+        }
+        const exists = await service.usernameFamilyMemberExists(username, id);
         res.status(200).json({ exists });
     } catch (err: any) {
         res.status(500).json({ error: err.message });
