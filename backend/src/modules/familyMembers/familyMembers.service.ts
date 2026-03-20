@@ -3,14 +3,22 @@ import { FamilyMemberDTO, UpdateFamilyMemberDTO } from "./familyMembers.dto";
 
 // Select all rows with given first name from familymember table, return row(s)
 export async function findFamilyMembersByFName(f_name: string) {
-    const text = `SELECT * FROM familymember WHERE f_name = LOWER($1) ORDER BY username`;
+    const text = `
+        SELECT * FROM familymember
+        WHERE f_name ILIKE '%' || TRIM($1) || '%'
+        ORDER BY username, f_name
+    `;
     const { rows } = await pool.query(text, [f_name]);
     return rows;
 }
 
 // Select all rows with given last name from familymember table, return row(s)
 export async function findFamilyMembersByLName(l_name: string) {
-    const text = `SELECT * FROM familymember WHERE l_name = LOWER($1) ORDER BY username`;
+    const text = `
+        SELECT * FROM familymember
+        WHERE l_name ILIKE '%' || TRIM($1) || '%'
+        ORDER BY username, l_name, f_name
+    `;
     const { rows } = await pool.query(text, [l_name]);
     return rows;
 }
