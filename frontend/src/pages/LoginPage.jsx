@@ -1,12 +1,12 @@
-import React, { useState } from 'react'
-import '../styles/global-styles.css'
-import '../styles/Login.css'
+import React, { useState } from 'react';
+import '../styles/global-styles.css';
+import '../styles/Login.css';
 
-import logo from '../assets/surrey-food-bank-logo.png'
+import logo from '../assets/surrey-food-bank-logo.png';
 
-import { Input, Card, Button, Text, NavLink, Typography, Image, PasswordInput } from '@mantine/core';
-import { useNavigate, useLocation } from 'react-router';
+import { Button, Card, Image, Input, NavLink, PasswordInput, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
+import { useLocation, useNavigate } from 'react-router';
 
 import { login, me } from '../../api/auth.js';
 
@@ -88,5 +88,5 @@ export default function LoginPage() {
         </div>
       </Card>
     </div>
-  )
+  );
 }

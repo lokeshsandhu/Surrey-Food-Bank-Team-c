@@ -1,22 +1,21 @@
-import React, { useEffect, useRef } from 'react';
-import { act, useState } from 'react'
-import '../styles/global-styles.css'
-import '../styles/Register.css'
+import React, { useEffect, useRef, useState } from 'react';
+import '../styles/global-styles.css';
+import '../styles/Register.css';
 
-import logo from '../assets/surrey-food-bank-logo.png'
+import logo from '../assets/surrey-food-bank-logo.png';
 
-import EligibilityQuestions from '../components/EligibilityQuestions.jsx'
-import AccountInformation from '../components/AccountInformation.jsx'
-import AddFamilyMembers from '../components/AddFamilyMembers.jsx'
-import RegistrationFinished from '../components/RegistrationFinished.jsx'
+import AccountInformation from '../components/AccountInformation.jsx';
+import AddFamilyMembers from '../components/AddFamilyMembers.jsx';
+import EligibilityQuestions from '../components/EligibilityQuestions.jsx';
+import RegistrationFinished from '../components/RegistrationFinished.jsx';
 
-import { Input, Card, Button, Text, NavLink, Typography, Timeline, Image, Stepper, Group, Modal } from '@mantine/core';
-import { useForm, isNotEmpty, hasLength, matchesField, isEmail } from '@mantine/form'
+import { Button, Card, Group, Image, Modal, Stepper, Text } from '@mantine/core';
+import { isNotEmpty, matchesField, useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 
 import { useNavigate } from 'react-router';
 
-import validator from 'validator'
+import validator from 'validator';
 import { createAccount, usernameExists } from '../../api/accounts.js';
 import { login, me } from '../../api/auth.js';
 import { createFamilyMember } from '../../api/familyMembers.js';
@@ -32,32 +31,59 @@ export default function RegisterPage() {
 
     const form = useForm({
         initialValues: {
-            username: '',
-            user_password: '',
-            confirm_password: '',
-            canada_status: '',
+            username: 'allison1',
+            user_password: 'Abc1234$',
+            confirm_password: 'Abc1234$',
+            canada_status: 'Canadian Citizen',
             household_size: 0,
-            baby_or_pregnant: '',
-            language_spoken: '',
+            baby_or_pregnant: 'true',
+            language_spoken: 'English and Korean',
             account_notes: '',
             addr: {
-                line1: '',
+                line1: '6177 Walter Gage Road',
                 line2: '',
-                city: '',
-                province: '',
-                postal_code: ''
+                city: 'Vancouver',
+                province: 'BC',
+                postal_code: 'V6T 1Z1'
             },
             main_family_member:
             {
-                f_name: '',
-                l_name: '',
-                dob: null,
-                phone: '',
-                email: '',
+                f_name: 'Allison',
+                l_name: 'K',
+                dob: '2003-02-18',
+                phone: '(123) 456-7890',
+                email: 'a@gmail.com',
                 relationship: 'owner'
             },
             family_members: []
         },
+        // initialValues: {
+        //     username: '',
+        //     user_password: '',
+        //     confirm_password: '',
+        //     canada_status: '',
+        //     household_size: 0,
+        //     baby_or_pregnant: '',
+        //     language_spoken: '',
+        //     account_notes: '',
+        //     addr: {
+        //         line1: '',
+        //         line2: '',
+        //         city: '',
+        //         province: '',
+        //         postal_code: ''
+        //     },
+        //     main_family_member:
+        //     {
+        //         f_name: '',
+        //         l_name: '',
+        //         dob: null,
+        //         phone: '',
+        //         email: '',
+        //         relationship: 'owner'
+        //     },
+        //     family_members: []
+        // },
         validateInputOnBlur: true,
         validateInputOnChange: true,
         validate: {
@@ -81,33 +107,14 @@ export default function RegisterPage() {
                 phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
             family_members: {
-                f_name: (value, values, path) => {
-                    if (value.trim().length === 0) {
-                        return 'Please enter their first name.'
-                    }
-
-                    const ownerFName = form.values.main_family_member.f_name.trim().toLowerCase();
-                    const familyFNames = values.family_members.map(m => m.f_name.trim().toLowerCase());
-
-                    const index = Number(path.split('.')[1]);
-                    const currentFName = value.trim().toLowerCase();
-
-                    const duplicates = familyFNames.filter((fName, i) =>
-                        i !== index && fName === currentFName).length > 0
-                        || currentFName === ownerFName;
-
-                    if (duplicates) {
-                        return 'First name already taken. Please enter a unique name for this family member.';
-                    }
-                    return null;
-                },
+                f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their first name.',
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
                 dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
                 email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
                 relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
             }
         }
-    })
+    });
 
 
     useEffect(() => {
@@ -132,7 +139,7 @@ export default function RegisterPage() {
 
     useEffect(() => {
         checkUsername();
-    }, [form.values.username])
+    }, [form.values.username]);
 
     const prevSection = () => {
         if (activeSection === 0) {
@@ -165,7 +172,7 @@ export default function RegisterPage() {
         } catch (err) {
             setRegisterError('Sorry, we could not log you in automatically. Please try logging in manually.');
         }
-    }
+    };
 
     const nextSection = async () => {
         let fieldsToValidate = [];
@@ -254,7 +261,7 @@ export default function RegisterPage() {
                             };
                             try {
                                 await createFamilyMember(loginResult.token, ownerData);
-                                console.log('created owner')
+                                console.log('created owner');
                                 // Add each additional family member
                                 for (const member of form.values.family_members) {
                                     const memberData = {
@@ -267,7 +274,7 @@ export default function RegisterPage() {
                                         relationship: member.relationship,
                                     };
                                     await createFamilyMember(loginResult.token, memberData);
-                                    console.log('created family member')
+                                    console.log('created family member');
                                 }
                                 open();
                             } catch (famErr) {
@@ -290,7 +297,7 @@ export default function RegisterPage() {
                 setActiveSection((current) => (current < 3 ? current + 1 : current));
             }
         }
-    }
+    };
 
     return (
         <div className="top-container linear-gradient">
@@ -337,8 +344,8 @@ export default function RegisterPage() {
             </Card>
             <Modal opened={opened} onClose={close} title="Register Success" centered>
                 <Text mb={10}>Select 'Continue' to view your dashboard</Text>
-                <Button mt={4} color='cyan' onClick={() => { loginNavigate() }}>Continue</Button>
+                <Button mt={4} color='cyan' onClick={() => { loginNavigate(); }}>Continue</Button>
             </Modal>
         </div>
-    )
+    );
 }
