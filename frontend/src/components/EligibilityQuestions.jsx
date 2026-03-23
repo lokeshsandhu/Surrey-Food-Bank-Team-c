@@ -1,17 +1,15 @@
 import { Input, Radio, Group, Stack, TextInput, Text, Fieldset, Select, Alert } from '@mantine/core';
-import { IconInfoCircle } from '@tabler/icons-react'
+import { IconInfoCircle } from '@tabler/icons-react';
 import React from 'react';
 import { useState, useEffect } from 'react';
-import '../styles/global-styles.css'
-import '../styles/Register.css'
+import '../styles/global-styles.css';
+import '../styles/Register.css';
 import { IMaskInput } from 'react-imask';
+import { provinceOptions } from '../constants/ProvinceOptions';
 
 export default function ElegibilityQuestions({ form }) {
     const [isCityEligible, setIsCityEligible] = useState(true);
     const [isProvinceEligible, setIsProvinceEligible] = useState(true);
-
-    const provinceOptions = ['NL', 'PE', 'NS', 'NB', 'QC', 'ON', 'MB', 'SK', 'AB', 'BC', 'YT', 'NT', 'NU']
-    provinceOptions.sort();
 
     useEffect(() => {
         if (form.values.addr.city.trim().length > 0) {
@@ -21,24 +19,24 @@ export default function ElegibilityQuestions({ form }) {
         if (form.values.addr.postal_code.trim().length > 0) {
             checkIsProvinceEligible();
         }
-    }, [form.values.addr.city, form.values.addr.postal_code])
+    }, [form.values.addr.city, form.values.addr.postal_code]);
 
     const checkIsCityEligible = () => {
-        const city = form.getValues().addr.city.toLowerCase()
+        const city = form.getValues().addr.city.toLowerCase();
         const isEligible =
             city === 'surrey' ||
             city === 'north delta' ||
             city === 'cloverdale';
         setIsCityEligible(isEligible);
-    }
+    };
     const checkIsProvinceEligible = () => {
-        const isEligible = form.getValues().addr.province === 'BC'
+        const isEligible = form.getValues().addr.province === 'BC';
         setIsProvinceEligible(isEligible);
-    }
+    };
 
     return (
         <Group>
-            <div style={{width: '100%'}}>
+            <div style={{ width: '100%' }}>
                 <h2 className='login-title'>Eligibility Questions</h2>
             </div>
             <Radio.Group
@@ -93,7 +91,7 @@ export default function ElegibilityQuestions({ form }) {
                         }}
                         onChange={(e) => {
                             form.getInputProps('addr.city').onChange(e);
-                            setIsCityEligible(true)
+                            setIsCityEligible(true);
                         }}
                     />
                     <Select
@@ -142,5 +140,5 @@ export default function ElegibilityQuestions({ form }) {
                 </Alert>
             }
         </Group>
-    )
+    );
 }

@@ -10,6 +10,7 @@ import { IMaskInput } from 'react-imask';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
+import { provinceOptions } from "../constants/ProvinceOptions";
 
 
 export default function AccountInformationTab({ clientUsername }) {
@@ -19,9 +20,6 @@ export default function AccountInformationTab({ clientUsername }) {
     const username = sessionStorage.getItem("username");
     const [ownerId, setOwnerId] = useState(null);
     const location = useLocation();
-
-    const provinceOptions = ['NL', 'PE', 'NS', 'NB', 'QC', 'ON', 'MB', 'SK', 'AB', 'BC', 'YT', 'NT', 'NU'];
-    provinceOptions.sort();
 
     if (!token) {
         navigate('/');

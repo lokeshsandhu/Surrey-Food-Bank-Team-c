@@ -1,7 +1,6 @@
 import { Input, TextInput, Text, Group, Button, Stack, Alert } from '@mantine/core';
 import { DateInput } from '@mantine/dates'
 import { IMaskInput } from 'react-imask'
-import { IconCircleCheckFilled } from '@tabler/icons-react'
 import React from 'react';
 import '../styles/global-styles.css'
 import '../styles/Register.css'
@@ -99,9 +98,6 @@ export default function AddFamilyMembers({ form }) {
             <div style={{width: '100%', display: 'flex', justifyContent: 'end'}}>
                 <Button onClick={() => addFamilyMember()} my={20}>Add Family Member</Button>
             </div>
-            {/* <Alert variant="light" color="cyan" title="You have finished the Registration Form" icon={<IconCircleCheckFilled />}>
-                Select 'Register' when you are ready to register your account.
-            </Alert> */}
         </div>
     )
 }
