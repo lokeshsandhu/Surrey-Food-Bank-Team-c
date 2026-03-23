@@ -27,6 +27,16 @@ export default function TimeslotPage() {
 
     dayjs.extend(customParseFormat);
 
+    const normalizeApptDate = (apptDate) => {
+        if (!apptDate) return apptDate;
+        if (typeof apptDate === 'string') return apptDate.includes('T') ? apptDate.slice(0, 10) : apptDate;
+        if (apptDate instanceof Date) return apptDate.toISOString().slice(0, 10);
+        const asString = String(apptDate);
+        return asString.includes('T') ? asString.slice(0, 10) : asString;
+    };
+
+    const parseApptDate = (apptDate) => dayjs(normalizeApptDate(apptDate), 'YYYY-MM-DD', true);
+
     if (!token) {
         navigate('/');
         return null;
@@ -108,8 +118,8 @@ export default function TimeslotPage() {
             const formattedTimeslots = mergedSlots.map((slot) => ({
                 id: `${slot.appt_date}-${slot.start_time}-${slot.end_time}-${slot.username || 'available'}`,
                 title: slot.username || 'Available Slot',
-                start: `${dayjs(slot.appt_date).format('YYYY-MM-DD')} ${dayjs(slot.start_time, 'HH:mm:ss').format('HH:mm')}`,
-                end: `${dayjs(slot.appt_date).format('YYYY-MM-DD')} ${dayjs(slot.end_time, 'HH:mm:ss').format('HH:mm')}`,
+                start: `${parseApptDate(slot.appt_date).format('YYYY-MM-DD')} ${dayjs(slot.start_time, 'HH:mm:ss').format('HH:mm')}`,
+                end: `${parseApptDate(slot.appt_date).format('YYYY-MM-DD')} ${dayjs(slot.end_time, 'HH:mm:ss').format('HH:mm')}`,
                 color: slot.username ? 'red' : 'green',
                 appt_notes: slot.appt_notes,
             }));

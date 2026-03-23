@@ -77,7 +77,7 @@ export default function LoginPage() {
           onChange={e => setPassword(e.target.value)}
         />
         <Button onClick={handleLogin}>Login</Button>
-        {error && <Text color="red" mt={10}>{error}</Text>}
+        {error && <Text c="red" mt={10}>{error}</Text>}
         <div>
           <NavLink
             className='link'

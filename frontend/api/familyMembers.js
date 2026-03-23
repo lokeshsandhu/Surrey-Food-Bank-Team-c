@@ -1,6 +1,8 @@
+import { apiUrl } from "./baseUrl";
+
 // API functions for family members endpoints
 
-const API_BASE = "http://localhost:3000/api/family-members";
+const API_BASE = apiUrl("/api/family-members");
 
 
 /**
@@ -68,13 +70,13 @@ export function getFamilyMembers(token, username) {
 
 /**
  * Update a family member's details.
- * Required fields: username, f_name (in URL)
+ * Required fields: username, id (in URL)
  * Optional fields in data: l_name, dob, phone, email, relationship
  * Example:
- *   updateFamilyMember(token, "johndoe", "Jane", { relationship: "daughter", dob: "2013-06-01" });
+ *   updateFamilyMember(token, "johndoe", 5, { relationship: "daughter", dob: "2013-06-01" });
  */
-export function updateFamilyMember(token, username, f_name, data) {
-  return fetch(`${API_BASE}/${username}/${encodeURIComponent(f_name)}`, {
+export function updateFamilyMember(token, username, id, data) {
+  return fetch(`${API_BASE}/${username}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify(data)
@@ -83,13 +85,13 @@ export function updateFamilyMember(token, username, f_name, data) {
 
 
 /**
- * Delete a family member by username and first name.
- * Required fields: username, f_name (in URL)
+ * Delete a family member by username and id.
+ * Required fields: username, id (in URL)
  * Example:
- *   deleteFamilyMember(token, "johndoe", "Jane");
+ *   deleteFamilyMember(token, "johndoe", 5);
  */
-export function deleteFamilyMember(token, username, f_name) {
-  return fetch(`${API_BASE}/${username}/${encodeURIComponent(f_name)}`, {
+export function deleteFamilyMember(token, username, id) {
+  return fetch(`${API_BASE}/${username}/${id}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` }
   }).then(res => res.json());
@@ -106,7 +108,7 @@ export function getOwnerFamilyMembers(token) {
   }).then(res => res.json());
 }
 
-// return true if family member with given name and username already exists
-export function familyMemberExists(username, f_name) {
-  return fetch(`${API_BASE}/exists/${username}/${f_name}`).then(res => res.json());
+// return true if family member with given id and username already exists
+export function familyMemberExists(username, id) {
+  return fetch(`${API_BASE}/exists/${username}/${id}`).then(res => res.json());
 }

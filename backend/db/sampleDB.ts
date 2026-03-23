@@ -88,7 +88,7 @@ async function sampleJeffData(){
         user_password: 'big_J3ff',
         canada_status: 'Permanent Resident',
         household_size: 1,
-        addr: 'Jeff RD, Surrey, BC, V1M 3B5',
+        addr: 'Jeff RD, , Surrey, BC, V1M 3B5',
         baby_or_pregnant: false,
         language_spoken: `English`,
         account_notes: `Sample account for Jeff Smith`,
@@ -140,52 +140,23 @@ async function sampleApptData() {
     await appointment.bookAppointment(jeffBookingFeb28, 'big_jeff');
 }
 
-// create available time slots for the month of March 2026
+// create available time slots for the month of March 2026, excluding weekends
 async function marchTimeSlots() {
     for(let i=1; i<32; i++) {
-        const date = '2026-03-' + String(i).padStart(2, '0');;
-        const slot = {
-            appt_date: date,
-            start_time: '08:00',
-            end_time: '16:00',
-            appt_notes: undefined
+        const weekends: number[] = [7, 8, 14, 15, 21, 22, 28, 29];
+
+        if (!weekends.includes(i)) {
+            const date = '2026-03-' + String(i).padStart(2, '0');;
+            const slot = {
+                appt_date: date,
+                start_time: '08:00',
+                end_time: '16:00',
+                appt_notes: undefined
+            }
+            await appointment.createAppointmentsInTimeRange(slot);
         }
-        appointment.createAppointmentsInTimeRange(slot);
+        
     }
-}
-
-async function testUpdate() {
-    const janeFM = {
-        f_name: 'New Jane',
-        l_name: 'New Doe',
-        dob: '2000/01/01',
-        phone: 'new phone',
-        email: 'new email',
-        relationship: 'owner',
-    }
-
-    const janeAccount = {
-        username: 'newjaneaccount',
-        canada_status: 'new status',
-        household_size: 8,
-        addr: 'new addr',
-        baby_or_pregnant: false,
-        language_spoken: 'new lang',
-        account_notes: 'new info'
-    }
-
-    const jillFM = {
-        f_name: 'evil jill',
-        l_name: 'evil last name',
-        dob: '1000/01/01',
-        phone: 'evil phone',
-        email: 'evil email',
-        relationship: 'evil daughter',
-    }
-
-    await familymember.updateFamilyMember('jane123', 'Jane', janeFM);
-    await account.updateAccount('jane123', janeAccount);
-    await familymember.updateFamilyMember('newjaneaccount', 'Jill', jillFM);
 }
 
 // run init functions
@@ -194,8 +165,8 @@ async function runSample() {
         await sampleAdminData();
         await sampleJaneData();
         await sampleJeffData();
-        sampleApptData();
-        marchTimeSlots();
+        await sampleApptData();
+        await marchTimeSlots();
         console.log('Sample data successfully initialized.')
     } catch (err) {
         console.log('Unable to initialize sample data: ', err);
@@ -204,4 +175,3 @@ async function runSample() {
 }
 
 runSample();
-//testUpdate();

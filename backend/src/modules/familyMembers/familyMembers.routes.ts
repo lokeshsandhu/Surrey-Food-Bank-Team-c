@@ -17,13 +17,13 @@ router.get("/owners", authenticate, controller.getOwnerFamilyMembers);
 // GET /api/family-members/:username — list family members for an account
 router.get("/:username", authenticate,controller.getFamilyMembers);
 
-// PUT /api/family-members/:username/:f_name — update a family member
-router.put("/:username/:f_name", authenticate,controller.updateFamilyMember);
+// PUT /api/family-members/:username/:id — update a family member
+router.put("/:username/:id", authenticate,controller.updateFamilyMember);
 
-// DELETE /api/family-members/:username/:f_name — delete a family member
-router.delete("/:username/:f_name", authenticate, controller.deleteFamilyMember);
+// DELETE /api/family-members/:username/:id — delete a family member
+router.delete("/:username/:id", authenticate, controller.deleteFamilyMember);
 
-// GET /api/family-members/exists/:username — check if username exists
-router.get("/exists/:username/:f_name", controller.checkUsernameFamilyMemberExists);
+// GET /api/family-members/exists/:username/:id — check if family member exists
+router.get("/exists/:username/:id", controller.checkUsernameFamilyMemberExists);
 
 export default router;

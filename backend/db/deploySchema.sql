@@ -1,10 +1,3 @@
--- Database schema (scaffold only).
--- Define tables for: accounts, family_members, appointments
-
-DROP TABLE IF EXISTS public.familymember;
-DROP TABLE IF EXISTS public.appointment;
-DROP TABLE IF EXISTS public.account;
-
 CREATE TABLE IF NOT EXISTS public.account
 (
     username varchar NOT NULL PRIMARY KEY,

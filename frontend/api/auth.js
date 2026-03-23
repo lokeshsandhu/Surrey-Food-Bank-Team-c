@@ -1,4 +1,6 @@
 
+import { apiUrl } from "./baseUrl";
+
 // API functions for authentication endpoints
 
 /**
@@ -8,7 +10,7 @@
  *   // Save the returned token for future API calls.
  */
 export function login(username, password) {
-  return fetch("http://localhost:3000/api/auth/login", {
+  return fetch(apiUrl("/api/auth/login"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password })
@@ -22,7 +24,7 @@ export function login(username, password) {
  *   // Returns user info, including role (admin/client).
  */
 export function me(token) {
-  return fetch("http://localhost:3000/api/auth/me", {
+  return fetch(apiUrl("/api/auth/me"), {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` }
   }).then(res => res.json());
