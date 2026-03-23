@@ -86,8 +86,9 @@ export default function AddFamilyMembers({ form }) {
                             />
 
                             <Select
-                                label='6. Relationship to Family Member'
+                                label='6. Relationship to Account Owner'
                                 placeholder='Select Relationship'
+                                description='e.g. if this family member is your mother, select the "Parent" option.'
                                 data={FMRelationshipOptions}
                                 key={form.key(`family_members.${index}.relationship`)}
                                 {...form.getInputProps(`family_members.${index}.relationship`)}

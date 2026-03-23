@@ -1,4 +1,4 @@
-import { Title, Text, Stack, TextInput, Radio, Group, Table, ScrollArea, Button, Modal } from "@mantine/core";
+import { Stack, TextInput, Group, Table, Button, Modal, Select } from "@mantine/core";
 import React, { useEffect, useState } from "react";
 import { createFamilyMember, deleteFamilyMember, getFamilyMembers, updateFamilyMember } from "../../api/familyMembers";
 import { useDisclosure } from "@mantine/hooks";
@@ -9,6 +9,7 @@ import { IMaskInput } from 'react-imask';
 import validator from 'validator';
 import { notifications } from '@mantine/notifications';
 import { IconUserPlus } from '@tabler/icons-react';
+import { FMRelationshipOptions } from '../constants/FMRelationshipOptions';
 
 // enum for the modal mode
 const modeEnum = { updateMember: 1, addMember: 2 };
@@ -319,16 +320,28 @@ export default function FamilyMembersTab({ clientUsername }) {
             w={'45%'}
             withAsterisk={form.values.relationship === 'owner' && isMemberOwner()}
           />
-          <TextInput
-            variant={form.values.relationship === 'owner' && isMemberOwner() ? "unstyled" : "default"}
-            label="Relationship"
-            placeholder="e.g. Daughter, Son"
-            key={form.key(`relationship`)}
-            {...form.getInputProps(`relationship`)}
-            withAsterisk
-            w={'45%'}
-            readOnly={form.values.relationship === 'owner' && isMemberOwner()}
-          />
+
+          {form.values.relationship !== 'owner' &&
+            <Select
+              label='Relationship to Account Owner'
+              placeholder='Select Relationship'
+              description='e.g. if this family member is your mother, select the "Parent" option.'
+              data={FMRelationshipOptions}
+              key={form.key(`relationship`)}
+              {...form.getInputProps(`relationship`)}
+              withAsterisk
+              w={'100%'}
+            />}
+          {
+            form.values.relationship === 'owner' &&
+            <TextInput
+              variant='unstyled'
+              label='Relationship to Account Owner'
+              value={form.values.relationship}
+              readOnly
+              w={'100%'}
+            />
+          }
         </Stack>
         <Group w='100%' display={'flex'} mt={20}
           style={{ justifyContent: 'space-between' }}>
