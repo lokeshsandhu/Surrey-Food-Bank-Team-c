@@ -83,6 +83,7 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
             type="multiple"
             clearable
             radius="md"
+            excludeDate={(date) => new Date(date).getDay() === 0 || new Date(date).getDay() === 6}
             value={timeslotDates}
             onChange={setTimeslotDates}
           />
