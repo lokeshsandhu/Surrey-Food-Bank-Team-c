@@ -258,7 +258,7 @@ export default function AccountInformationTab({ clientUsername }) {
                         withAsterisk
                         w={'45%'}
                     />
-                    <Fieldset legend="Address" variant='unstyled' mt={10}>
+                    <Fieldset variant='unstyled' my={10}>
                         <Group className='address' my={10}>
                             <TextInput
                                 label="Address Line 1"
@@ -344,12 +344,14 @@ export default function AccountInformationTab({ clientUsername }) {
                         {...form.getInputProps('accountInformation.language_spoken')}
                         withAsterisk
                         w={'45%'}
+                        mb={10}
                     />
                     <TextInput
                         label="Additional Notes (optional)"
                         placeholder="Enter any additional information"
                         key={form.key('accountInformation.account_notes')}
                         {...form.getInputProps('accountInformation.account_notes')}
+                        mb={10}
                     />
                 </Stack>)}
             {form.values.accountInformation.username === null && <Text>Error loading account Information...</Text>}

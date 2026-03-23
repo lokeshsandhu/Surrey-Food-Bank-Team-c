@@ -1,9 +1,10 @@
-import { Input, TextInput, Text, Group, Button, Stack, Alert } from '@mantine/core';
-import { DateInput } from '@mantine/dates'
-import { IMaskInput } from 'react-imask'
+import { TextInput, Text, Group, Button, Stack, Select } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
+import { IMaskInput } from 'react-imask';
 import React from 'react';
-import '../styles/global-styles.css'
-import '../styles/Register.css'
+import '../styles/global-styles.css';
+import '../styles/Register.css';
+import { FMRelationshipOptions } from '../constants/FMRelationshipOptions';
 
 export default function AddFamilyMembers({ form }) {
     const addFamilyMember = () => {
@@ -15,8 +16,8 @@ export default function AddFamilyMembers({ form }) {
                 phone: '',
                 email: '',
                 relationship: ''
-            })
-    }
+            });
+    };
 
     return (
         <div className='registration-section'>
@@ -33,7 +34,7 @@ export default function AddFamilyMembers({ form }) {
                                 color="red"
                                 size='compact-sm'
                                 justify='end'
-                                onClick={() => { form.removeListItem('family_members', index) }}
+                                onClick={() => { form.removeListItem('family_members', index); }}
                             >
                                 Remove</Button>
                         </Group>
@@ -83,9 +84,11 @@ export default function AddFamilyMembers({ form }) {
                                 mask='(000) 000-0000'
                                 w={'45%'}
                             />
-                            <TextInput
-                                label="6. Relationship"
-                                placeholder="e.g. Daughter"
+
+                            <Select
+                                label='6. Relationship to Family Member'
+                                placeholder='Select Relationship'
+                                data={FMRelationshipOptions}
                                 key={form.key(`family_members.${index}.relationship`)}
                                 {...form.getInputProps(`family_members.${index}.relationship`)}
                                 withAsterisk
@@ -95,9 +98,9 @@ export default function AddFamilyMembers({ form }) {
                     </Group>
                 ))}
             </Stack>
-            <div style={{width: '100%', display: 'flex', justifyContent: 'end'}}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'end' }}>
                 <Button onClick={() => addFamilyMember()} my={20}>Add Family Member</Button>
             </div>
         </div>
-    )
+    );
 }

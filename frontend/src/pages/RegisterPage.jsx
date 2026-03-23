@@ -201,6 +201,8 @@ export default function RegisterPage() {
                 "main_family_member.phone",
             ];
 
+            await checkUsername();
+            if (form.errors.username || form.errors.family_members) return;
         }
 
         if (activeSection === 2) {
@@ -214,8 +216,6 @@ export default function RegisterPage() {
         }
 
 
-        await checkUsername();
-        if (form.errors.username || form.errors.family_members) return;
 
         let hasErrors = false;
         fieldsToValidate.forEach((field) => {

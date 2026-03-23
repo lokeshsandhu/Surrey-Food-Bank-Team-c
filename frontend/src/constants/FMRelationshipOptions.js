@@ -1,8 +1,8 @@
 export const FMRelationshipOptions = [
-    'Spouse',
-    'Sibling',
     'Child',
     'Parent',
     'Parter',
+    'Sibling',
+    'Spouse',
     'Other'
 ];
