@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import '../styles/global-styles.css';
 import '../styles/Register.css';
 import { IMaskInput } from 'react-imask';
-import { provinceOptions } from '../constants/ProvinceOptions';
+import { provinceOptions, canadaStatusOptions } from '../constants/FormOptions';
 
 export default function ElegibilityQuestions({ form }) {
     const [isCityEligible, setIsCityEligible] = useState(true);
@@ -40,8 +40,8 @@ export default function ElegibilityQuestions({ form }) {
                 <h2 className='login-title'>Eligibility Questions</h2>
             </div>
             <Radio.Group
-                name="status-in-canada"
-                label="1. Immigration Status"
+                name="canada-status"
+                label="1. Immigration Status in Canada"
                 withAsterisk
                 className='question-section'
                 key={form.key('canada_status')}
@@ -50,11 +50,26 @@ export default function ElegibilityQuestions({ form }) {
                 <Text size='sm' mb={3}>Please select the option that best describes your status in Canada. </Text>
                 <Text size='sm' my={0} fs='italic'>Note: Visitors or international students that have stayed in Canada for less than 6 months do not qualify for this program.</Text>
                 <Group mt="xs">
-                    <Radio value="Canadian Citizen" label="Canadian Citizen" />
-                    <Radio value="Permanent Resident" label="Permanent Resident" />
-                    <Radio value="International Student > 6 months" label="International student with more than 6 months in Canada" />
-                    <Radio value="(Ineligible) Visitor or International student with less than 6 months in Canada" label="Visitor or International student with less than 6 months in Canada" />
-                    <Radio value="Other" label="Other" />
+                    <Radio
+                        value={canadaStatusOptions.citizen.value}
+                        label={canadaStatusOptions.citizen.label}
+                    />
+                    <Radio
+                        value={canadaStatusOptions.permanentResident.value}
+                        label={canadaStatusOptions.permanentResident.label}
+                    />
+                    <Radio
+                        value={canadaStatusOptions.intlStudentMoreThan6.value}
+                        label={canadaStatusOptions.intlStudentMoreThan6.label}
+                    />
+                    <Radio
+                        value={canadaStatusOptions.visitorIntlStudentLessThan6.value}
+                        label={canadaStatusOptions.visitorIntlStudentLessThan6.label}
+                    />
+                    <Radio
+                        value={canadaStatusOptions.other.value}
+                        label={canadaStatusOptions.other.label}
+                    />
                 </Group>
             </Radio.Group>
             {form.getValues().canada_status === '(Ineligible) Visitor or International student with less than 6 months in Canada' &&

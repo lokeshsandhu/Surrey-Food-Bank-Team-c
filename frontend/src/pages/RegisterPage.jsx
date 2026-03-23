@@ -31,10 +31,10 @@ export default function RegisterPage() {
 
     const form = useForm({
         initialValues: {
-            username: 'allison1',
+            username: 'allison4',
             user_password: 'Abc1234$',
             confirm_password: 'Abc1234$',
-            canada_status: 'Canadian Citizen',
+            canada_status: '',
             household_size: 0,
             baby_or_pregnant: 'true',
             language_spoken: 'English and Korean',
@@ -90,7 +90,13 @@ export default function RegisterPage() {
             username: (value) => value.trim().length < 5 ? 'Username must be at least 5 characters' : null,
             user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
-            canada_status: (value) => value ? null : 'Please select an option.',
+            canada_status: (value) => {
+                if (value.trim().length === 0) {
+                    return 'Please select an option.';
+                }
+
+                // if (value ===)
+            },
             baby_or_pregnant: (value) => value && value.length > 0 ? null : 'Please select an option.',
             language_spoken: isNotEmpty('Please enter your primary language.'),
             addr: {

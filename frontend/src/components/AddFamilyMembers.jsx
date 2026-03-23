@@ -4,7 +4,7 @@ import { IMaskInput } from 'react-imask';
 import React from 'react';
 import '../styles/global-styles.css';
 import '../styles/Register.css';
-import { FMRelationshipOptions } from '../constants/FMRelationshipOptions';
+import { FMRelationshipOptions } from '../constants/FormOptions';
 
 export default function AddFamilyMembers({ form }) {
     const addFamilyMember = () => {

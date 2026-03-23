@@ -10,7 +10,7 @@ import { IMaskInput } from 'react-imask';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
-import { provinceOptions } from "../constants/ProvinceOptions";
+import { provinceOptions, canadaStatusOptions } from "../constants/FormOptions";
 
 
 export default function AccountInformationTab({ clientUsername }) {
@@ -315,11 +315,26 @@ export default function AccountInformationTab({ clientUsername }) {
                     >
                         <Text size='sm' mb={3}>Please select the option that best describes your status in Canada. </Text>
                         <Group mt="xs">
-                            <Radio value="Canadian Citizen" label="Canadian Citizen" />
-                            <Radio value="Permanent Resident" label="Permanent Resident" />
-                            <Radio value="International Student > 6 months" label="International student with more than 6 months in Canada" />
-                            <Radio value="(Ineligible) Visitor or International student with less than 6 months in Canada" label="Visitor or International student with less than 6 months in Canada" />
-                            <Radio value="Other" label="Other" />
+                            <Radio
+                                value={canadaStatusOptions.citizen.value}
+                                label={canadaStatusOptions.citizen.label}
+                            />
+                            <Radio
+                                value={canadaStatusOptions.permanentResident.value}
+                                label={canadaStatusOptions.permanentResident.label}
+                            />
+                            <Radio
+                                value={canadaStatusOptions.intlStudentMoreThan6.value}
+                                label={canadaStatusOptions.intlStudentMoreThan6.label}
+                            />
+                            <Radio
+                                value={canadaStatusOptions.visitorIntlStudentLessThan6.value}
+                                label={canadaStatusOptions.visitorIntlStudentLessThan6.label}
+                            />
+                            <Radio
+                                value={canadaStatusOptions.other.value}
+                                label={canadaStatusOptions.other.label}
+                            />
                         </Group>
                     </Radio.Group>
                     <Radio.Group

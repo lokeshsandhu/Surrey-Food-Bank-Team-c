@@ -9,7 +9,7 @@ import { IMaskInput } from 'react-imask';
 import validator from 'validator';
 import { notifications } from '@mantine/notifications';
 import { IconUserPlus } from '@tabler/icons-react';
-import { FMRelationshipOptions } from '../constants/FMRelationshipOptions';
+import { FMRelationshipOptions } from '../constants/FormOptions';
 
 // enum for the modal mode
 const modeEnum = { updateMember: 1, addMember: 2 };
