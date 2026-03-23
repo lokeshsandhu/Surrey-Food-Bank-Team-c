@@ -10,20 +10,26 @@ import validator from 'validator';
 import { notifications } from '@mantine/notifications';
 import { IconUserPlus } from '@tabler/icons-react';
 
+// enum for the modal mode
+const modeEnum = { updateMember: 1, addMember: 2 };
 
 // written with the assisstance of Gemini
 export default function FamilyMembersTab({ clientUsername }) {
   const token = sessionStorage.getItem('token');
+
   const [familyMemberInfo, setFamilyMemberInfo] = useState([]);
   const [currentMember, setCurrentMember] = useState(null);
+
+  // Modal
   const [opened, { open, close }] = useDisclosure(false);
-  const [openedAddModal, addModalHandlers] = useDisclosure(false);
+  // Controls the modal and type: update vs. add family member
+  const [mode, setMode] = useState(modeEnum.updateMember);
+
 
   if (!token) {
     navigate('/');
     return null;
   }
-
 
   const form = useForm({
     initialValues: {
@@ -62,14 +68,16 @@ export default function FamilyMembersTab({ clientUsername }) {
     }
   };
 
-  const handleAddMember = () => {
+  const openAddModal = () => {
     form.reset();
-    addModalHandlers.open();
+    setMode(modeEnum.addMember);
+    open();
   };
 
-  const handleEditMember = (member) => {
+  const openUpdateModal = (member) => {
     setCurrentMember(member);
     form.setValues(member);
+    setMode(modeEnum.updateMember);
     open();
   };
 
@@ -153,7 +161,7 @@ export default function FamilyMembersTab({ clientUsername }) {
       try {
         const result = await createFamilyMember(token, memberData);
         await getFamilyMembersInformation();
-        addModalHandlers.close();
+        close();
         form.reset();
         notifications.show({
           title: 'Saved',
@@ -173,6 +181,14 @@ export default function FamilyMembersTab({ clientUsername }) {
         message: 'Please fill all the required fields (*).',
         color: 'red',
       });
+    }
+  };
+
+  const handleUpdateAddMember = async () => {
+    if (mode === modeEnum.updateMember) {
+      await updateMember();
+    } else if (mode === modeEnum.addMember) {
+      await addMember();
     }
   };
 
@@ -212,7 +228,7 @@ export default function FamilyMembersTab({ clientUsername }) {
       <Table.Td>{FM.relationship}</Table.Td>
       <Table.Td>
         <Button size='xs'
-          onClick={() => handleEditMember(FM)}>Edit</Button>
+          onClick={() => openUpdateModal(FM)}>Edit</Button>
       </Table.Td>
     </Table.Tr>
   ));
@@ -241,7 +257,7 @@ export default function FamilyMembersTab({ clientUsername }) {
                 <Button
                   color='green'
                   leftSection={<IconUserPlus />}
-                  onClick={handleAddMember}
+                  onClick={openAddModal}
                 >
                   Add
                 </Button>
@@ -251,7 +267,11 @@ export default function FamilyMembersTab({ clientUsername }) {
           <Table.Tbody>{rows}</Table.Tbody>
         </Table>
       </Table.ScrollContainer>
-      <Modal opened={opened} onClose={close} title='Edit Family Member' centered>
+      <Modal
+        opened={opened}
+        onClose={close}
+        title={mode === modeEnum.updateMember ? 'Edit Family Member' : 'Add Family Member'}
+        centered>
         <Stack w='100%'>
           <Group>
             <TextInput
@@ -312,73 +332,15 @@ export default function FamilyMembersTab({ clientUsername }) {
         </Stack>
         <Group w='100%' display={'flex'} mt={20}
           style={{ justifyContent: 'space-between' }}>
-          <Button color='red' disabled={form.values.relationship === 'owner' && isMemberOwner()} onClick={removeMember} >Remove</Button>
-          <Button color='teal' onClick={updateMember}>Save</Button>
-        </Group>
-      </Modal>
-
-      <Modal opened={openedAddModal} onClose={addModalHandlers.close} title='Add Family Member' centered>
-        <Stack w='100%'>
-          <Group>
-            <TextInput
-              label="First Name"
-              placeholder="e.g. Alex"
-              key={form.key(`f_name`)}
-              {...form.getInputProps(`f_name`)}
-              withAsterisk
-              w={'45%'}
-            />
-            <TextInput
-              label="Last Name"
-              placeholder="e.g. Doe"
-              key={form.key(`l_name`)}
-              {...form.getInputProps(`l_name`)}
-              withAsterisk
-              w={'45%'}
-            />
-          </Group>
-          <DateInput
-            label="Date of Birth"
-            placeholder="YYYY MM DD"
-            valueFormat='YYYY MM DD'
-            maxDate={new Date()}
-            key={form.key(`dob`)}
-            {...form.getInputProps(`dob`)}
-            withAsterisk
-            w={'45%'}
-          />
-          <TextInput
-            label="Email"
-            placeholder="e.g. alexdoe@gmail.com"
-            key={form.key(`email`)}
-            {...form.getInputProps(`email`)}
-            w={'45%'}
-            withAsterisk
-          />
-          <TextInput
-            label="Phone"
-            placeholder="e.g. (123) 456-7890"
-            key={form.key(`phone`)}
-            {...form.getInputProps(`phone`)}
-            component={IMaskInput}
-            mask='(000) 000-0000'
-            w={'45%'}
-            withAsterisk={form.values.relationship === 'owner' && isMemberOwner()}
-          />
-          <TextInput
-            variant={form.values.relationship === 'owner' && isMemberOwner() ? "unstyled" : "default"}
-            label="Relationship"
-            placeholder="e.g. Daughter, Son"
-            key={form.key(`relationship`)}
-            {...form.getInputProps(`relationship`)}
-            withAsterisk
-            w={'45%'}
-            readOnly={form.values.relationship === 'owner' && isMemberOwner()}
-          />
-        </Stack>
-        <Group w='100%' display={'flex'} mt={20}
-          style={{ justifyContent: 'flex-end' }}>
-          <Button onClick={addMember}>Save</Button>
+          {mode === modeEnum.updateMember &&
+            <Button
+              color='red'
+              disabled={form.values.relationship === 'owner' && isMemberOwner()}
+              onClick={removeMember} >
+              Remove
+            </Button>
+          }
+          <Button color='teal' onClick={handleUpdateAddMember}>Save</Button>
         </Group>
       </Modal>
     </div>
