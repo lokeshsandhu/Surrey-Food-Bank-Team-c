@@ -1,24 +1,26 @@
-import { Title, Text, Stack, TextInput, Radio, Group, Fieldset, Select, Button } from "@mantine/core"
+import { Title, Text, Stack, TextInput, Radio, Group, Fieldset, Select, Button } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react";
 import { getAccount, updateAccount, usernameExists } from "../../api/accounts";
 import { getFamilyMembers, updateFamilyMember, familyMemberExists } from "../../api/familyMembers";
 import { useForm, isNotEmpty } from "@mantine/form";
-import validator from 'validator'
+import validator from 'validator';
 import dayjs from 'dayjs';
-import { IMaskInput } from 'react-imask'
+import { IMaskInput } from 'react-imask';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router';
+import { useLocation } from 'react-router-dom';
 
 
 export default function AccountInformationTab({ clientUsername }) {
     const token = sessionStorage.getItem('token');
     const navigate = useNavigate();
     const role = sessionStorage.getItem('role');
-    const username = sessionStorage.getItem("username")
+    const username = sessionStorage.getItem("username");
     const [ownerId, setOwnerId] = useState(null);
+    const location = useLocation();
 
-    const provinceOptions = ['NL', 'PE', 'NS', 'NB', 'QC', 'ON', 'MB', 'SK', 'AB', 'BC', 'YT', 'NT', 'NU']
+    const provinceOptions = ['NL', 'PE', 'NS', 'NB', 'QC', 'ON', 'MB', 'SK', 'AB', 'BC', 'YT', 'NT', 'NU'];
     provinceOptions.sort();
 
     if (!token) {
@@ -27,7 +29,7 @@ export default function AccountInformationTab({ clientUsername }) {
     }
 
     if (username !== clientUsername && role !== 'admin') {
-        navigate(`/clientDashboard/account/${username}`)
+        navigate(`/clientDashboard/account/${username}`);
     }
 
     const form = useForm({
@@ -79,14 +81,14 @@ export default function AccountInformationTab({ clientUsername }) {
                 phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             }
         }
-    })
+    });
 
     const getAccountInformation = async () => {
         const result = await getAccount(token, clientUsername);
         const familyMembers = await getFamilyMembers(token, clientUsername);
         const ownerTemp = familyMembers.filter(member => member.relationship === 'owner');
         const owner = ownerTemp[0];
-        const address = splitAddress(result.addr)
+        const address = splitAddress(result.addr);
         // TODO: Rewrite (better practices)
         if (result && owner) {
             setOwnerId(owner.id);
@@ -113,9 +115,9 @@ export default function AccountInformationTab({ clientUsername }) {
                     phone: owner.phone,
                     email: owner.email
                 }
-            })
+            });
         }
-    }
+    };
 
     const splitAddress = (address) => {
         const addrParts = address.split(', ').map(p => p.trim());
@@ -127,27 +129,7 @@ export default function AccountInformationTab({ clientUsername }) {
             province: addrParts[3] ?? '',
             postal_code: addrParts[4] ?? '',
         };
-    }
-
-    // const checkFirstName = async () => {
-    //     const currentFname = form.values.accountOwner.f_name;
-
-    //     const result = await familyMemberExists(clientUsername, currentFname);
-    //     console.log('result', result)
-
-    //     if (currentFname === form.values.accountOwner.f_name) return;
-    //     if (result.exists) {
-    //         form.setFieldError(
-    //             'accountOwner.f_name',
-    //             'A family member already has this first name. Try a different name.'
-    //         );
-    //     }
-    // };
-
-    // useEffect(() => {
-
-    //     checkFirstName();
-    // }, [form.values.accountOwner.f_name])
+    };
 
     const updateAccountInformation = async () => {
         const fieldsToValidate = [
@@ -162,11 +144,7 @@ export default function AccountInformationTab({ clientUsername }) {
             "accountInformation.addr.postal_code",
             "accountInformation.baby_or_pregnant",
             "accountInformation.language_spoken",
-        ]
-
-
-        // await checkFirstName();
-        // if (form.errors.accountOwner.f_name) return;
+        ];
 
         let hasErrors = false;
         fieldsToValidate.forEach((field) => {
@@ -180,23 +158,23 @@ export default function AccountInformationTab({ clientUsername }) {
             const accountInfo = form.values.accountInformation;
             const ownerInfo = form.values.accountOwner;
             const accountData = {
-                // username: accountInfo.username,
+                username: accountInfo.username,
                 canada_status: accountInfo.canada_status,
                 addr: accountInfo.addr.line1 + ', ' + accountInfo.addr.line2 + ', ' + accountInfo.addr.city + ', ' + accountInfo.addr.province + ', ' + accountInfo.addr.postal_code,
                 baby_or_pregnant: accountInfo.baby_or_pregnant === 'true',
                 language_spoken: accountInfo.language_spoken,
                 account_notes: accountInfo.account_notes
-            }
+            };
             const ownerData = {
-                // f_name: ownerInfo.f_name,
+                f_name: ownerInfo.f_name,
                 l_name: ownerInfo.l_name,
                 dob: ownerInfo.dob,
                 phone: ownerInfo.phone,
                 email: ownerInfo.email,
-            }
+            };
             try {
-                const accountResult = await updateAccount(token, clientUsername, accountData)
-                const ownerResult = await updateFamilyMember(token, clientUsername, ownerId, ownerData)
+                const accountResult = await updateAccount(token, clientUsername, accountData);
+                const ownerResult = await updateFamilyMember(token, clientUsername, ownerId, ownerData);
                 notifications.show({
                     title: 'Saved',
                     message: 'Your changes to Account Information have been saved.',
@@ -218,11 +196,11 @@ export default function AccountInformationTab({ clientUsername }) {
                 color: 'red',
             });
         }
-    }
+    };
 
     useEffect(() => {
         getAccountInformation();
-    }, [])
+    }, [location.pathname]);
 
     return (
         <div>
@@ -234,23 +212,16 @@ export default function AccountInformationTab({ clientUsername }) {
                         label="Username"
                         placeholder="e.g. john123"
                         value={form.values.accountInformation.username}
-                        w={'60%'}
+                        w={'45%'}
                         readOnly
                     />
                     <TextInput
-                        variant='unstyled'
                         label="First Name"
-                        value={form.values.accountOwner.f_name}
-                        // placeholder="e.g. Alex"
-                        // key={form.key('accountOwner.f_name')}
-                        // {...form.getInputProps('accountOwner.f_name')}
-                        readOnly
+                        placeholder="e.g. Alex"
+                        key={form.key('accountOwner.f_name')}
+                        {...form.getInputProps('accountOwner.f_name')}
+                        withAsterisk
                         w={'45%'}
-                    // onBlur={async (event) => {
-                    //     form.getInputProps('accountOwner.f_name').onBlur(event);
-
-                    //     await checkFirstName();
-                    // }}
                     />
                     <TextInput
                         label="Last Name"
@@ -266,7 +237,7 @@ export default function AccountInformationTab({ clientUsername }) {
                         valueFormat='YYYY MM DD'
                         {...form.getInputProps('accountOwner.dob')}
                         withAsterisk
-                        w={'30%'}
+                        w={'45%'}
                         maxDate={dayjs()}
                         defaultDate={dayjs()}
                         minDate={dayjs().subtract(100, 'year').toDate()}
@@ -388,5 +359,5 @@ export default function AccountInformationTab({ clientUsername }) {
                 <Button onClick={updateAccountInformation}>Save</Button>
             </div>
         </div>
-    )
+    );
 }

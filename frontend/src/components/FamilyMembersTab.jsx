@@ -1,12 +1,12 @@
-import { Title, Text, Stack, TextInput, Radio, Group, Table, ScrollArea, Button, Modal } from "@mantine/core"
-import React, { useEffect, useState } from "react"
+import { Title, Text, Stack, TextInput, Radio, Group, Table, ScrollArea, Button, Modal } from "@mantine/core";
+import React, { useEffect, useState } from "react";
 import { createFamilyMember, deleteFamilyMember, getFamilyMembers, updateFamilyMember } from "../../api/familyMembers";
 import { useDisclosure } from "@mantine/hooks";
 import '../styles/clientList.css';
 import { useForm } from "@mantine/form";
 import { DateInput } from "@mantine/dates";
-import { IMaskInput } from 'react-imask'
-import validator from 'validator'
+import { IMaskInput } from 'react-imask';
+import validator from 'validator';
 import { notifications } from '@mantine/notifications';
 import { IconUserPlus } from '@tabler/icons-react';
 
@@ -37,38 +37,7 @@ export default function FamilyMembersTab({ clientUsername }) {
     validateInputOnBlur: true,
     validateInputOnChange: true,
     validate: {
-      f_name: (value) => {
-        // TODO: trying to let user edit f_name
-        // if (value.trim().length === 0) {
-        //   return 'Please enter their first name.'
-        // }
-
-        // const currentFName = value.toLowerCase();
-
-        // const duplicates = familyMemberInfo.some((member) => {
-        //   const isSameName = member.f_name.toLowerCase() === currentFName;
-        //   const isCurrentMember =
-        //     member.f_name === currentMember.f_name
-        //     && member.l_name === currentMember.l_name
-        //     && member.dob === currentMember.dob
-        //     && member.email === currentMember.email
-        //     && member.relationship === currentMember.relationship;
-
-        //   return isSameName && !isCurrentMember;
-        if (value.trim().length === 0) {
-          return 'Please enter their first name.'
-        }
-
-        const allFNames = familyMemberInfo.map(m => m.f_name.toLowerCase());
-        const currentFName = value.trim().toLowerCase();
-
-        const duplicates = allFNames.filter((fName, i) => fName === currentFName).length > 0;
-
-        if (duplicates) {
-          return 'First name already taken. Please enter a unique name for this family member.';
-        }
-        return null;
-      },
+      f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their first name.',
       l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
       dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
       email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
@@ -76,42 +45,43 @@ export default function FamilyMembersTab({ clientUsername }) {
         (value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).') : null,
       relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' && !isMemberOwner() ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
     }
-  })
+  });
 
   const isMemberOwner = () => {
-    const currentMember = { f_name: form.values.f_name, relationship: form.values.relationship }
-    const relationships = familyMemberInfo.map(m => { return { f_name: m.f_name, relationship: m.relationship } });
+    const currentMember = { f_name: form.values.f_name, relationship: form.values.relationship };
+    const relationships = familyMemberInfo.map(m => { return { f_name: m.f_name, relationship: m.relationship }; });
     return relationships.some(m => m.f_name === currentMember.f_name && m.relationship === currentMember.relationship);
-  }
+  };
 
   const getFamilyMembersInformation = async () => {
     try {
       const familyMembers = await getFamilyMembers(token, clientUsername);
       setFamilyMemberInfo(familyMembers);
     } catch (err) {
-      console.log("Big error ", err)
+      console.log("Big error ", err);
     }
-  }
+  };
 
   const handleAddMember = () => {
     form.reset();
     addModalHandlers.open();
-  }
+  };
 
   const handleEditMember = (member) => {
     setCurrentMember(member);
     form.setValues(member);
     open();
-  }
+  };
 
   const updateMember = async () => {
     const fieldsToValidate = [
+      "f_name",
       "l_name",
       "dob",
       "email",
       "phone",
       "relationship"
-    ]
+    ];
     let hasErrors = false;
 
     fieldsToValidate.forEach((field) => {
@@ -122,16 +92,17 @@ export default function FamilyMembersTab({ clientUsername }) {
     });
 
     if (!hasErrors) {
-      const member = form.values
+      const member = form.values;
       const memberData = {
+        f_name: member.f_name.trim(),
         l_name: member.l_name.trim(),
         dob: member.dob,
         phone: member.phone,
         email: member.email,
         relationship: member.relationship
-      }
+      };
       try {
-        const result = await updateFamilyMember(token, clientUsername, currentMember.id, memberData)
+        const result = await updateFamilyMember(token, clientUsername, currentMember.id, memberData);
         await getFamilyMembersInformation();
         close();
         form.reset();
@@ -148,8 +119,7 @@ export default function FamilyMembersTab({ clientUsername }) {
         });
       }
     }
-
-  }
+  };
 
   const addMember = async () => {
     const fieldsToValidate = [
@@ -159,7 +129,7 @@ export default function FamilyMembersTab({ clientUsername }) {
       "email",
       "phone",
       "relationship"
-    ]
+    ];
     let hasErrors = false;
 
     fieldsToValidate.forEach((field) => {
@@ -170,7 +140,7 @@ export default function FamilyMembersTab({ clientUsername }) {
     });
 
     if (!hasErrors) {
-      const member = form.values
+      const member = form.values;
       const memberData = {
         username: clientUsername,
         f_name: member.f_name,
@@ -179,7 +149,7 @@ export default function FamilyMembersTab({ clientUsername }) {
         phone: member.phone,
         email: member.email,
         relationship: member.relationship
-      }
+      };
       try {
         const result = await createFamilyMember(token, memberData);
         await getFamilyMembersInformation();
@@ -193,18 +163,23 @@ export default function FamilyMembersTab({ clientUsername }) {
       } catch (err) {
         notifications.show({
           title: 'Error',
-          message: 'There was a problem when saving your changes. Please try again.',
+          message: 'There was a problem creating a new family member. Please try again.',
           color: 'green',
         });
       }
+    } else {
+      notifications.show({
+        title: 'Missing Fields',
+        message: 'Please fill all the required fields (*).',
+        color: 'red',
+      });
     }
-
-  }
+  };
 
   const removeMember = async () => {
     if (form.values.relationship !== 'owner') {
       try {
-        const result = await deleteFamilyMember(token, clientUsername, currentMember.id)
+        const result = await deleteFamilyMember(token, clientUsername, currentMember.id);
         await getFamilyMembersInformation();
         close();
         form.reset();
@@ -221,11 +196,11 @@ export default function FamilyMembersTab({ clientUsername }) {
         });
       }
     }
-  }
+  };
 
   useEffect(() => {
     getFamilyMembersInformation();
-  }, [])
+  }, []);
 
   const rows = familyMemberInfo.map((FM) => (
     <Table.Tr key={FM.id}>
@@ -280,11 +255,11 @@ export default function FamilyMembersTab({ clientUsername }) {
         <Stack w='100%'>
           <Group>
             <TextInput
-              variant='unstyled'
               label="First Name"
               placeholder="e.g. Alex"
-              value={form.values.f_name}
-              readOnly
+              key={form.key(`f_name`)}
+              {...form.getInputProps(`f_name`)}
+              withAsterisk
               w={'45%'}
             />
             <TextInput
@@ -408,4 +383,4 @@ export default function FamilyMembersTab({ clientUsername }) {
       </Modal>
     </div>
   );
-}
+};
