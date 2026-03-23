@@ -4,7 +4,7 @@ import { AdminNavBar } from '../components/navBar';
 import { WeekView } from '@mantine/schedule';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { getAppointmentsInDateRange, getAppointmentsInDateTimeRange, updateAppointment } from '../../api/appointments.js';
+import { getAppointmentsInDateRange, createAppointmentsInTimeRange, updateAppointment } from '../../api/appointments.js';
 import { useNavigate } from 'react-router';
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { LoadingOverlay } from '@mantine/core';
@@ -42,8 +42,13 @@ export default function TimeslotPage() {
         return null;
     }
 
-    const handleTimeslotClick = (date, time) => {
-        setSelectedTimeslotData({date: date, time: time})
+    const handleTimeslotClick = (slotStart, slotEnd) => {
+        setSelectedTimeslotData({start: slotStart, end: slotEnd});
+        timeslotModalHandlers.open();
+    }
+
+    const handleSlotDragEnd = (rangeStart, rangeEnd) => {
+        setSelectedTimeslotData({start: rangeStart, end: rangeEnd});
         timeslotModalHandlers.open();
     }
 
@@ -167,7 +172,43 @@ export default function TimeslotPage() {
     }
 
     const handleTimeslotFormSubmit = async (values) => {
-        console.log('Timeslot form submit with values:', values);
+        const results = await Promise.all(
+            values.dates.map(async (date) => {
+                const data = {
+                    appt_date: dayjs(date).format('YYYY-MM-DD'),
+                    start_time: dayjs(values.start).format('HH:mm'),
+                    end_time: dayjs(values.end).format('HH:mm'),
+                    appt_notes: values.appt_notes,
+                };
+
+                const res = await createAppointmentsInTimeRange(token, data);
+                return { date, error: res?.error || null };
+            })
+        );
+
+        const errors = results.filter((result) => result.error);
+
+        await fetchTimeslots();
+
+        if (errors.length === 0) {
+            notifications.show({
+                title: 'Success',
+                message: 'Timeslots successfully created',
+                color: 'green'
+            });
+        } else if (errors.length < values.dates.length) {
+            notifications.show({
+                title: 'Partial Success',
+                message: `Some timeslots were created successfully, but there were errors for the following dates: ${errors.map(e => dayjs(e.date).format('YYYY-MM-DD') + ' (' + e.error + ')').join(', ')}`,
+                color: 'yellow'
+            });
+        } else {
+            notifications.show({
+                title: 'Error',
+                message: 'Failed to create timeslots: ' + errors.map(e => dayjs(e.date).format('YYYY-MM-DD') + ' (' + e.error + ')').join(', '),
+                color: 'red'
+            });
+        }
     }
 
 
@@ -181,6 +222,8 @@ export default function TimeslotPage() {
                 events={events}
                 onEventClick={handleEventClick}
                 onTimeSlotClick={handleTimeslotClick}
+                withDragSlotSelect
+                onSlotDragEnd={handleSlotDragEnd}
                 startTime={'08:00'}
                 endTime={'16:00'}
                 intervalMinutes={15}
@@ -192,6 +235,7 @@ export default function TimeslotPage() {
                     viewSelect: {visibility: 'hidden'},
                     weekViewDaySlots: {backgroundColor: '#f2f2f2'},
                 }}
+                withWeekendDays={false}
                 style={{
                     background: 'rgba(255, 255, 255, 0.8)',
                     borderRadius: '10px',

@@ -1,13 +1,16 @@
 // Heavily inspired/referenced from mantine ui's demo from https://alpha.mantine.dev/schedule/schedule/#create-and-update-events
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal, TextInput, Button, Stack, Group, Checkbox } from '@mantine/core';
 import React from 'react';
-import { DateTimePicker } from '@mantine/dates';
+import { DatePickerInput, DateTimePicker, TimePicker } from '@mantine/dates';
 import { isNotEmpty, useForm } from '@mantine/form';
 import dayjs from 'dayjs';
+import customParseFormat from "dayjs/plugin/customParseFormat";
 
 export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...others }) {
+  dayjs.extend(customParseFormat);
+
   const form = useForm({
     initialValues: {
       id: values?.id,
@@ -18,7 +21,6 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
       appt_notes: values?.appt_notes || '',
     },
     validate: {
-      title: isNotEmpty('Event title is required'),
       start: isNotEmpty('Start time is required'),
       end: (value, { start }) => {
         if (!value) {
@@ -34,6 +36,8 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
     },
   });
 
+  const [timeslotDates, setTimeslotDates] = useState([]);
+
   useEffect(() => {
     form.setValues({
       id: values?.id,
@@ -43,19 +47,20 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
       color: values?.color || 'blue',
       appt_notes: values?.appt_notes || '',
     });
+
+    console.log('Received values in TimeslotForm:', values);
+    setTimeslotDates([dayjs(values?.start).toDate()]);
   }, [values]);
 
-  const handleSubmit = (values) => {
+  const handleSubmit = () => {
     onSubmit({
-      id: values.id,
-      title: values.title,
-      start: values.start,
-      end: values.end,
-      color: values.color,
-      appt_notes: values.appt_notes,
+      dates: timeslotDates,
+      start: form.values.start,
+      end: form.values.end,
+      appt_notes: form.values.appt_notes,
     });
     onClose();
-  };
+  }
 
   const handleDelete = () => {
     onDelete?.(form.values);
@@ -73,18 +78,34 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
 
-          <DateTimePicker
+          <DatePickerInput
+            label="Timeslot Dates"
+            type="multiple"
+            clearable
+            radius="md"
+            value={timeslotDates}
+            onChange={setTimeslotDates}
+          />
+
+          <TimePicker
             label="Start Time"
             clearable
             radius="md"
-            {...form.getInputProps('start')}
-            disabled
+            format="12h"
+            value={dayjs(form.values.start).format('HH:mm')}
           />
-          <DateTimePicker label="End Time" {...form.getInputProps('end')} clearable radius="md" disabled/>
+
+          <TimePicker
+            label="End Time"
+            clearable
+            radius="md"
+            format="12h"
+            value={dayjs(form.values.end).format('HH:mm')}
+          />
 
           <TextInput
             label="Additional Notes"
-            placeholder="Enter any additional notes"
+            placeholder="Enter any additional notes for the timeslot"
             {...form.getInputProps('appt_notes')}
           />
 
@@ -95,8 +116,8 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
               </Button>
             )}
             
-            <Button type="submit" radius="md">
-              {form.values.id ? 'Update' : 'Create'}
+            <Button type="submit" radius="md" disabled={timeslotDates.length === 0}>
+              Create
             </Button>
           </Group>
         </Stack>
