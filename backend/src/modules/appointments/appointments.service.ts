@@ -397,7 +397,7 @@ export async function getAvailableAppointments(babyOrPregnant: boolean, username
     const { rows: householdRows } = await pool.query(householdText, [username]);
     const householdSize = householdRows[0]?.household_size ?? 1;
 
-    if (householdSize < 4) {
+    if (householdSize < 5) {
         return rows;
     }
 
@@ -439,11 +439,14 @@ export async function bookAppointment(data: BookAppointmentDTO, username: string
     const householdText = `SELECT household_size FROM account WHERE username = $1`;
     const { rows: householdRows } = await pool.query(householdText, [username]);
     const householdSize = householdRows[0]?.household_size ?? 1;
-    const slotsNeeded = householdSize >= 4 ? 2 : 1;
+    const slotsNeeded = householdSize >= 5 ? 2 : 1;
 
-    const slotStarts: string[] = [data.start_time];
+    const [startHourRaw, startMinRaw] = String(data.start_time).split(":");
+    const normalizedStart = `${String(Number(startHourRaw)).padStart(2, "0")}:${String(Number(startMinRaw)).padStart(2, "0")}`;
+
+    const slotStarts: string[] = [normalizedStart];
     if (slotsNeeded === 2) {
-        const [hour, min] = data.start_time.split(":").map(Number);
+        const [hour, min] = normalizedStart.split(":").map(Number);
         const totalMinutes = hour * 60 + min + 15;
         const nextHour = Math.floor(totalMinutes / 60);
         const nextMin = totalMinutes % 60;
@@ -468,7 +471,8 @@ export async function bookAppointment(data: BookAppointmentDTO, username: string
         }
 
         const orderedSlots = slotStarts.map((start) => {
-            return lockedRows.find((row) => String(row.start_time).slice(0, 5) === start);
+            const startHHmm = String(start).slice(0, 5);
+            return lockedRows.find((row) => String(row.start_time).slice(0, 5) === startHHmm);
         });
         if (orderedSlots.some((slot) => !slot)) {
             throw new Error("One or more requested slots do not exist.");
@@ -480,7 +484,7 @@ export async function bookAppointment(data: BookAppointmentDTO, username: string
             const firstEnd = String(slots[0].end_time).slice(0, 5);
             const secondStart = String(slots[1].start_time).slice(0, 5);
             if (firstEnd !== secondStart) {
-                throw new Error("Both slots must be consecutive to book a 30-minute appointment.");
+                throw new Error("Both slots must be consecutive to book a 30-minute appointment (household size 5+).");
             }
         }
 

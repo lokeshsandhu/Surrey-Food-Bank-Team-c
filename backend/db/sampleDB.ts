@@ -27,7 +27,7 @@ async function sampleJaneData(){
         username: 'jane123',
         user_password: 'Password1!',
         canada_status: 'Canadian Citizen',
-        household_size: 4,
+        household_size: 5,
         addr: '123 ave, , surrey, BC, V1M 3B5',
         baby_or_pregnant: true,
         language_spoken: 'English and Spanish',
@@ -51,6 +51,15 @@ async function sampleJaneData(){
         dob: '2010/01/01',
         phone: '(111) 111-1111',
         email: 'jim@email.com',
+        relationship: 'Son',
+    }
+    const johnFM = {
+        username: 'jane123',
+        f_name: 'John',
+        l_name: 'Doe',
+        dob: '2010/01/01',
+        phone: '(111) 111-1111',
+        email: 'john@email.com',
         relationship: 'Son',
     }
 
@@ -79,6 +88,7 @@ async function sampleJaneData(){
     await familymember.createFamilyMember(jimFM);
     await familymember.createFamilyMember(jillFM);
     await familymember.createFamilyMember(jessFM);
+    await familymember.createFamilyMember(johnFM);
 }
 
 // sample account and family member data for Jeff Smith user persona
