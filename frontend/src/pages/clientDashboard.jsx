@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useDisclosure } from '@mantine/hooks';
 import { cancelAppointment } from '../../api/appointments.js';
-import { sendConfirmMessage } from '../../../backend/src/shared/email/email.js';
+import { sendConfirmationEmail } from '../../api/email.js';
 
 const excludedDays = [5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
 
@@ -84,7 +84,13 @@ export default function ClientDashboard() {
                         borderRadius: '8px',
                     }
                 });
-                sendConfirmMessage(selectedDate, myUsername);
+                const confirmationEmail = {
+                    date: selectedDate,
+                    time: selectedTime,
+                    username: myUsername,
+                    email: "schoolpia914@gmail.com"
+                }
+                sendConfirmationEmail(token, confirmationEmail);
                 handleAvailableTimes(selectedDate); // Refresh available times after booking
                 fetchMyAppointment();
             } else {
