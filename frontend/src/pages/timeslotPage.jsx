@@ -4,7 +4,7 @@ import { AdminNavBar } from '../components/navBar';
 import { WeekView } from '@mantine/schedule';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { getAppointmentsInDateRange, createAppointmentsInTimeRange, updateAppointment, deleteAppointment } from '../../api/appointments.js';
+import { getAppointmentsInDateRange, createAppointmentsInTimeRange, updateAppointment, deleteAppointment, deleteAppointmentFromUsername } from '../../api/appointments.js';
 import { useNavigate } from 'react-router';
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { LoadingOverlay } from '@mantine/core';
@@ -167,7 +167,7 @@ export default function TimeslotPage() {
         const bookingTime = dayjs(values.start, 'YYYY-MM-DD HH:mm').format('HH:mm');
         const normalizedTitle = String(values.title || '').trim().replace(/\s+\d+\/\d+$/, '');
         const titleIndicatesAvailable = /^available slot(s)?$/i.test(normalizedTitle);
-        const username = titleIndicatesAvailable ? null : (values.bookingUsername ?? (normalizedTitle || null));
+        const username = titleIndicatesAvailable ? null : (values.username ?? (normalizedTitle || null));
         const notes = values.appt_notes || '';
 
         console.log('Creating booking with date:', bookingDate, 'start:', bookingTime, 'end:', dayjs(bookingTime, 'HH:mm').add(15, 'minutes').format('HH:mm'), 'username:', username, 'notes:', notes);
@@ -207,6 +207,7 @@ export default function TimeslotPage() {
                     start_time: dayjs(values.start).format('HH:mm'),
                     end_time: dayjs(values.end).format('HH:mm'),
                     appt_notes: values.appt_notes,
+                    capacity: values.capacity,
                 };
                 
                 console.log('Creating timeslot with data:', data);

@@ -1,7 +1,7 @@
 // Heavily inspired/referenced from mantine ui's demo from https://alpha.mantine.dev/schedule/schedule/#create-and-update-events
 
 import { useEffect, useState } from 'react';
-import { Modal, TextInput, Button, Stack, Group, Checkbox } from '@mantine/core';
+import { Modal, TextInput, Button, Stack, Group, Checkbox, NumberInput } from '@mantine/core';
 import React from 'react';
 import { DatePickerInput, TimePicker, getTimeRange } from '@mantine/dates';
 import { isNotEmpty, useForm } from '@mantine/form';
@@ -18,6 +18,7 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
       start: values?.start || new Date(),
       end: values?.end || new Date(),
       appt_notes: values?.appt_notes || '',
+      capacity: values?.capacity || 1,
     },
     validate: {
       start: isNotEmpty('Start time is required'),
@@ -44,6 +45,7 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
       start: values?.start || new Date(),
       end: values?.end || new Date(),
       appt_notes: values?.appt_notes || '',
+      capacity: values?.capacity || 1,
     });
 
     setTimeslotDates([dayjs(values?.start).toDate()]);
@@ -57,6 +59,7 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
       start: form.values.start,
       end: form.values.end,
       appt_notes: form.values.appt_notes,
+      capacity: form.values.capacity,
     });
     onClose();
   }
@@ -104,6 +107,13 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
             format="12h"
             value={dayjs(form.values.end).format('HH:mm')}
             onChange={(value) => form.setFieldValue('end', dayjs(value, 'HH:mm').toDate())}
+          />
+
+          <NumberInput
+            label="Capacity"
+            radius="md"
+            min={1}
+            {...form.getInputProps('capacity')}
           />
 
           <TextInput
