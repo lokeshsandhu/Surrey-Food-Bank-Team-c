@@ -7,7 +7,7 @@ import { DateTimePicker } from '@mantine/dates';
 import { isNotEmpty, useForm } from '@mantine/form';
 import dayjs from 'dayjs';
 
-export function BookingForm({ opened, onClose, onSubmit, onDelete, values, bookedUsers = [], ...others }) {
+export function BookingForm({ opened, onClose, onSubmit, onDelete, values, bookedUsers = [], onRemoveBookedUser, removingBookingUsername, ...others }) {
   const form = useForm({
     initialValues: {
       id: values?.id,
@@ -121,7 +121,21 @@ export function BookingForm({ opened, onClose, onSubmit, onDelete, values, booke
           ) : (
             <Stack gap={6}>
               {bookedUsers.map((user) => (
-                <Text key={user} size="sm">{user}</Text>
+                <Group key={user} justify="space-between" gap="xs" wrap="nowrap">
+                  <Text size="sm" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user}</Text>
+                  <Button
+                    type="button"
+                    size="compact-xs"
+                    variant="light"
+                    color="red"
+                    onClick={() => onRemoveBookedUser?.(user)}
+                    loading={removingBookingUsername === user}
+                    disabled={!onRemoveBookedUser}
+                    aria-label={`Remove booking for ${user}`}
+                  >
+                    X
+                  </Button>
+                </Group>
               ))}
             </Stack>
           )}
