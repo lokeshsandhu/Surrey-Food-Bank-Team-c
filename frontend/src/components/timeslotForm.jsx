@@ -17,7 +17,6 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
       title: values?.title || '',
       start: values?.start || new Date(),
       end: values?.end || new Date(),
-      color: values?.color || 'blue',
       appt_notes: values?.appt_notes || '',
     },
     validate: {
@@ -44,7 +43,6 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
       title: values?.title || '',
       start: values?.start || new Date(),
       end: values?.end || new Date(),
-      color: values?.color || 'blue',
       appt_notes: values?.appt_notes || '',
     });
 

@@ -4,7 +4,7 @@ import { AdminNavBar } from '../components/navBar';
 import { WeekView } from '@mantine/schedule';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { getAppointmentsInDateRange, createAppointmentsInTimeRange, updateAppointment } from '../../api/appointments.js';
+import { getAppointmentsInDateRange, createAppointmentsInTimeRange, updateAppointment, deleteAppointment } from '../../api/appointments.js';
 import { useNavigate } from 'react-router';
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { LoadingOverlay } from '@mantine/core';
@@ -80,6 +80,29 @@ export default function TimeslotPage() {
         }
     }
 
+    const handleDeleteTimeslot = async (values) => {
+        const bookingDate = dayjs(values.start).format('YYYY-MM-DD');
+        const bookingTime = dayjs(values.start, 'YYYY-MM-DD HH:mm').format('HH:mm');
+        
+        const res = await deleteAppointment(token, bookingDate, bookingTime);
+
+        if (res.error) {
+            notifications.show({
+                title: 'Error',
+                message: 'Failed to delete timeslot: ' + (res?.error || ''),
+                color: 'red'
+            });
+        } else {
+            notifications.show({
+                title: 'Success',
+                message: 'Timeslot successfully deleted',
+                color: 'green'
+            });
+
+            await fetchTimeslots();
+        }
+    }
+
     useEffect(() => {
         fetchTimeslots();
     }, [token, date]);
@@ -139,7 +162,7 @@ export default function TimeslotPage() {
     const handleBookingFormSubmit = async (values) => {
         const bookingDate = dayjs(values.start).format('YYYY-MM-DD');
         const bookingTime = dayjs(values.start, 'YYYY-MM-DD HH:mm').format('HH:mm');
-        const username = values.title === 'Available Slot' ? null : values.title;
+        const username = values.username;
         const notes = values.appt_notes || '';
 
         console.log('Creating booking with date:', bookingDate, 'start:', bookingTime, 'end:', dayjs(bookingTime, 'HH:mm').add(15, 'minutes').format('HH:mm'), 'username:', username, 'notes:', notes);
@@ -248,7 +271,7 @@ export default function TimeslotPage() {
                 }}
                 />
                 <TimeslotForm opened={timeslotModalOpened} onClose={timeslotModalHandlers.close} values={selectedTimeslotData} onSubmit={handleTimeslotFormSubmit}/>
-                <BookingForm opened={bookingModalOpened} onClose={bookingModalHandlers.close} onDelete={handleDeleteBooking} values={selectedBookingData} onSubmit={handleBookingFormSubmit}/>
+                <BookingForm opened={bookingModalOpened} onClose={bookingModalHandlers.close} onDeleteBooking={handleDeleteBooking} onDeleteTimeslot={handleDeleteTimeslot} values={selectedBookingData} onSubmit={handleBookingFormSubmit}/>
         </div>
     );
 }

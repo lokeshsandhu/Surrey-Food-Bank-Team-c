@@ -1,20 +1,20 @@
 // Heavily inspired/referenced from mantine ui's demo from https://alpha.mantine.dev/schedule/schedule/#create-and-update-events
 
-import { useEffect } from 'react';
-import { Modal, TextInput, Button, Stack, Group, Checkbox } from '@mantine/core';
+import { useEffect, useState } from 'react';
+import { Modal, TextInput, Button, Stack, Group, NativeSelect } from '@mantine/core';
 import React from 'react';
 import { DateTimePicker } from '@mantine/dates';
 import { isNotEmpty, useForm } from '@mantine/form';
 import dayjs from 'dayjs';
+import { getOwnerFamilyMembers } from '../../api/familyMembers.js';
 
-export function BookingForm({ opened, onClose, onSubmit, onDelete, values, ...others }) {
+export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDeleteTimeslot, values, ...others }) {
   const form = useForm({
     initialValues: {
       id: values?.id,
-      title: values?.title || '',
+      title: '',
       start: values?.start || new Date(),
       end: values?.end || new Date(),
-      color: values?.color || 'blue',
       appt_notes: values?.appt_notes || '',
     },
     validate: {
@@ -34,33 +34,55 @@ export function BookingForm({ opened, onClose, onSubmit, onDelete, values, ...ot
     },
   });
 
+  const [clients, setClients] = useState([]);
+  const [currClient, setCurrClient] = useState("admin");
+  const token = sessionStorage.getItem('token');
+
+  const handleFetchClients = async () => {
+    try {
+      const clients = await getOwnerFamilyMembers(token);
+      setClients(clients);
+      console.log(clients);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+    }
+  };
+
   useEffect(() => {
     form.setValues({
       id: values?.id,
       title: values?.title || '',
       start: values?.start || new Date(),
       end: values?.end || new Date(),
-      color: values?.color || 'blue',
       appt_notes: values?.appt_notes || '',
     });
+    handleFetchClients();
   }, [values]);
+
+  useEffect(() => {
+    handleFetchClients();
+  }, []);
 
   const handleSubmit = (values) => {
     onSubmit({
       id: values.id,
-      title: values.title,
+      username: currClient,
       start: values.start,
       end: values.end,
-      color: values.color,
       appt_notes: values.appt_notes,
     });
     onClose();
   };
 
-  const handleDelete = () => {
-    onDelete?.(form.values);
+  const handleDeleteBooking = () => {
+    onDeleteBooking?.(form.values);
     onClose();
   };
+
+  const handleDeleteTimeslot = () => {
+    onDeleteTimeslot?.(form.values);
+    onClose();
+  }
 
   return (
     <Modal
@@ -72,12 +94,14 @@ export function BookingForm({ opened, onClose, onSubmit, onDelete, values, ...ot
     >
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
-          <TextInput
+          <NativeSelect
             label="Name for Booking"
-            placeholder="Enter booking name"
+            placeholder="Select a name for the booking"
             radius="md"
             data-autofocus
-            {...form.getInputProps('title')}
+            value={currClient}
+            onChange={(event) => setCurrClient(event.currentTarget.value)}
+            data={[...clients.map(client => ({ value: client.username, label: client.username })), { value: 'admin', label: 'Admin' }]}
           />
 
           <DateTimePicker
@@ -95,13 +119,17 @@ export function BookingForm({ opened, onClose, onSubmit, onDelete, values, ...ot
             {...form.getInputProps('appt_notes')}
           />
 
-          <Group justify="flex-end" gap="sm">
-            {form.values.id && onDelete && (
-              <Button color="red" onClick={handleDelete} mie="auto" radius="md">
+          <Group justify="space-between" align="flex-end" gap="sm" w="100%">
+            <Stack align="flex-start" gap="xs">
+              <Button color="red" onClick={handleDeleteTimeslot} mie="auto" radius="md">
+                Delete Timeslot
+              </Button>
+
+              <Button color="red" onClick={handleDeleteBooking} mie="auto" radius="md">
                 Delete Booking
               </Button>
-            )}
-            
+            </Stack>
+
             <Button type="submit" radius="md">
               {form.values.id ? 'Update' : 'Create'}
             </Button>
