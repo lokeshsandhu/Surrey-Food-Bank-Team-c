@@ -180,7 +180,8 @@ export default function TimeslotPage() {
                     end_time: dayjs(values.end).format('HH:mm'),
                     appt_notes: values.appt_notes,
                 };
-
+                
+                console.log('Creating timeslot with data:', data);
                 const res = await createAppointmentsInTimeRange(token, data);
                 return { date, error: res?.error || null };
             })

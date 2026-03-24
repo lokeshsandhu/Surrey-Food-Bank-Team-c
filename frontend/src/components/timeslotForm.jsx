@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Modal, TextInput, Button, Stack, Group, Checkbox } from '@mantine/core';
 import React from 'react';
-import { DatePickerInput, DateTimePicker, TimePicker } from '@mantine/dates';
+import { DatePickerInput, TimePicker, getTimeRange } from '@mantine/dates';
 import { isNotEmpty, useForm } from '@mantine/form';
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -27,7 +27,7 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
           return 'End time is required';
         }
 
-        if (dayjs(value).isBefore(dayjs(start))) {
+        if (dayjs(value, "HH:mm").isBefore(dayjs(start, "HH:mm"))) {
           return 'End time must be after start time';
         }
 
@@ -48,11 +48,12 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
       appt_notes: values?.appt_notes || '',
     });
 
-    console.log('Received values in TimeslotForm:', values);
     setTimeslotDates([dayjs(values?.start).toDate()]);
   }, [values]);
 
   const handleSubmit = () => {
+    console.log(form.values.start, form.values.end);
+    console.log(timeslotDates);
     onSubmit({
       dates: timeslotDates,
       start: form.values.start,
@@ -83,7 +84,8 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
             type="multiple"
             clearable
             radius="md"
-            excludeDate={(date) => new Date(date).getDay() === 0 || new Date(date).getDay() === 6}
+            excludeDate={(date) => new Date(date).getDay() === 5 || new Date(date).getDay() === 6}
+            firstDayOfWeek={0}
             value={timeslotDates}
             onChange={setTimeslotDates}
           />
@@ -94,6 +96,7 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
             radius="md"
             format="12h"
             value={dayjs(form.values.start).format('HH:mm')}
+            onChange={(value) => form.setFieldValue('start', dayjs(value, 'HH:mm').toDate())}
           />
 
           <TimePicker
@@ -102,6 +105,7 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
             radius="md"
             format="12h"
             value={dayjs(form.values.end).format('HH:mm')}
+            onChange={(value) => form.setFieldValue('end', dayjs(value, 'HH:mm').toDate())}
           />
 
           <TextInput
