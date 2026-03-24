@@ -87,10 +87,18 @@ export default function TimeslotPage() {
 
             const formattedTimeslots = mergedSlots.map((slot) => ({
                 id: `${slot.appt_date}-${slot.start_time}-${slot.end_time}-${slot.username || 'available'}`,
-                title: slot.username || 'Available Slot',
+                title: slot.username || 'Available Slots',
+                bookingUsername: slot.username || null,
+                bookedUsers: Array.isArray(slot.usernames) ? slot.usernames : [],
+                capacityLabel: `${slot.remaining_capacity ?? (slot.capacity ?? 1)}/${slot.capacity ?? 1}`,
                 start: `${parseApptDate(slot.appt_date).format('YYYY-MM-DD')} ${dayjs(slot.start_time, 'HH:mm:ss').format('HH:mm')}`,
                 end: `${parseApptDate(slot.appt_date).format('YYYY-MM-DD')} ${dayjs(slot.end_time, 'HH:mm:ss').format('HH:mm')}`,
-                color: slot.username ? 'red' : 'green',
+                color:
+                    Number(slot.booked_count || 0) === 0
+                        ? 'green'
+                        : Number(slot.remaining_capacity || 0) > 0
+                            ? 'yellow'
+                            : 'red',
                 appt_notes: slot.appt_notes,
             }));
 
@@ -104,7 +112,9 @@ export default function TimeslotPage() {
     const handleBookingFormSubmit = async (values) => {
         const bookingDate = dayjs(values.start).format('YYYY-MM-DD');
         const bookingTime = dayjs(values.start, 'YYYY-MM-DD HH:mm').format('HH:mm');
-        const username = values.title === 'Available Slot' ? null : values.title;
+        const normalizedTitle = String(values.title || '').trim().replace(/\s+\d+\/\d+$/, '');
+        const titleIndicatesAvailable = /^available slot(s)?$/i.test(normalizedTitle);
+        const username = titleIndicatesAvailable ? null : (values.bookingUsername ?? (normalizedTitle || null));
         const notes = values.appt_notes || '';
 
         console.log('Creating booking with date:', bookingDate, 'start:', bookingTime, 'end:', dayjs(bookingTime, 'HH:mm').add(15, 'minutes').format('HH:mm'), 'username:', username, 'notes:', notes);
@@ -146,6 +156,12 @@ export default function TimeslotPage() {
                 onDateChange={setDate}
                 events={events}
                 onEventClick={handleEventClick}
+                renderEventBody={(event) => (
+                    <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</span>
+                        <span style={{ marginLeft: 'auto', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{event.capacityLabel}</span>
+                    </div>
+                )}
                 startTime={'08:00'}
                 endTime={'16:00'}
                 intervalMinutes={30}
@@ -167,7 +183,13 @@ export default function TimeslotPage() {
                     justifySelf: 'top',
                 }}
                 />
-                <BookingForm opened={bookingModalOpened} onClose={bookingModalHandlers.close} values={selectedBookingData} onSubmit={handleBookingFormSubmit}/>
+                <BookingForm
+                    opened={bookingModalOpened}
+                    onClose={bookingModalHandlers.close}
+                    values={selectedBookingData}
+                    bookedUsers={selectedBookingData?.bookedUsers || []}
+                    onSubmit={handleBookingFormSubmit}
+                />
         </div>
     );
 }
