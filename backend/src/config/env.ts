@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 
+const __dirname = import.meta.dirname;
+
 const envFileCandidates = [
   process.env.ENV_FILE,
   path.resolve(process.cwd(), "db/dev.env"),

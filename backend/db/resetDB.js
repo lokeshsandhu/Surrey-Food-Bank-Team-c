@@ -1,9 +1,11 @@
 // resets database to clean state according to schema
 // run with 'node resetDB.js'
 
-const fs = require('fs');
-const path = require('path');
-const dotenv = require('dotenv');
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
+
+const __dirname = import.meta.dirname;
 
 const envFileCandidates = [
     process.env.ENV_FILE,
@@ -19,7 +21,7 @@ for (const envFile of envFileCandidates) {
 }
 
 // create a pool connection to database
-const { Pool } = require('pg');
+import { Pool } from 'pg';
 
 const useConnectionString = Boolean(process.env.DATABASE_URL);
 const enableSsl = process.env.DB_SSL === 'true';

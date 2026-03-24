@@ -2,7 +2,7 @@
   "name": "surrey-foodbank-backend",
   "private": true,
   "version": "0.1.0",
-  "type": "commonjs",
+  "type": "module",
   "main": "dist/src/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
@@ -20,8 +20,10 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "form-data": "^4.0.5",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mailgun.js": "^12.7.1",
     "pg": "^8.13.3",
     "ts-node": "^10.9.2"
   },
