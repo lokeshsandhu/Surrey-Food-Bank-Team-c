@@ -4,6 +4,7 @@ export interface CreateAppointmentsInRangeDTO {
     start_time: string; 
     end_time: string;   
     appt_notes?: string;
+    capacity?: number;
 }
 export interface AppointmentDTO {
     appt_date: string;
@@ -11,6 +12,10 @@ export interface AppointmentDTO {
     end_time: string;
     appt_notes?: string;
     username?: string;
+    capacity?: number;
+    booked_count?: number;
+    remaining_capacity?: number;
+    usernames?: string[];
 }
 
 export interface CreateSlotDTO {
@@ -18,6 +23,7 @@ export interface CreateSlotDTO {
     start_time: string;
     end_time: string;
     appt_notes?: string;
+    capacity?: number;
 }
 
 export interface BookAppointmentDTO {

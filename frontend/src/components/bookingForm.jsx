@@ -90,6 +90,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
       onClose={onClose}
       title={form.values.id ? 'Edit Event' : 'Create Event'}
       radius="md"
+      size="lg"
       {...others}
     >
       <form onSubmit={form.onSubmit(handleSubmit)}>
@@ -104,20 +105,20 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
             data={[...clients.map(client => ({ value: client.username, label: client.username })), { value: 'admin', label: 'Admin' }]}
           />
 
-          <DateTimePicker
-            label="Start Time"
-            clearable
-            radius="md"
-            {...form.getInputProps('start')}
-            disabled
-          />
-          <DateTimePicker label="End Time" {...form.getInputProps('end')} clearable radius="md" disabled/>
+            <DateTimePicker
+              label="Start Time"
+              clearable
+              radius="md"
+              {...form.getInputProps('start')}
+              disabled
+            />
+            <DateTimePicker label="End Time" {...form.getInputProps('end')} clearable radius="md" disabled/>
 
-          <TextInput
-            label="Additional Notes"
-            placeholder="Enter any additional notes"
-            {...form.getInputProps('appt_notes')}
-          />
+            <TextInput
+              label="Additional Notes"
+              placeholder="Enter any additional notes"
+              {...form.getInputProps('appt_notes')}
+            />
 
           <Group justify="space-between" align="flex-end" gap="sm" w="100%">
             <Stack align="flex-start" gap="xs">

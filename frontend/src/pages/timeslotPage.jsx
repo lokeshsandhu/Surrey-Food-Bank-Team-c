@@ -17,12 +17,14 @@ export default function TimeslotPage() {
     const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
     const [events, setEvents] = useState([]); // Placeholder for fetched timeslots
     const [loadingTimeslots, setLoadingTimeslots] = useState(false);
+    const [removingBookingUsername, setRemovingBookingUsername] = useState(null);
     const [bookingModalOpened, bookingModalHandlers] = useDisclosure(false);
     const [timeslotModalOpened, timeslotModalHandlers] = useDisclosure(false);
     const [selectedBookingData, setSelectedBookingData] = useState(null);
     const [selectedTimeslotData, setSelectedTimeslotData] = useState(null);
 
     const token = sessionStorage.getItem('token');
+    const currentUsername = sessionStorage.getItem('username');
     const navigate = useNavigate();
 
     dayjs.extend(customParseFormat);
@@ -124,36 +126,37 @@ export default function TimeslotPage() {
                 return aKey.localeCompare(bKey);
             });
 
-            // Merge consecutive slots on same day with same (non-empty) username
-            const mergedSlots = [];
-            for (const slot of sortedSlots) {
-                const last = mergedSlots[mergedSlots.length - 1];
+            const formattedTimeslots = sortedSlots.map((slot) => {
+                const bookedUsers = Array.isArray(slot.usernames) ? slot.usernames : [];
+                const preferredBookingUsername =
+                    bookedUsers.includes(currentUsername)
+                        ? currentUsername
+                        : (bookedUsers[0] || null);
 
-                const sameDay = last && last.appt_date === slot.appt_date;
-                const sameUser = last && last.username && slot.username && last.username === slot.username;
-                const isConsecutive =
-                    last &&
-                    dayjs(last.end_time, 'HH:mm:ss').format('HH:mm:ss') ===
-                        dayjs(slot.start_time, 'HH:mm:ss').format('HH:mm:ss');
-
-                if (sameDay && sameUser && isConsecutive) {
-                    last.end_time = slot.end_time; // extend previous slot
-                } else {
-                    mergedSlots.push({ ...slot });
-                }
-            }
-
-            const formattedTimeslots = mergedSlots.map((slot) => ({
+                return ({
                 id: `${slot.appt_date}-${slot.start_time}-${slot.end_time}-${slot.username || 'available'}`,
-                title: slot.username || 'Available Slot',
+                title: preferredBookingUsername || 'Available Slots',
+                displayTitle: bookedUsers.length > 0
+                    ? bookedUsers.join(', ')
+                    : 'Available Slots',
+                bookingUsername: preferredBookingUsername,
+                bookedUsers,
+                capacityLabel: `${slot.remaining_capacity ?? (slot.capacity ?? 1)}/${slot.capacity ?? 1}`,
                 start: `${parseApptDate(slot.appt_date).format('YYYY-MM-DD')} ${dayjs(slot.start_time, 'HH:mm:ss').format('HH:mm')}`,
                 end: `${parseApptDate(slot.appt_date).format('YYYY-MM-DD')} ${dayjs(slot.end_time, 'HH:mm:ss').format('HH:mm')}`,
-                color: slot.username ? 'red' : 'green',
+                color:
+                    Number(slot.booked_count || 0) === 0
+                        ? 'green'
+                        : Number(slot.remaining_capacity || 0) > 0
+                            ? 'yellow'
+                            : 'red',
                 appt_notes: slot.appt_notes,
-            }));
+            });
+            });
 
             console.log('Formatted timeslots:', formattedTimeslots);
             setEvents(formattedTimeslots);
+            return formattedTimeslots;
         } finally {
             setLoadingTimeslots(false);
         }
@@ -162,7 +165,9 @@ export default function TimeslotPage() {
     const handleBookingFormSubmit = async (values) => {
         const bookingDate = dayjs(values.start).format('YYYY-MM-DD');
         const bookingTime = dayjs(values.start, 'YYYY-MM-DD HH:mm').format('HH:mm');
-        const username = values.username;
+        const normalizedTitle = String(values.title || '').trim().replace(/\s+\d+\/\d+$/, '');
+        const titleIndicatesAvailable = /^available slot(s)?$/i.test(normalizedTitle);
+        const username = titleIndicatesAvailable ? null : (values.bookingUsername ?? (normalizedTitle || null));
         const notes = values.appt_notes || '';
 
         console.log('Creating booking with date:', bookingDate, 'start:', bookingTime, 'end:', dayjs(bookingTime, 'HH:mm').add(15, 'minutes').format('HH:mm'), 'username:', username, 'notes:', notes);
@@ -234,6 +239,41 @@ export default function TimeslotPage() {
             });
         }
     }
+    
+    const handleRemoveBookedUser = async (usernameToRemove) => {
+        if (!usernameToRemove) {
+            return;
+        }
+
+        setRemovingBookingUsername(usernameToRemove);
+        try {
+            const res = await deleteAppointmentFromUsername(token, usernameToRemove);
+            if (res?.error) {
+                notifications.show({
+                    title: 'Error',
+                    message: res.error || 'Failed to remove booking',
+                    color: 'red',
+                });
+                return;
+            }
+
+            notifications.show({
+                title: 'Success',
+                message: `Removed all bookings for ${usernameToRemove}`,
+                color: 'green',
+            });
+
+            const refreshedEvents = await fetchTimeslots();
+            const refreshed = refreshedEvents?.find((event) => event.start === selectedBookingData.start);
+            if (refreshed) {
+                setSelectedBookingData(refreshed);
+            } else {
+                bookingModalHandlers.close();
+            }
+        } finally {
+            setRemovingBookingUsername(null);
+        }
+    }
 
 
     return (
@@ -248,6 +288,12 @@ export default function TimeslotPage() {
                 onTimeSlotClick={handleTimeslotClick}
                 withDragSlotSelect
                 onSlotDragEnd={handleSlotDragEnd}
+                renderEventBody={(event) => (
+                    <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.displayTitle || event.title}</span>
+                        <span style={{ marginLeft: 'auto', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{event.capacityLabel}</span>
+                    </div>
+                )}
                 startTime={'08:00'}
                 endTime={'16:00'}
                 intervalMinutes={15}
@@ -271,7 +317,18 @@ export default function TimeslotPage() {
                 }}
                 />
                 <TimeslotForm opened={timeslotModalOpened} onClose={timeslotModalHandlers.close} values={selectedTimeslotData} onSubmit={handleTimeslotFormSubmit}/>
-                <BookingForm opened={bookingModalOpened} onClose={bookingModalHandlers.close} onDeleteBooking={handleDeleteBooking} onDeleteTimeslot={handleDeleteTimeslot} values={selectedBookingData} onSubmit={handleBookingFormSubmit}/>
+                
+                <BookingForm
+                    opened={bookingModalOpened}
+                    onClose={bookingModalHandlers.close}
+                    onDeleteBooking={handleDeleteBooking} 
+                    onDeleteTimeslot={handleDeleteTimeslot} 
+                    values={selectedBookingData}
+                    bookedUsers={selectedBookingData?.bookedUsers || []}
+                    removingBookingUsername={removingBookingUsername}
+                    onRemoveBookedUser={handleRemoveBookedUser}
+                    onSubmit={handleBookingFormSubmit}
+                />
         </div>
     );
 }
