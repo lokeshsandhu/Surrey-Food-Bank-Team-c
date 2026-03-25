@@ -11,31 +11,6 @@ import CityAlert from './alerts/CityAlert';
 import ProvinceAlert from './alerts/ProvinceAlert';
 
 export default function ElegibilityQuestions({ form }) {
-    const [isCityEligible, setIsCityEligible] = useState(true);
-    const [isProvinceEligible, setIsProvinceEligible] = useState(true);
-
-    useEffect(() => {
-        if (form.values.addr.city.trim().length > 0) {
-            checkIsCityEligible();
-        }
-
-        if (form.values.addr.postal_code.trim().length > 0) {
-            checkIsProvinceEligible();
-        }
-    }, [form.values.addr.city, form.values.addr.postal_code]);
-
-    const checkIsCityEligible = () => {
-        const city = form.getValues().addr.city.toLowerCase();
-        const isEligible =
-            city === 'surrey' ||
-            city === 'north delta' ||
-            city === 'cloverdale';
-        setIsCityEligible(isEligible);
-    };
-    const checkIsProvinceEligible = () => {
-        const isEligible = form.getValues().addr.province === 'BC';
-        setIsProvinceEligible(isEligible);
-    };
 
     return (
         <Group>

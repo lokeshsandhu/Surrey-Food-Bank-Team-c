@@ -38,7 +38,7 @@ export default function RegisterPage() {
             username: 'allison4',
             user_password: 'Abc1234$',
             confirm_password: 'Abc1234$',
-            canada_status: '',
+            canada_status: canadaStatusOptions.citizen.value,
             household_size: 0,
             baby_or_pregnant: 'true',
             language_spoken: 'English and Korean',
@@ -46,8 +46,8 @@ export default function RegisterPage() {
             addr: {
                 line1: '6177 Walter Gage Road',
                 line2: '',
-                city: '',
-                province: '',
+                city: 'Surrey',
+                province: 'BC',
                 postal_code: 'V6T 1Z1'
             },
             main_family_member:
@@ -132,7 +132,13 @@ export default function RegisterPage() {
             main_family_member: {
                 f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your first name.',
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your last name.',
-                dob: (value) => value && value.trim().length > 0 ? null : 'Please enter your date of birth.',
+                dob: (value) => {
+                    const val = value.trim();
+                    console.log(val);
+                    if (val.length === 0) {
+                        return 'Please enter your date of birth.';
+                    }
+                },
                 email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
                 phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
