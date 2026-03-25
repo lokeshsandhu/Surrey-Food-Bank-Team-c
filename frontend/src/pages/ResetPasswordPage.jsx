@@ -4,7 +4,7 @@ import '../styles/Login.css';
 
 import logo from '../assets/surrey-food-bank-logo.png';
 
-import { Button, Card, Image, PasswordInput, Title } from '@mantine/core';
+import { Button, Card, Image, PasswordInput, Title, Group } from '@mantine/core';
 import { useNavigate } from 'react-router';
 import { useForm, matchesField } from '@mantine/form';
 import validator from 'validator';
@@ -27,7 +27,6 @@ export default function ResetPasswordPage() {
     });
 
     const handleResetPassword = async () => {
-        setError('');
         alert('To implement: Reset password');
         // TODO: API Request to reset password
 
@@ -57,23 +56,28 @@ export default function ResetPasswordPage() {
                     fit="contain"
                     p={2}
                 />
-                <Title order={3} fw={500} mb={2} style={{ justifyContent: 'center' }}>Reset Your Password</Title>
-                <PasswordInput
-                    label="New Password"
-                    placeholder="Enter new password"
-                    key={form.key('user_password')}
-                    {...form.getInputProps('user_password')}
-                    h={'60px'}
-                    withAsterisk
-                />
-                <PasswordInput
-                    label="Confirm New Password"
-                    placeholder="Re-enter new password"
-                    key={form.key('confirm_password')}
-                    {...form.getInputProps('confirm_password')}
-                    h={'60px'}
-                    withAsterisk
-                />
+                <Title order={3} fw={500} mb={2} style={{ justifyContent: 'flex-start' }}>Reset Your Password</Title>
+                <Group style={{ flexDirection: 'column', gap: 40, justifyContent: 'flex-start' }}>
+                    <PasswordInput
+                        label="New Password"
+                        placeholder="Enter new password"
+                        key={form.key('user_password')}
+                        {...form.getInputProps('user_password')}
+                        h={'60px'}
+                        w='100%'
+                        withAsterisk
+                    />
+                    <PasswordInput
+                        label="Confirm New Password"
+                        placeholder="Re-enter new password"
+                        key={form.key('confirm_password')}
+                        {...form.getInputProps('confirm_password')}
+                        h={'60px'}
+                        w='100%'
+                        mb={20}
+                        withAsterisk
+                    />
+                </Group>
                 <Button onClick={handleResetPassword}>Reset Password</Button>
             </Card>
         </div>

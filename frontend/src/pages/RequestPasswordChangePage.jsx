@@ -6,7 +6,7 @@ import logo from '../assets/surrey-food-bank-logo.png';
 
 import { Button, Card, Image, TextInput, NavLink, Group, Text, Title } from '@mantine/core';
 import { useLocation, useNavigate } from 'react-router';
-
+import { notifications } from '@mantine/notifications';
 import { login, me } from '../../api/auth.js';
 
 export default function RequestPasswordChangePage() {
@@ -21,6 +21,19 @@ export default function RequestPasswordChangePage() {
         // TODO: Check if user's email is in our database
 
         // TODO: Send email if the user exists
+        // On successful email sent:   
+        notifications.show({
+                title: "Reset Link Sent",
+                message: "Please check your email for the reset link.",
+                color: "green",
+              });
+
+        //TODO:  If email fails to send:
+        // notifications.show({
+        //     title: "Error Sending Reset Link",
+        //     message: "Please try again in a few minutes.",
+        //     color: "red",
+        // });
     };
 
     return (
