@@ -9,7 +9,8 @@ import AddFamilyMembers from '../components/AddFamilyMembers.jsx';
 import EligibilityQuestions from '../components/EligibilityQuestions.jsx';
 import RegistrationFinished from '../components/RegistrationFinished.jsx';
 
-import { Button, Card, Group, Image, Modal, Stepper, Text } from '@mantine/core';
+import { Button, Card, Group, Image, Modal, Stepper, Text, Alert } from '@mantine/core';
+import { IconInfoCircle } from '@tabler/icons-react';
 import { isNotEmpty, matchesField, useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 
@@ -19,6 +20,9 @@ import validator from 'validator';
 import { createAccount, usernameExists } from '../../api/accounts.js';
 import { login, me } from '../../api/auth.js';
 import { createFamilyMember } from '../../api/familyMembers.js';
+
+import { canadaStatusOptions } from '../constants/FormOptions.js';
+import CanadaStatusAlert from '../components/alerts/CanadaStatusAlert.jsx';
 
 export default function RegisterPage() {
     const errorRef = useRef(null);
@@ -95,7 +99,10 @@ export default function RegisterPage() {
                     return 'Please select an option.';
                 }
 
-                // if (value ===)
+                if (value === canadaStatusOptions.visitorIntlStudentLessThan6.value
+                    || value === canadaStatusOptions.other.value) {
+                    return "";
+                }
             },
             baby_or_pregnant: (value) => value && value.length > 0 ? null : 'Please select an option.',
             language_spoken: isNotEmpty('Please enter your primary language.'),

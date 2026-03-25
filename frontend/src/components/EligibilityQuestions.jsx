@@ -6,6 +6,7 @@ import '../styles/global-styles.css';
 import '../styles/Register.css';
 import { IMaskInput } from 'react-imask';
 import { provinceOptions, canadaStatusOptions } from '../constants/FormOptions';
+import CanadaStatusAlert from './alerts/CanadaStatusAlert';
 
 export default function ElegibilityQuestions({ form }) {
     const [isCityEligible, setIsCityEligible] = useState(true);
@@ -72,8 +73,13 @@ export default function ElegibilityQuestions({ form }) {
                     />
                 </Group>
             </Radio.Group>
-            {form.getValues().canada_status === '(Ineligible) Visitor or International student with less than 6 months in Canada' &&
-                <Alert variant="light" color="red" title="You may not be eligible for this program" icon={<IconInfoCircle />}>Visitors or international students that have stayed in Canada for less than 6 months do not qualify for this program.</Alert>
+            {
+                (
+                    form.values.canada_status === canadaStatusOptions.visitorIntlStudentLessThan6.value ||
+                    form.values.canada_status ===
+                    canadaStatusOptions.other.value
+                ) &&
+                <CanadaStatusAlert />
             }
             <Fieldset legend="2. Address" variant='unstyled'>
                 <Text size='sm' mb={3}>Please enter your residential address.</Text>
