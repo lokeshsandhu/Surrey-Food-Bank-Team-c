@@ -1,0 +1,67 @@
+name: backend-tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: cpsc319
+          POSTGRES_DB: sfb_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d sfb_db"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend deps
+        working-directory: backend
+        run: npm ci
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            (echo > /dev/tcp/127.0.0.1/5432) >/dev/null 2>&1 && exit 0
+            sleep 1
+          done
+          echo "Postgres did not become ready in time" >&2
+          exit 1
+
+      - name: Reset schema
+        working-directory: backend
+        env:
+          CI: true
+          DB_USER: postgres
+          DB_HOST: 127.0.0.1
+          DB_NAME: sfb_db
+          DB_PASSWORD: cpsc319
+          DB_PORT: 5432
+        run: node db/resetDB.js
+
+      - name: Run tests
+        working-directory: backend
+        env:
+          CI: true
+          DB_USER: postgres
+          DB_HOST: 127.0.0.1
+          DB_NAME: sfb_db
+          DB_PASSWORD: cpsc319
+          DB_PORT: 5432
+        run: npm test -- --runInBand
