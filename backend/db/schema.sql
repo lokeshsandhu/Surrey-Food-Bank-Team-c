@@ -1,8 +1,10 @@
 -- Database schema (scaffold only).
--- Define tables for: accounts, family_members, appointments
+-- Define tables for: accounts, family_members, appointment_slots, appointment_bookings
 
 DROP TABLE IF EXISTS public.familymember;
 DROP TABLE IF EXISTS public.appointment;
+DROP TABLE IF EXISTS public.appointment_booking;
+DROP TABLE IF EXISTS public.appointment_slot;
 DROP TABLE IF EXISTS public.account;
 
 CREATE TABLE IF NOT EXISTS public.account
@@ -19,6 +21,7 @@ CREATE TABLE IF NOT EXISTS public.account
 
 CREATE TABLE IF NOT EXISTS public.familymember
 (
+    id integer GENERATED ALWAYS AS IDENTITY,
     username varchar NOT NULL,
     f_name varchar NOT NULL,
     l_name varchar,
@@ -26,23 +29,40 @@ CREATE TABLE IF NOT EXISTS public.familymember
     phone varchar,
     email varchar,
     relationship varchar,
-    CONSTRAINT familymember_pkey PRIMARY KEY (username, f_name),
+    CONSTRAINT familymember_pkey PRIMARY KEY (username, id),
     CONSTRAINT familymember_fkey_username FOREIGN KEY (username)
         REFERENCES public.account (username) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS public.appointment
+CREATE TABLE IF NOT EXISTS public.appointment_slot
 (
     appt_date date NOT NULL,
     start_time time without time zone NOT NULL,
     end_time time without time zone NOT NULL,
+    capacity integer NOT NULL DEFAULT 1,
     appt_notes varchar,
-    username varchar,
-    CONSTRAINT appointment_pkey PRIMARY KEY (appt_date, start_time),
-    CONSTRAINT appointment_fkey_user FOREIGN KEY (username)
+    CONSTRAINT appointment_slot_pkey PRIMARY KEY (appt_date, start_time),
+    CONSTRAINT appointment_slot_capacity_check CHECK (capacity >= 1)
+);
+
+CREATE TABLE IF NOT EXISTS public.appointment_booking
+(
+    appt_date date NOT NULL,
+    start_time time without time zone NOT NULL,
+    username varchar NOT NULL,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT appointment_booking_pkey PRIMARY KEY (appt_date, start_time, username),
+    CONSTRAINT appointment_booking_fkey_slot FOREIGN KEY (appt_date, start_time)
+        REFERENCES public.appointment_slot (appt_date, start_time) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT appointment_booking_fkey_user FOREIGN KEY (username)
         REFERENCES public.account (username) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS idx_appointment_booking_username_date
+    ON public.appointment_booking (username, appt_date, start_time);

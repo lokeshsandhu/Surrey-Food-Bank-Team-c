@@ -1,20 +1,29 @@
-import { Pool, PoolConfig } from "pg";
-import fs from "fs";
-import path from "path";
-import dotenv from "dotenv";
+import { Pool, PoolConfig, types as pgTypes } from "pg";
+import { env } from "../config/env";
 
-const devEnvPath = path.join(__dirname, "../../db/dev.env");
+// Ensure Postgres `DATE` columns (OID 1082) are returned as plain `YYYY-MM-DD` strings.
+// Without this, node-postgres may return JS Date objects that JSON-serialize to UTC midnight
+// (e.g. "2026-03-17T00:00:00.000Z"), which can shift a day when formatted in a browser's
+// local timezone.
+pgTypes.setTypeParser(1082, (value) => value);
 
-// In CI, credentials are typically provided via environment variables and we
-// should not override them from a local dev file.
-const shouldLoadDevEnv =
-  !process.env.CI &&
-  fs.existsSync(devEnvPath) &&
-  !process.env.DATABASE_URL &&
-  !process.env.DB_USER &&
-  !process.env.DB_HOST &&
-  !process.env.DB_NAME &&
-  !process.env.DB_PASSWORD;
+const poolConfig: PoolConfig = env.DATABASE_URL
+  ? {
+      connectionString: env.DATABASE_URL,
+    }
+  : {
+      user: env.DB_USER,
+      host: env.DB_HOST,
+      database: env.DB_NAME,
+      password: env.DB_PASSWORD,
+      port: env.DB_PORT,
+    };
+
+if (env.DB_SSL) {
+  poolConfig.ssl = { rejectUnauthorized: false };
+}
+
+const pool = new Pool(poolConfig);
 
 if (shouldLoadDevEnv) {
   dotenv.config({ path: devEnvPath, override: true });

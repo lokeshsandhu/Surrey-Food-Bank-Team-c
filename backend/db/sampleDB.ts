@@ -27,7 +27,7 @@ async function sampleJaneData(){
         username: 'jane123',
         user_password: 'Password1!',
         canada_status: 'Canadian Citizen',
-        household_size: 4,
+        household_size: 5,
         addr: '123 ave, , surrey, BC, V1M 3B5',
         baby_or_pregnant: true,
         language_spoken: 'English and Spanish',
@@ -51,6 +51,15 @@ async function sampleJaneData(){
         dob: '2010/01/01',
         phone: '(111) 111-1111',
         email: 'jim@email.com',
+        relationship: 'Son',
+    }
+    const johnFM = {
+        username: 'jane123',
+        f_name: 'John',
+        l_name: 'Doe',
+        dob: '2010/01/01',
+        phone: '(111) 111-1111',
+        email: 'john@email.com',
         relationship: 'Son',
     }
 
@@ -79,6 +88,7 @@ async function sampleJaneData(){
     await familymember.createFamilyMember(jimFM);
     await familymember.createFamilyMember(jillFM);
     await familymember.createFamilyMember(jessFM);
+    await familymember.createFamilyMember(johnFM);
 }
 
 // sample account and family member data for Jeff Smith user persona
@@ -88,7 +98,7 @@ async function sampleJeffData(){
         user_password: 'big_J3ff',
         canada_status: 'Permanent Resident',
         household_size: 1,
-        addr: 'Jeff RD, Surrey, BC, V1M 3B5',
+        addr: 'Jeff RD, , Surrey, BC, V1M 3B5',
         baby_or_pregnant: false,
         language_spoken: `English`,
         account_notes: `Sample account for Jeff Smith`,
@@ -120,7 +130,7 @@ async function sampleApptData() {
     const feb28FullSlot = {
         appt_date: '2026-02-28',
         start_time: '08:00',
-        end_time: '08:20',
+        end_time: '08:30',
         appt_notes: undefined
     }
 
@@ -140,17 +150,22 @@ async function sampleApptData() {
     await appointment.bookAppointment(jeffBookingFeb28, 'big_jeff');
 }
 
-// create available time slots for the month of March 2026
+// create available time slots for the month of March 2026, excluding weekends
 async function marchTimeSlots() {
     for(let i=1; i<32; i++) {
-        const date = '2026-03-' + String(i).padStart(2, '0');;
-        const slot = {
-            appt_date: date,
-            start_time: '08:00',
-            end_time: '16:00',
-            appt_notes: undefined
+        const weekends: number[] = [7, 8, 14, 15, 21, 22, 28, 29];
+
+        if (!weekends.includes(i)) {
+            const date = '2026-03-' + String(i).padStart(2, '0');;
+            const slot = {
+                appt_date: date,
+                start_time: '08:00',
+                end_time: '16:00',
+                appt_notes: undefined
+            }
+            await appointment.createAppointmentsInTimeRange(slot);
         }
-        appointment.createAppointmentsInTimeRange(slot);
+        
     }
 }
 
@@ -160,8 +175,8 @@ async function runSample() {
         await sampleAdminData();
         await sampleJaneData();
         await sampleJeffData();
-        sampleApptData();
-        marchTimeSlots();
+        await sampleApptData();
+        await marchTimeSlots();
         console.log('Sample data successfully initialized.')
     } catch (err) {
         console.log('Unable to initialize sample data: ', err);

@@ -6,6 +6,24 @@ A scheduling application that allows clients to create accounts, add family memb
 
 This application has been created using React, [Mantine](https://mantine.dev/), Node.js, and PostgreSQL.
 
+## Deploying on Render
+This repository now includes a Render Blueprint at [render.yaml](/Users/lokeshsandhu/Documents/Study/CPSC%20319/Surrey-Food-Bank-Team-c/render.yaml) for deploying:
+- the Vite frontend as a Render Static Site
+- the Express backend as a Render Web Service
+- a Render Postgres database
+
+To deploy with the Blueprint:
+1. Push this repository to GitHub.
+2. In Render, create a new Blueprint instance from the repository.
+3. Review the generated services and confirm the free plans if you want the no-cost setup.
+4. Trigger the initial deploy. Render will build the frontend, build the backend, and run `npm run db:migrate` on the backend before start-up.
+
+Important notes:
+- The frontend now reads the API URL from `VITE_API_BASE_URL`, with a local fallback to `http://localhost:3000`.
+- The backend now supports `DATABASE_URL`, `CLIENT_ORIGIN`, and Render-provided `PORT` values, while still supporting the local `backend/db/dev.env` workflow.
+- The deploy-time schema script uses `backend/db/deploySchema.sql`, which creates tables without dropping existing data.
+- Render's free Postgres plan expires 30 days after creation, so it is fine for demos and testing but not for longer-lived production data.
+
 # Basic Setup Instructions
 The following instructions will go over initial setup for first time users.
 

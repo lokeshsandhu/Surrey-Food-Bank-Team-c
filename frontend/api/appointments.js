@@ -1,6 +1,8 @@
+import { apiUrl } from "./baseUrl";
+
 // API functions for appointments endpoints
 
-const API_BASE = "http://localhost:3000/api/appointments";
+const API_BASE = apiUrl("/api/appointments");
 
 
 /**
@@ -45,13 +47,14 @@ export function getAppointmentsInDateTimeRange(token, date, start, end) {
 /**
  * Create multiple appointments in a time range (admin only).
  * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), end_time (HH:mm)
- * Optional: appt_notes
+ * Optional: appt_notes, capacity
  * Example:
  *   createAppointmentsInTimeRange(token, {
  *     appt_date: "2024-06-01",
  *     start_time: "09:00",
  *     end_time: "12:00",
- *     appt_notes: "Morning slots"
+ *     appt_notes: "Morning slots",
+ *     capacity: 3
  *   });
  */
 export function createAppointmentsInTimeRange(token, data) {
@@ -66,13 +69,14 @@ export function createAppointmentsInTimeRange(token, data) {
 /**
  * Create a single available appointment slot (admin only).
  * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), end_time (HH:mm)
- * Optional: appt_notes
+ * Optional: appt_notes, capacity
  * Example:
  *   createAppointment(token, {
  *     appt_date: "2024-06-01",
  *     start_time: "10:00",
  *     end_time: "10:15",
- *     appt_notes: "Special slot"
+ *     appt_notes: "Special slot",
+ *     capacity: 2
  *   });
  */
 export function createAppointment(token, data) {
@@ -112,10 +116,13 @@ export function getAllAppointments(token) {
 
 
 /**
- * Update an appointment (admin only).
+ * Update an appointment slot or set/clear a booking (admin only).
  * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), updateData (object with fields to update)
+ * updateData can include: end_time, appt_notes, capacity, username
+ * - username: "someuser" adds a booking on that slot (if capacity allows)
+ * - username: null clears all bookings for that slot
  * Example:
- *   updateAppointment(token, "2024-06-01", "10:00", { username: "janedoe" });
+ *   updateAppointment(token, "2024-06-01", "10:00", { capacity: 3 });
  */
 export function updateAppointment(token, appt_date, start_time, updateData) {
   return fetch(`${API_BASE}/update`, {
@@ -186,6 +193,7 @@ export function findAppointmentFromApptDateAndStartTime(token, appt_date, start_
 
 /**
  * Get all available appointments (client only).
+ * Response rows now include capacity fields like booked_count and remaining_capacity.
  * Example:
  *   getAvailableAppointments(token);
  */
@@ -214,16 +222,18 @@ export function bookAppointment(token, data) {
 }
 
 /**
- * Cancel all booked appointments for the client (client only).
- * No fields required except token.
+ * Cancel booked appointments for the client (client only).
+ * - If appt_date and start_time are passed, cancels that slot only.
+ * - If omitted, cancels all bookings for the user.
  * Example:
- *   cancelAppointment(token);
+ *   cancelAppointment(token, "2024-06-01", "10:00");
  */
-export function cancelAppointment(token) {
+export function cancelAppointment(token, appt_date, start_time) {
+  const body = (appt_date && start_time) ? { appt_date, start_time } : {};
   return fetch(`${API_BASE}/cancel`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({})
+    body: JSON.stringify(body)
   }).then(res => res.json());
 }
 
