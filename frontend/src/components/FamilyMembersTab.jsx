@@ -1,4 +1,4 @@
-import { Stack, TextInput, Group, Table, Button, Modal, Select } from "@mantine/core";
+import { Stack, TextInput, Group, Table, Button, Modal, Select, Title } from "@mantine/core";
 import React, { useEffect, useState } from "react";
 import { createFamilyMember, deleteFamilyMember, getFamilyMembers, updateFamilyMember } from "../../api/familyMembers";
 import { useDisclosure } from "@mantine/hooks";
@@ -10,6 +10,7 @@ import validator from 'validator';
 import { notifications } from '@mantine/notifications';
 import { IconUserPlus } from '@tabler/icons-react';
 import { FMRelationshipOptions } from '../constants/FormOptions';
+import { useNavigate } from "react-router";
 
 // enum for the modal mode
 const modeEnum = { updateMember: 1, addMember: 2 };
@@ -17,7 +18,7 @@ const modeEnum = { updateMember: 1, addMember: 2 };
 // written with the assisstance of Gemini
 export default function FamilyMembersTab({ clientUsername }) {
   const token = sessionStorage.getItem('token');
-
+  const navigate = useNavigate();
   const [familyMemberInfo, setFamilyMemberInfo] = useState([]);
   const [currentMember, setCurrentMember] = useState(null);
 
@@ -235,7 +236,8 @@ export default function FamilyMembersTab({ clientUsername }) {
   ));
 
   return (
-    <div >
+    <div>
+      <Title order={2} mb={10}>Family Members</Title>
       <Table.ScrollContainer maxHeight={'80%'}>
         <Table
           miw={500}
