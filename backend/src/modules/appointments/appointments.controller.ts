@@ -7,8 +7,8 @@ export async function updateMyAppointment(req: Request, res: Response) {
     try {
         const username = req.user!.username;
         const { appt_date, start_time, newAppointment } = req.body;
-        const cancelled = await service.cancelBooking(username);
-        if (!cancelled) {
+        const cancelled = await service.cancelBooking(username, appt_date, start_time);
+        if (!cancelled || cancelled.length === 0) {
             res.status(404).json({ success: false, error: "Current appointment not found or not yours" });
             return;
         }
@@ -232,8 +232,8 @@ export async function cancelBooking(req: Request, res: Response) {
     try {
         const username = req.user!.username;
         const { appt_date, start_time } = req.body;
-        const cancelled = await service.cancelBooking(username);
-        if (!cancelled) {
+        const cancelled = await service.cancelBooking(username, appt_date, start_time);
+        if (!cancelled || cancelled.length === 0) {
             res.status(404).json({ success: false, error: "Appointment not found or not yours" });
             return;
         }
