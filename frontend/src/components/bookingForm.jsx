@@ -1,13 +1,13 @@
 // Heavily inspired/referenced from mantine ui's demo from https://alpha.mantine.dev/schedule/schedule/#create-and-update-events
 
 import { useEffect } from 'react';
-import { Modal, TextInput, Button, Stack, Group, Checkbox } from '@mantine/core';
+import { Modal, TextInput, Button, Stack, Group, Box, Paper, Text } from '@mantine/core';
 import React from 'react';
 import { DateTimePicker } from '@mantine/dates';
 import { isNotEmpty, useForm } from '@mantine/form';
 import dayjs from 'dayjs';
 
-export function BookingForm({ opened, onClose, onSubmit, onDelete, values, ...others }) {
+export function BookingForm({ opened, onClose, onSubmit, onDelete, values, bookedUsers = [], onRemoveBookedUser, removingBookingUsername, ...others }) {
   const form = useForm({
     initialValues: {
       id: values?.id,
@@ -68,49 +68,79 @@ export function BookingForm({ opened, onClose, onSubmit, onDelete, values, ...ot
       onClose={onClose}
       title={form.values.id ? 'Edit Event' : 'Create Event'}
       radius="md"
+      size="lg"
       {...others}
     >
-      <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack gap="md">
-          <TextInput
-            label="Name for Booking"
-            placeholder="Enter booking name"
-            radius="md"
-            data-autofocus
-            {...form.getInputProps('title')}
-          />
+      <Box style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 220px', gap: '16px', alignItems: 'start' }}>
+        <form onSubmit={form.onSubmit(handleSubmit)}>
+          <Stack gap="md">
+            <TextInput
+              label="Name for Booking"
+              placeholder="Enter booking name"
+              radius="md"
+              data-autofocus
+              {...form.getInputProps('title')}
+            />
 
-          <DateTimePicker
-            label="Start Time"
-            clearable
-            radius="md"
-            {...form.getInputProps('start')}
-            disabled
-          />
-          <DateTimePicker label="End Time" {...form.getInputProps('end')} clearable radius="md" disabled/>
+            <DateTimePicker
+              label="Start Time"
+              clearable
+              radius="md"
+              {...form.getInputProps('start')}
+              disabled
+            />
+            <DateTimePicker label="End Time" {...form.getInputProps('end')} clearable radius="md" disabled/>
 
-          <TextInput
-            label="Additional Notes"
-            placeholder="Enter any additional notes"
-            {...form.getInputProps('appt_notes')}
-          />
+            <TextInput
+              label="Additional Notes"
+              placeholder="Enter any additional notes"
+              {...form.getInputProps('appt_notes')}
+            />
 
-          <Group justify="flex-end" gap="sm">
-            {form.values.id && onDelete && (
-              <Button color="red" onClick={handleDelete} mie="auto" radius="md">
-                Delete
+            <Group justify="flex-end" gap="sm">
+              {form.values.id && onDelete && (
+                <Button color="red" onClick={handleDelete} mie="auto" radius="md">
+                  Delete
+                </Button>
+              )}
+
+              <Button variant="default" onClick={onClose} radius="md">
+                Cancel
               </Button>
-            )}
+              <Button type="submit" radius="md">
+                {form.values.id ? 'Update' : 'Create'}
+              </Button>
+            </Group>
+          </Stack>
+        </form>
 
-            <Button variant="default" onClick={onClose} radius="md">
-              Cancel
-            </Button>
-            <Button type="submit" radius="md">
-              {form.values.id ? 'Update' : 'Create'}
-            </Button>
-          </Group>
-        </Stack>
-      </form>
+        <Paper withBorder radius="md" p="sm" style={{ minHeight: '100%' }}>
+          <Text fw={600} mb="xs">Current Bookings</Text>
+          {bookedUsers.length === 0 ? (
+            <Text c="dimmed" size="sm">No users booked</Text>
+          ) : (
+            <Stack gap={6}>
+              {bookedUsers.map((user) => (
+                <Group key={user} justify="space-between" gap="xs" wrap="nowrap">
+                  <Text size="sm" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user}</Text>
+                  <Button
+                    type="button"
+                    size="compact-xs"
+                    variant="light"
+                    color="red"
+                    onClick={() => onRemoveBookedUser?.(user)}
+                    loading={removingBookingUsername === user}
+                    disabled={!onRemoveBookedUser}
+                    aria-label={`Remove booking for ${user}`}
+                  >
+                    X
+                  </Button>
+                </Group>
+              ))}
+            </Stack>
+          )}
+        </Paper>
+      </Box>
     </Modal>
   );
 }
