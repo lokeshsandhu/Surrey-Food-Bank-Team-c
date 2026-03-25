@@ -9,7 +9,7 @@ export async function updateMyAppointment(req: Request, res: Response) {
         const { appt_date, start_time, newAppointment } = req.body;
         const cancelled = await service.cancelBooking(username, appt_date, start_time);
         if (!cancelled || cancelled.length === 0) {
-            res.status(404).json({ success: false, error: "Current appointment not found or not yours" });
+            res.status(500).json({ success: false, error: "Current appointment not found or not yours" });
             return;
         }
         const result = await service.bookAppointment(newAppointment, username);
@@ -234,7 +234,7 @@ export async function cancelBooking(req: Request, res: Response) {
         const { appt_date, start_time } = req.body;
         const cancelled = await service.cancelBooking(username, appt_date, start_time);
         if (!cancelled || cancelled.length === 0) {
-            res.status(404).json({ success: false, error: "Appointment not found or not yours" });
+            res.status(200).json({ success: true });
             return;
         }
         res.status(200).json({ success: true });

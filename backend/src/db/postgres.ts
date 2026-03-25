@@ -23,20 +23,4 @@ if (env.DB_SSL) {
   poolConfig.ssl = { rejectUnauthorized: false };
 }
 
-const pool = new Pool(poolConfig);
-
-if (shouldLoadDevEnv) {
-  dotenv.config({ path: devEnvPath, override: true });
-}
-
-const poolConfig: PoolConfig = process.env.DATABASE_URL
-  ? { connectionString: process.env.DATABASE_URL }
-  : {
-      user: process.env.DB_USER || process.env.USER,
-      host: process.env.DB_HOST || process.env.HOST,
-      database: process.env.DB_NAME || process.env.DATABASE,
-      password: process.env.DB_PASSWORD || process.env.PASSWORD,
-      port: Number(process.env.DB_PORT || process.env.PORT) || 5432,
-    };
-
 export default new Pool(poolConfig);

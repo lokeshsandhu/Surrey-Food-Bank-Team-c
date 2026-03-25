@@ -8,7 +8,7 @@ const TEST_PASS = 'password123';
 const ADMIN_USER = 'admin';
 
 beforeAll(async () => {
-    await pool.query('DELETE FROM appointment WHERE username IN ($1, $2)', [TEST_USER, ADMIN_USER]);
+    await pool.query('DELETE FROM appointment_booking WHERE username IN ($1, $2)', [TEST_USER, ADMIN_USER]);
     await pool.query('DELETE FROM familymember WHERE username IN ($1, $2)', [TEST_USER, ADMIN_USER]);
     await pool.query('DELETE FROM account WHERE username IN ($1, $2)', [TEST_USER, ADMIN_USER]);
 
@@ -26,7 +26,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await pool.query('DELETE FROM appointment WHERE username IN ($1, $2)', [TEST_USER, ADMIN_USER]);
+    await pool.query('DELETE FROM appointment_booking WHERE username IN ($1, $2)', [TEST_USER, ADMIN_USER]);
     await pool.query('DELETE FROM familymember WHERE username IN ($1, $2)', [TEST_USER, ADMIN_USER]);
     await pool.query('DELETE FROM account WHERE username IN ($1, $2)', [TEST_USER, ADMIN_USER]);
     await pool.end();

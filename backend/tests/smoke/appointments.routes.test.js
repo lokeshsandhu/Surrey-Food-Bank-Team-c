@@ -16,10 +16,10 @@ let adminToken;
 
 beforeAll(async () => {
     // Clean slate
-    await pool.query('DELETE FROM appointment WHERE username IN ($1, $2) OR username IS NULL', [CLIENT_USER, ADMIN_USER]);
+    await pool.query('DELETE FROM appointment_booking WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
     await pool.query('DELETE FROM familymember WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
     await pool.query('DELETE FROM account WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
-    await pool.query('DELETE FROM appointment WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
+    await pool.query('DELETE FROM appointment_slot WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
 
     const hashed = await hashPassword(CLIENT_PASS);
 
@@ -50,8 +50,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await pool.query('DELETE FROM appointment WHERE username IN ($1, $2) OR username IS NULL', [CLIENT_USER, ADMIN_USER]);
-    await pool.query('DELETE FROM appointment WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
+    await pool.query('DELETE FROM appointment_booking WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
+    await pool.query('DELETE FROM appointment_slot WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
     await pool.query('DELETE FROM familymember WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
     await pool.query('DELETE FROM account WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
     await pool.end();
@@ -59,7 +59,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
     // Clear appointments before each test
-    await pool.query('DELETE FROM appointment WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
+    await pool.query('DELETE FROM appointment_slot WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
 });
 
 // ─── Admin: Create Single Appointment ────────────────────────────────
@@ -224,7 +224,7 @@ describe('PATCH /api/appointments/update (admin update)', () => {
 // ─── Admin: Search Endpoints ─────────────────────────────────────────
 describe('GET /api/appointments/search/* (admin search)', () => {
     beforeEach(async () => {
-        await pool.query('DELETE FROM appointment WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
+        await pool.query('DELETE FROM appointment_slot WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
         await request(app)
             .post('/api/appointments/appointments-in-range')
             .set('Authorization', `Bearer ${adminToken}`)
@@ -363,7 +363,7 @@ describe('GET /api/appointments/available (client)', () => {
 // ─── Client: Book Appointment ────────────────────────────────────────
 describe('POST /api/appointments/book (client)', () => {
     beforeEach(async () => {
-        await pool.query('DELETE FROM appointment WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
+        await pool.query('DELETE FROM appointment_slot WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
         // Create slots
         await request(app)
             .post('/api/appointments/appointments-in-range')
@@ -540,7 +540,7 @@ describe('Booking for household_size >= 4', () => {
     let largeToken;
 
     beforeAll(async () => {
-        await pool.query('DELETE FROM appointment WHERE username = $1', [LARGE_USER]);
+        await pool.query('DELETE FROM appointment_booking WHERE username = $1', [LARGE_USER]);
         await pool.query('DELETE FROM familymember WHERE username = $1', [LARGE_USER]);
         await pool.query('DELETE FROM account WHERE username = $1', [LARGE_USER]);
 
@@ -558,7 +558,7 @@ describe('Booking for household_size >= 4', () => {
     });
 
     afterAll(async () => {
-        await pool.query('DELETE FROM appointment WHERE username = $1', [LARGE_USER]);
+        await pool.query('DELETE FROM appointment_booking WHERE username = $1', [LARGE_USER]);
         await pool.query('DELETE FROM familymember WHERE username = $1', [LARGE_USER]);
         await pool.query('DELETE FROM account WHERE username = $1', [LARGE_USER]);
     });

@@ -12,7 +12,7 @@ let clientToken;
 let adminToken;
 
 beforeAll(async () => {
-    await pool.query('DELETE FROM appointment WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
+    await pool.query('DELETE FROM appointment_booking WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
     await pool.query('DELETE FROM familymember WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
     await pool.query('DELETE FROM account WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
 

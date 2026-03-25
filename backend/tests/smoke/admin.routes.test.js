@@ -13,8 +13,8 @@ let clientToken;
 let adminToken;
 
 beforeAll(async () => {
-    await pool.query('DELETE FROM appointment WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
-    await pool.query('DELETE FROM appointment WHERE appt_date = $1', [APPT_DATE]);
+    await pool.query('DELETE FROM appointment_booking WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
+    await pool.query('DELETE FROM appointment_slot WHERE appt_date = $1', [APPT_DATE]);
     await pool.query('DELETE FROM familymember WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
     await pool.query('DELETE FROM account WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
 
@@ -46,8 +46,13 @@ beforeAll(async () => {
 
     // Create and book an appointment for the client
     await pool.query(
-        `INSERT INTO appointment (appt_date, start_time, end_time, appt_notes, username)
-         VALUES ($1, '10:00', '10:15', 'client appt', $2)`,
+        `INSERT INTO appointment_slot (appt_date, start_time, end_time, appt_notes)
+         VALUES ($1, '10:00', '10:15', 'client appt')`,
+        [APPT_DATE]
+    );
+    await pool.query(
+        `INSERT INTO appointment_booking (appt_date, start_time, username)
+         VALUES ($1, '10:00', $2)`,
         [APPT_DATE, CLIENT_USER]
     );
 
@@ -63,8 +68,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await pool.query('DELETE FROM appointment WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
-    await pool.query('DELETE FROM appointment WHERE appt_date = $1', [APPT_DATE]);
+    await pool.query('DELETE FROM appointment_booking WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
+    await pool.query('DELETE FROM appointment_slot WHERE appt_date = $1', [APPT_DATE]);
     await pool.query('DELETE FROM familymember WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
     await pool.query('DELETE FROM account WHERE username IN ($1, $2)', [CLIENT_USER, ADMIN_USER]);
     await pool.end();
