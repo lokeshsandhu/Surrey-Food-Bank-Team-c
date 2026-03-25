@@ -10,7 +10,6 @@ import EligibilityQuestions from '../components/EligibilityQuestions.jsx';
 import RegistrationFinished from '../components/RegistrationFinished.jsx';
 
 import { Button, Card, Group, Image, Modal, Stepper, Text, Alert } from '@mantine/core';
-import { IconInfoCircle } from '@tabler/icons-react';
 import { isNotEmpty, matchesField, useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 
@@ -22,7 +21,7 @@ import { login, me } from '../../api/auth.js';
 import { createFamilyMember } from '../../api/familyMembers.js';
 
 import { canadaStatusOptions } from '../constants/FormOptions.js';
-import CanadaStatusAlert from '../components/alerts/CanadaStatusAlert.jsx';
+import { isMinAge } from '../utils/registrationHelpers.js';
 
 export default function RegisterPage() {
     const errorRef = useRef(null);
@@ -134,9 +133,12 @@ export default function RegisterPage() {
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your last name.',
                 dob: (value) => {
                     const val = value.trim();
-                    console.log(val);
                     if (val.length === 0) {
                         return 'Please enter your date of birth.';
+                    }
+
+                    if (!isMinAge(val)) {
+                        return ' ';
                     }
                 },
                 email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
