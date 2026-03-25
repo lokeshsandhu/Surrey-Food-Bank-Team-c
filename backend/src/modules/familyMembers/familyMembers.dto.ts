@@ -10,7 +10,7 @@ export interface FamilyMemberDTO {
 }
 
 export interface UpdateFamilyMemberDTO {
-    f_name: string;
+    f_name?: string;
     l_name?: string;
     dob?: string;
     phone?: string;
