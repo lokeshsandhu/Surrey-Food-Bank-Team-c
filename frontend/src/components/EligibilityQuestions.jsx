@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import '../styles/global-styles.css'
 import '../styles/Register.css'
 import { IMaskInput } from 'react-imask';
+import { INELIGIBLE_CANADA_STATUS, isEligibleCity, isEligibleProvince } from '../utils/registerValidation.js';
 
 export default function ElegibilityQuestions({ form }) {
     const [isCityEligible, setIsCityEligible] = useState(true);
@@ -24,16 +25,10 @@ export default function ElegibilityQuestions({ form }) {
     }, [form.values.addr.city, form.values.addr.postal_code])
 
     const checkIsCityEligible = () => {
-        const city = form.getValues().addr.city.toLowerCase()
-        const isEligible =
-            city === 'surrey' ||
-            city === 'north delta' ||
-            city === 'cloverdale';
-        setIsCityEligible(isEligible);
+        setIsCityEligible(isEligibleCity(form.getValues().addr.city));
     }
     const checkIsProvinceEligible = () => {
-        const isEligible = form.getValues().addr.province === 'BC'
-        setIsProvinceEligible(isEligible);
+        setIsProvinceEligible(isEligibleProvince(form.getValues().addr.province));
     }
 
     return (
@@ -59,7 +54,7 @@ export default function ElegibilityQuestions({ form }) {
                     <Radio value="Other" label="Other" />
                 </Group>
             </Radio.Group>
-            {form.getValues().canada_status === '(Ineligible) Visitor or International student with less than 6 months in Canada' &&
+            {form.getValues().canada_status === INELIGIBLE_CANADA_STATUS &&
                 <Alert variant="light" color="red" title="You may not be eligible for this program" icon={<IconInfoCircle />}>Visitors or international students that have stayed in Canada for less than 6 months do not qualify for this program.</Alert>
             }
             <Fieldset legend="2. Address" variant='unstyled'>
