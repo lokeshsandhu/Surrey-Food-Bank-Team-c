@@ -91,7 +91,7 @@ export default function LoginPage() {
             className='link'    
             variant='white'
             size='sm'
-            onClick={() => navigate('/resetPassword')}
+            onClick={() => navigate('/requestPasswordChange')}
           >
             Forgot Password?
           </Button>

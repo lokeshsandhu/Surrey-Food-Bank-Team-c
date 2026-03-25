@@ -4,23 +4,49 @@ import '../styles/Login.css';
 
 import logo from '../assets/surrey-food-bank-logo.png';
 
-import { Button, Card, Image, TextInput, NavLink, Group, Text, Title } from '@mantine/core';
-import { useLocation, useNavigate } from 'react-router';
-
-import { login, me } from '../../api/auth.js';
+import { Button, Card, Image, PasswordInput, Title } from '@mantine/core';
+import { useNavigate } from 'react-router';
+import { useForm, matchesField } from '@mantine/form';
+import validator from 'validator';
+import { notifications } from '@mantine/notifications';
 
 export default function ResetPasswordPage() {
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
-
     const navigate = useNavigate();
 
-    const handleResetEmail = async () => {
-        setError('');
-        alert('To implement: check if user exists. if so, send email');
-        // TODO: Check if user's email is in our database
+    const form = useForm({
+        initialValues: {
+            user_password: '',
+            confirm_password: ''
+        },
+        validateInputOnBlur: true,
+        validateInputOnChange: true,
+        validate: {
+            user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
+            confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
+        }
+    });
 
-        // TODO: Send email if the user exists
+    const handleResetPassword = async () => {
+        setError('');
+        alert('To implement: Reset password');
+        // TODO: API Request to reset password
+
+        // ON SUCCESS: send to login page
+        notifications.show({
+            title: "Password Reset Successfully",
+            message: "Please login with your new password.",
+            color: "green",
+        });
+        navigate('/login');
+
+        // TODO: ON FAIL: ?
+        // notifications.show({
+        //     title: "Error Resetting Password",
+        //     message: "Please try agin.",
+        //     color: "red",
+        // });
     };
 
     return (
@@ -33,14 +59,24 @@ export default function ResetPasswordPage() {
                     fit="contain"
                     p={2}
                 />
-                <Group style={{ gap: 2 }} mb={10}>
-                    <Title order={3} fw={500} mb={2} style={{ justifyContent: 'center' }}>Reset Your Password</Title>
-                    <Text size='sm' color='gray'>Enter the email associated with your account and we will send you password reset instructions.</Text>
-                </Group>
-                <TextInput placeholder='Email' value={email} onChange={e => setEmail(e.target.value)} />
-                {error && <Text c="red" mt={10}>{error}</Text>}
-                <Button onClick={handleResetEmail}>Send Reset Link</Button>
-                <Button variant='light' onClick={() => navigate('/login')}>Back</Button>
+                <Title order={3} fw={500} mb={2} style={{ justifyContent: 'center' }}>Reset Your Password</Title>
+                <PasswordInput
+                    label="New Password"
+                    placeholder="Enter new password"
+                    key={form.key('user_password')}
+                    {...form.getInputProps('user_password')}
+                    h={'60px'}
+                    withAsterisk
+                />
+                <PasswordInput
+                    label="Confirm New Password"
+                    placeholder="Re-enter new password"
+                    key={form.key('confirm_password')}
+                    {...form.getInputProps('confirm_password')}
+                    h={'60px'}
+                    withAsterisk
+                />
+                <Button onClick={handleResetPassword}>Reset Password</Button>
             </Card>
         </div>
     );

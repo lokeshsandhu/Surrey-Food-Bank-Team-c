@@ -20,6 +20,7 @@ import ProtectedRoute from './routes/protectedroute.jsx';
 import AdminRoute from './routes/adminroute.jsx';
 import ClientList from './pages/clientList.jsx';
 import { ClientAccountAdminView, ClientAccountClientView } from './pages/clientAccount.jsx';
+import RequestPasswordChangePage from './pages/RequestPasswordChangePage.jsx';
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 const theme = createTheme({
   fontFamily: 'Roboto, sans-serif',
@@ -51,6 +52,8 @@ createRoot(document.getElementById('root')).render(
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/requestPasswordChange" element={<RequestPasswordChangePage />} />
+        {/* TODO: DELETE LATER */}
         <Route path="/resetPassword" element={<ResetPasswordPage />} />
         <Route path="*" element={<Navigate to="/login" />} />
         <Route path="/adminDashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
