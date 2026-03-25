@@ -13,7 +13,7 @@ export function isEligibleProvince(province) {
 }
 
 export function validateAdultDob(value) {
-  if (!value) {
+  if (!value || value.length === 0) {
     return 'Please enter your date of birth.';
   }
 

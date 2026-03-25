@@ -53,7 +53,6 @@ createRoot(document.getElementById('root')).render(
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/requestPasswordChange" element={<RequestPasswordChangePage />} />
-        {/* TODO: DELETE LATER */}
         <Route path="/resetPassword" element={<ResetPasswordPage />} />
         <Route path="*" element={<Navigate to="/login" />} />
         <Route path="/adminDashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

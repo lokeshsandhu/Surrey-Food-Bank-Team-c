@@ -11,6 +11,7 @@ import { notifications } from '@mantine/notifications';
 import { IconUserPlus } from '@tabler/icons-react';
 import { FMRelationshipOptions } from '../constants/FormOptions';
 import { useNavigate } from "react-router";
+import { getAccount, updateAccount } from "../../api/accounts";
 
 // enum for the modal mode
 const modeEnum = { updateMember: 1, addMember: 2 };
@@ -61,10 +62,13 @@ export default function FamilyMembersTab({ clientUsername }) {
     return relationships.some(m => m.f_name === currentMember.f_name && m.relationship === currentMember.relationship);
   };
 
+  // Gets family members under this account
+  // Returns the number of family members
   const getFamilyMembersInformation = async () => {
     try {
       const familyMembers = await getFamilyMembers(token, clientUsername);
       setFamilyMemberInfo(familyMembers);
+      return familyMembers.length;
     } catch (err) {
       console.log("Big error ", err);
     }
@@ -161,8 +165,19 @@ export default function FamilyMembersTab({ clientUsername }) {
         relationship: member.relationship
       };
       try {
+        // Add family member
         const result = await createFamilyMember(token, memberData);
         await getFamilyMembersInformation();
+
+        // Refetch
+        const householdSize = await getFamilyMembersInformation();
+
+        // Update the account size
+        const accountUpdate = await updateAccount(token, clientUsername, {
+          household_size: householdSize
+        });
+
+
         close();
         form.reset();
         notifications.show({
@@ -197,8 +212,17 @@ export default function FamilyMembersTab({ clientUsername }) {
   const removeMember = async () => {
     if (form.values.relationship !== 'owner') {
       try {
+        // Delete Request
         const result = await deleteFamilyMember(token, clientUsername, currentMember.id);
-        await getFamilyMembersInformation();
+
+        // Refetch
+        const famSize = await getFamilyMembersInformation();
+
+        // Update the account size
+        const accountUpdate = await updateAccount(token, clientUsername, {
+          household_size: famSize
+        });
+
         close();
         form.reset();
         notifications.show({
