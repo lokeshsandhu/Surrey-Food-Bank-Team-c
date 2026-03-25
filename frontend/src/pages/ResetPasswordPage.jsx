@@ -11,8 +11,6 @@ import validator from 'validator';
 import { notifications } from '@mantine/notifications';
 
 export default function ResetPasswordPage() {
-    const [email, setEmail] = useState('');
-    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const form = useForm({
