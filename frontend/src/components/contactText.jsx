@@ -6,7 +6,7 @@ import { sfb_email, sfb_phone_number } from '../constants/Contacts';
 
 export default function ContactText() {
     return (
-        <Text size='xs' mt={20}>
+        <Text size='xs' mt={10}>
             For any questions, please contact Surrey Food Bank at <a
                 href={`tel:${sfb_phone_number}`}>
                 {sfb_phone_number}

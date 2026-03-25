@@ -7,6 +7,8 @@ import '../styles/Register.css';
 import { IMaskInput } from 'react-imask';
 import { provinceOptions, canadaStatusOptions } from '../constants/FormOptions';
 import CanadaStatusAlert from './alerts/CanadaStatusAlert';
+import CityAlert from './alerts/CityAlert';
+import ProvinceAlert from './alerts/ProvinceAlert';
 
 export default function ElegibilityQuestions({ form }) {
     const [isCityEligible, setIsCityEligible] = useState(true);
@@ -140,26 +142,18 @@ export default function ElegibilityQuestions({ form }) {
                         {...form.getInputProps('addr.postal_code')}
                     />
                 </Group>
-
             </Fieldset>
-            {(!isCityEligible || !isProvinceEligible)
-                &&
-                <Alert
-                    variant="light"
-                    color="red"
-                    title="Reminder - To be eligible for Surrey Food Bank:"
-                    icon={<IconInfoCircle />}
-                    w={582}
-                >
-                    {!isProvinceEligible && <Text size='sm' my={0}>
-                        Clients must reside in British Columbia (BC), Canada
-                    </Text>}
-                    {!isCityEligible &&
-                        <Text size='sm' my={0}>
-                            Clients must reside within Surrey, North Delta, or Cloverdale, North of 40th Avenue
-                        </Text>}
-                </Alert>
+
+            {
+                (
+                    form.values.addr.city.trim().length !== 0
+                    && form.values.addr.city.trim().toLowerCase() !== 'surrey'
+                    && form.values.addr.city.trim().toLowerCase() !== 'north delta'
+                    && form.values.addr.city.trim().toLowerCase() !== 'cloverdale'
+                )
+                && <CityAlert />
             }
+            {(form.values.addr.province.length !== 0 && form.values.addr.province !== 'BC') && <ProvinceAlert />}
         </Group>
     );
 }

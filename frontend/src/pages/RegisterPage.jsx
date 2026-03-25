@@ -46,8 +46,8 @@ export default function RegisterPage() {
             addr: {
                 line1: '6177 Walter Gage Road',
                 line2: '',
-                city: 'Vancouver',
-                province: 'BC',
+                city: '',
+                province: '',
                 postal_code: 'V6T 1Z1'
             },
             main_family_member:
@@ -101,16 +101,33 @@ export default function RegisterPage() {
 
                 if (value === canadaStatusOptions.visitorIntlStudentLessThan6.value
                     || value === canadaStatusOptions.other.value) {
-                    return "";
+                    return " ";
                 }
             },
             baby_or_pregnant: (value) => value && value.length > 0 ? null : 'Please select an option.',
             language_spoken: isNotEmpty('Please enter your primary language.'),
             addr: {
                 line1: isNotEmpty('Please enter your address.'),
-                city: isNotEmpty('Please enter your city.'),
-                province: isNotEmpty('Please enter your province.'),
-                postal_code: (value) => value ? (validator.isPostalCode(value, 'CA') ? null : 'Please enter a valid postal code (e.g. V1M 3B5).') : 'Please enter your postal code.'
+                city: (value) => {
+                    const val = value.trim().toLowerCase();
+                    if (val.length === 0) {
+                        return 'Please enter your city.';
+                    } else if (
+                        val !== 'surrey' &&
+                        val !== 'north delta' &&
+                        val !== 'cloverdale') {
+                        return ' ';
+                    }
+                },
+                province: (value) => {
+                    const val = value.trim();
+                    if (val.length === 0) {
+                        return 'Please enter your province.';
+                    } else if (val !== 'BC') {
+                        return ' ';
+                    }
+                },
+                postal_code: (value) => value ? (validator.isPostalCode(value, 'CA') ? null : 'Please enter a valid Canadian postal code (e.g. V1M 3B5).') : 'Please enter your postal code.'
             },
             main_family_member: {
                 f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your first name.',

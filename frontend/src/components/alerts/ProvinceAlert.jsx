@@ -4,14 +4,14 @@ import { IconInfoCircle } from '@tabler/icons-react';
 import '../../styles/global-styles.css';
 import ContactText from '../contactText';
 
-export default function CanadaStatusAlert() {
+export default function ProvinceAlert() {
     return (
         <Alert
             variant="light"
             color="red"
-            title="You are not be eligible for this program (Ineligible Immigration Status)"
+            title="You are not be eligible for this program (Ineligible Province)"
             icon={<IconInfoCircle />}
-        >Visitors or international students that have stayed in Canada for less than 6 months do not qualify for this program.
+        >Clients must reside in British Columbia (BC), Canada.
             <ContactText />
         </Alert>
     );
