@@ -1,6 +1,20 @@
 import pool from "../../db/postgres";
 import { FamilyMemberDTO, UpdateFamilyMemberDTO } from "./familyMembers.dto";
 
+function buildFamilyMemberLookupClause(identifier: number | string, startIndex = 1) {
+    if (typeof identifier === "number") {
+        return {
+            clause: `username = $${startIndex} AND id = $${startIndex + 1}`,
+            values: [identifier],
+        };
+    }
+
+    return {
+        clause: `username = $${startIndex} AND LOWER(f_name) = LOWER($${startIndex + 1})`,
+        values: [identifier],
+    };
+}
+
 // Select all rows with given first name from familymember table, return row(s)
 export async function findFamilyMembersByFName(f_name: string) {
     const text = `
@@ -25,6 +39,20 @@ export async function findFamilyMembersByLName(l_name: string) {
 
 // Insert row into familymember table, return row(s)
 export async function createFamilyMember(data: FamilyMemberDTO) {
+    const duplicateCheck = await pool.query(
+        `
+            SELECT 1
+            FROM familymember
+            WHERE username = $1 AND LOWER(f_name) = LOWER($2)
+            LIMIT 1
+        `,
+        [data.username, data.f_name]
+    );
+
+    if (duplicateCheck.rows.length > 0) {
+        throw new Error("Family member with this first name already exists for the account");
+    }
+
     const text = `
         INSERT INTO familymember
         (username, f_name, l_name, dob, phone, email, relationship)
@@ -59,7 +87,7 @@ export async function getFamilyMembers(username: string) {
 // Only the fields you specify are updated
 export async function updateFamilyMember(
     username: string,
-    id: number,
+    identifier: number | string,
     data: UpdateFamilyMemberDTO
 ) {
     const fields: string[] = [];
@@ -92,32 +120,35 @@ export async function updateFamilyMember(
     }
 
     if (fields.length === 0) {
+        const lookup = buildFamilyMemberLookupClause(identifier);
         const { rows } = await pool.query(
-            `SELECT * FROM familymember WHERE username = $1 AND id = $2`,
-            [username, id]
+            `SELECT * FROM familymember WHERE ${lookup.clause}`,
+            [username, ...lookup.values]
         );
         return rows[0] ?? null;
     }
 
-    values.push(username, id);
+    const lookup = buildFamilyMemberLookupClause(identifier, idx);
+    values.push(username, ...lookup.values);
     const text = `
         UPDATE familymember
         SET ${fields.join(", ")}
-        WHERE username = $${idx} AND id = $${idx + 1}
+        WHERE ${lookup.clause}
         RETURNING *
     `;
     const { rows } = await pool.query(text, values);
     return rows[0] ?? null;
 }
 
-// Delete row from familymember table with given username and id, return row
-export async function deleteFamilyMember(username: string, id: number) {
+// Delete row from familymember table with given username and identifier, return row
+export async function deleteFamilyMember(username: string, identifier: number | string) {
+    const lookup = buildFamilyMemberLookupClause(identifier);
     const text = `
         DELETE FROM familymember
-        WHERE username = $1 AND id = $2
+        WHERE ${lookup.clause}
         RETURNING *
     `;
-    const { rows } = await pool.query(text, [username, id]);
+    const { rows } = await pool.query(text, [username, ...lookup.values]);
     return rows[0] ?? null;
 }
 
@@ -128,9 +159,10 @@ export async function getOwnerFamilyMembers() {
     return rows;
 }
 
-// Select from familymember table with given username and id, return boolean
-export async function usernameFamilyMemberExists(username: string, id: number): Promise<boolean> {
-    const text = `SELECT * FROM familymember WHERE username = $1 AND id = $2`;
-    const { rows } = await pool.query(text, [username, id]);
+// Select from familymember table with given username and identifier, return boolean
+export async function usernameFamilyMemberExists(username: string, identifier: number | string): Promise<boolean> {
+    const lookup = buildFamilyMemberLookupClause(identifier);
+    const text = `SELECT * FROM familymember WHERE ${lookup.clause}`;
+    const { rows } = await pool.query(text, [username, ...lookup.values]);
     return rows.length > 0;
 }
