@@ -34,3 +34,7 @@ html, body {
 .card {
     gap: 15px;
 }
+
+.mantine-Alert-body {
+    gap: 2px;
+}
