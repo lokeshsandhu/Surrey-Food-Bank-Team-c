@@ -1,6 +1,17 @@
 const { findFamilyMembersByFName, findFamilyMembersByLName, createFamilyMember, getFamilyMembers, updateFamilyMember, deleteFamilyMember, getOwnerFamilyMembers, usernameFamilyMemberExists} = require('../../src/modules/familyMembers/familyMembers.service');
 const pool = require('../../src/db/postgres').default;
 
+function normalizeDateOnly(value) {
+    if (value == null) return value;
+    if (value instanceof Date) return value.toISOString().slice(0, 10);
+    if (typeof value === 'string') return value.slice(0, 10);
+    return String(value);
+}
+
+function expectDobEqual(actualDob, expectedIsoDate) {
+    expect(normalizeDateOnly(actualDob)).toBe(expectedIsoDate);
+}
+
 describe('familyMembers.service', () => {
 
     beforeEach(async () => {
@@ -36,8 +47,7 @@ describe('familyMembers.service', () => {
         expect(newMember.username).toBe('testuser');
         expect(newMember.f_name).toBe('test');
         expect(newMember.l_name).toBe('user');
-        const expectedDate = new Date('1990/01/01');
-        expect(newMember.dob).toEqual(expectedDate);
+        expectDobEqual(newMember.dob, '1990-01-01');
         expect(newMember.phone).toBe('(111) 111-111');
         expect(newMember.email).toBe('email@email.com');
         expect(newMember.relationship).toBe('owner');
@@ -351,8 +361,7 @@ describe('familyMembers.service', () => {
         expect(initial.username).toBe('testuser');
         expect(initial.f_name).toBe('first');
         expect(initial.l_name).toBe('user');
-        const initialDate = new Date('1990/01/01');
-        expect(initial.dob).toEqual(initialDate);
+        expectDobEqual(initial.dob, '1990-01-01');
         expect(initial.phone).toBe('(111) 111-111');
         expect(initial.email).toBe('email@email.com');
         expect(initial.relationship).toBe('owner');
@@ -362,8 +371,7 @@ describe('familyMembers.service', () => {
         expect(result.username).toBe('testuser');
         expect(result.f_name).toBe('newfirst');
         expect(result.l_name).toBe('newuser');
-        const updatedDate = new Date('2000/12/12');
-        expect(result.dob).toEqual(updatedDate);
+        expectDobEqual(result.dob, '2000-12-12');
         expect(result.phone).toBe('(222) 222-222');
         expect(result.email).toBe('newemail@email.com');
         expect(result.relationship).toBe('newRelation');
@@ -391,8 +399,7 @@ describe('familyMembers.service', () => {
         expect(initial.username).toBe('testuser');
         expect(initial.f_name).toBe('first');
         expect(initial.l_name).toBe('user');
-        const initialDate = new Date('1990/01/01');
-        expect(initial.dob).toEqual(initialDate);
+        expectDobEqual(initial.dob, '1990-01-01');
         expect(initial.phone).toBe('(111) 111-111');
         expect(initial.email).toBe('email@email.com');
         expect(initial.relationship).toBe('owner');
@@ -402,7 +409,7 @@ describe('familyMembers.service', () => {
         expect(initial.username).toBe('testuser');
         expect(initial.f_name).toBe('first');
         expect(result.l_name).toBe('newuser');
-        expect(initial.dob).toEqual(initialDate);
+        expectDobEqual(initial.dob, '1990-01-01');
         expect(result.phone).toBe('(222) 222-222');
         expect(initial.email).toBe('email@email.com');
         expect(result.relationship).toBe('newRelation');
@@ -427,8 +434,7 @@ describe('familyMembers.service', () => {
         expect(initial.username).toBe('testuser');
         expect(initial.f_name).toBe('first');
         expect(initial.l_name).toBe('user');
-        const initialDate = new Date('1990/01/01');
-        expect(initial.dob).toEqual(initialDate);
+        expectDobEqual(initial.dob, '1990-01-01');
         expect(initial.phone).toBe('(111) 111-111');
         expect(initial.email).toBe('email@email.com');
         expect(initial.relationship).toBe('owner');
@@ -438,7 +444,7 @@ describe('familyMembers.service', () => {
         expect(initial.username).toBe('testuser');
         expect(initial.f_name).toBe('first');
         expect(initial.l_name).toBe('user');
-        expect(initial.dob).toEqual(initialDate);
+        expectDobEqual(initial.dob, '1990-01-01');
         expect(initial.phone).toBe('(111) 111-111');
         expect(initial.email).toBe('email@email.com');
         expect(initial.relationship).toBe('owner');
