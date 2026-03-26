@@ -44,7 +44,7 @@ export const provinceOptions = [
 
 export const FMRelationshipOptions = [
     'Spouse',
-    'Parter',
+    'Partner',
     'Child',
     'Parent',
     'Sibling',

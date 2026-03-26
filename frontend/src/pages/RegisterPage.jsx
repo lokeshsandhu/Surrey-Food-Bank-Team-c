@@ -253,8 +253,6 @@ export default function RegisterPage() {
             ]);
         }
 
-
-
         let hasErrors = false;
         fieldsToValidate.forEach((field) => {
             const result = form.validateField(field);
