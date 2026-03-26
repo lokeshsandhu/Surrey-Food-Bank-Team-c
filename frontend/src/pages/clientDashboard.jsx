@@ -7,7 +7,7 @@ import { ClientNavBar } from '../components/navBar.jsx';
 import { useState } from 'react';
 import { notifications, Notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router';
-import { bookAppointment, deleteAppointmentFromUsername, getAppointmentsInDateRange, getMyAppointments } from '../../api/appointments.js';
+import { bookAppointment, getAppointmentsInDateRange, getMyAppointments } from '../../api/appointments.js';
 import { me } from '../../api/auth.js';
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -118,14 +118,17 @@ export default function ClientDashboard() {
 
     const handleCancelBooking = async (appointment) => {
         setModalLoading(true);
-        const res = await deleteAppointmentFromUsername(token, appointment.username);
-        if (res && res.success) {
+        const res = await cancelAppointment(token, appointment?.appt_date, appointment?.start_time);
+        const cancelSucceeded = Boolean(res?.success) || Array.isArray(res?.deleted);
+
+        if (cancelSucceeded) {
             notifications.show({
                 title: 'Success',
                 message: 'Appointment cancelled successfully',
                 color: 'var(--mantine-color-green-6)',
                 autoClose: 5000,
-                withCloseButton: true,                withBorder: true,
+                withCloseButton: true,
+                withBorder: true,
                 style: {
                     border: '3px solid',
                     borderColor: 'var(--mantine-color-green-6)',
