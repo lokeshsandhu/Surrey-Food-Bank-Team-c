@@ -23,6 +23,4 @@ if (env.DB_SSL) {
   poolConfig.ssl = { rejectUnauthorized: false };
 }
 
-const pool = new Pool(poolConfig);
-
-export default pool;
+export default new Pool(poolConfig);

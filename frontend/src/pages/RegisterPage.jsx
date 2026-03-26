@@ -20,6 +20,7 @@ import validator from 'validator'
 import { createAccount, usernameExists } from '../../api/accounts.js';
 import { login, me } from '../../api/auth.js';
 import { createFamilyMember } from '../../api/familyMembers.js';
+import { validateAdultDob } from '../utils/registerValidation.js';
 
 export default function RegisterPage() {
     const errorRef = useRef(null);
@@ -76,7 +77,7 @@ export default function RegisterPage() {
             main_family_member: {
                 f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your first name.',
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your last name.',
-                dob: (value) => value && value.trim().length > 0 ? null : 'Please enter your date of birth.',
+                dob: validateAdultDob,
                 email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
                 phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
