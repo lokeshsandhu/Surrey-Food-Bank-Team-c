@@ -1,5 +1,4 @@
-import { Input, Radio, Group, Stack, TextInput, Text, Fieldset, Select, Alert } from '@mantine/core';
-import { IconInfoCircle } from '@tabler/icons-react';
+import { Radio, Group, TextInput, Text, Fieldset, Select } from '@mantine/core';
 import React from 'react';
 import { useState, useEffect } from 'react';
 import '../styles/global-styles.css';
@@ -11,6 +10,28 @@ import CityAlert from './alerts/CityAlert';
 import ProvinceAlert from './alerts/ProvinceAlert';
 
 export default function ElegibilityQuestions({ form }) {
+    const [isCityEligible, setIsCityEligible] = useState(true);
+    const [isProvinceEligible, setIsProvinceEligible] = useState(true);
+
+    const checkIsCityEligible = () => {
+        const city = form.getValues().addr.city.trim().toLowerCase();
+        setIsCityEligible(
+            city.length === 0
+            || city === 'surrey'
+            || city === 'north delta'
+            || city === 'cloverdale'
+        );
+    };
+
+    const checkIsProvinceEligible = () => {
+        const province = form.getValues().addr.province.trim().toUpperCase();
+        setIsProvinceEligible(province.length === 0 || province === 'BC');
+    };
+
+    useEffect(() => {
+        checkIsCityEligible();
+        checkIsProvinceEligible();
+    }, [form.values.addr.city, form.values.addr.province]);
 
     return (
         <Group>
@@ -120,15 +141,10 @@ export default function ElegibilityQuestions({ form }) {
             </Fieldset>
 
             {
-                (
-                    form.values.addr.city.trim().length !== 0
-                    && form.values.addr.city.trim().toLowerCase() !== 'surrey'
-                    && form.values.addr.city.trim().toLowerCase() !== 'north delta'
-                    && form.values.addr.city.trim().toLowerCase() !== 'cloverdale'
-                )
+                !isCityEligible
                 && <CityAlert />
             }
-            {(form.values.addr.province.length !== 0 && form.values.addr.province !== 'BC') && <ProvinceAlert />}
+            {!isProvinceEligible && <ProvinceAlert />}
         </Group>
     );
 }

@@ -12,6 +12,9 @@ import AgeAlert from './alerts/AgeAlert';
 import { isMinAge } from '../utils/registrationHelpers';
 
 export default function AccountInformation({ form }) {
+    const dobError =
+        form.errors['main_family_member.dob']
+        || form.errors.main_family_member?.dob;
 
     const checkUsername = async () => {
         const currentUsername = form.values.username;
@@ -99,6 +102,9 @@ export default function AccountInformation({ form }) {
                         defaultDate={dayjs()}
                         minDate={dayjs().subtract(100, 'year').toDate()}
                     />
+                    {dobError === 'Please enter your date of birth.' && (
+                        <Text c="red" size="sm">Please enter your date of birth.</Text>
+                    )}
                     {!isMinAge(form.values.main_family_member.dob) && <AgeAlert />}
                     <TextInput
                         label="4. Email"

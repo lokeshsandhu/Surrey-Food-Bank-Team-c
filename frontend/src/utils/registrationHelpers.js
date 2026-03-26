@@ -9,8 +9,6 @@ export const isMinAge = (val) => {
         today.getDate()
     );
 
-    console.log(minDob);
-
     if (dobDate > minDob) {
         return false;
     }
