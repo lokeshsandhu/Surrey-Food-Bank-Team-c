@@ -23,3 +23,20 @@ export function sendConfirmationEmail(token, data) {
     body: JSON.stringify(data)
   }).then(res => res.json());
 }
+
+/**
+ * Send recovery email to reset account password
+ * Required fields: email, link
+ * Example:
+ *   getFamilyMembersByFName(token, {
+ *      email: "email@email.com",
+ *      link: ""
+ * });
+ */
+export function sendRecoveryEmail(token, data) {
+  return fetch(`${API_BASE}/send-recovery`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data)
+  }).then(res => res.json());
+}

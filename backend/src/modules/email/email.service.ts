@@ -8,17 +8,17 @@ const mg = mailgun.client({
     key: env.MAILGUN_KEY,
 });
 
-export async function sendConfirmMessage(date: string, time: string, user: string, email: string) {
+export async function sendConfirmMessage(apptdate: string, appttime: string, user: string, email: string) {
   try {
-    const subjectUser = "Booking Confirmation for " + user;
+    const subjectUser = "Booking Confirmation for " + apptdate;
     const data = await mg.messages.create("sandbox566ace4bec16451b809897c40c8e522a.mailgun.org", {
       from: "Mailgun Sandbox <postmaster@sandbox566ace4bec16451b809897c40c8e522a.mailgun.org>",
       to: [email],
       subject: subjectUser,
       template: "booking confirmation",
       "h:X-Mailgun-Variables": JSON.stringify({
-        bookingdate: date,
-        bookingtime: time,
+        bookingdate: apptdate,
+        bookingtime: appttime,
         username: user
       }),
     });
@@ -29,7 +29,23 @@ export async function sendConfirmMessage(date: string, time: string, user: strin
   }
 }
 
-//sendConfirmMessage("Testing Date 123", "12:12", "Big Username Moment", "schoolpia914@gmail.com");
+// send recovery email using "account recovery" template
+export async function sendRecoveryMessage(email: string, link: string) {
+  try {
+    const subjectUser = "Account Recovery for " + email;
+    const data = await mg.messages.create("sandbox566ace4bec16451b809897c40c8e522a.mailgun.org", {
+      from: "Mailgun Sandbox <postmaster@sandbox566ace4bec16451b809897c40c8e522a.mailgun.org>",
+      to: [email],
+      subject: subjectUser,
+      template: "account recovery",
+      "h:X-Mailgun-Variables": JSON.stringify({
+        useremail: email,
+        recoverylink: link,
+      }),
+    });
 
-// const date = new Date("01/04/2026");
-
+    return data;
+  } catch (error) {
+    return error;
+  }
+}
