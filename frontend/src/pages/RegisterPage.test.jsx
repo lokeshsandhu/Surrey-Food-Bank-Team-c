@@ -1,15 +1,9 @@
 import { MantineProvider } from '@mantine/core';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import RegisterPage from './RegisterPage.jsx';
-import {
-  INELIGIBLE_CANADA_STATUS,
-  isEligibleCity,
-  isEligibleProvince,
-  validateAdultDob,
-} from '../utils/registerValidation.js';
 
 vi.mock('react-router', () => ({
   useNavigate: () => vi.fn(),
@@ -37,44 +31,61 @@ function renderRegisterPage() {
   );
 }
 
-describe('registerValidation', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-03-24T12:00:00Z'));
-  });
+async function selectProvince(user, province) {
+  await user.click(screen.getByPlaceholderText(/select province/i));
+  const option = screen
+    .getAllByRole('option', { hidden: true })
+    .find((node) => node.textContent?.trim() === province);
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
+  if (!option) {
+    throw new Error(`Province option not found: ${province}`);
+  }
 
-  it('requires a date of birth', () => {
-    expect(validateAdultDob(null)).toBe('Please enter your date of birth.');
-  });
+  fireEvent.click(option);
+}
 
-  it('rejects users younger than 18', () => {
-    expect(validateAdultDob('2008-03-25')).toBe('You must be at least 18 years old to register.');
-  });
+async function completeEligibilityStep(user, overrides = {}) {
+  const {
+    canadaStatus = 'Canadian Citizen',
+    line1 = '13478 78th Ave',
+    city = 'Surrey',
+    province = 'BC',
+    postalCode = 'V1M 3B5',
+  } = overrides;
 
-  it('accepts users who are already 18', () => {
-    expect(validateAdultDob('2008-03-24')).toBeNull();
-  });
+  if (canadaStatus) {
+    await user.click(screen.getByLabelText(new RegExp(canadaStatus, 'i')));
+  }
 
-  it('accepts only supported Surrey-area cities', () => {
-    expect(isEligibleCity('Surrey')).toBe(true);
-    expect(isEligibleCity('north delta')).toBe(true);
-    expect(isEligibleCity('Vancouver')).toBe(false);
-  });
+  await user.type(screen.getByLabelText(/address line 1/i), line1);
+  await user.type(screen.getByPlaceholderText(/e\.g\. surrey/i), city);
+  await selectProvince(user, province);
+  await user.type(screen.getByLabelText(/postal code/i), postalCode);
+  await user.click(screen.getByRole('button', { name: /^next$/i }));
+  await screen.findByText(/account information/i);
+}
 
-  it('accepts only British Columbia as the eligible province', () => {
-    expect(isEligibleProvince('BC')).toBe(true);
-    expect(isEligibleProvince('bc')).toBe(true);
-    expect(isEligibleProvince('AB')).toBe(false);
-  });
+async function completeAccountInfoWithoutDob(user, overrides = {}) {
+  const {
+    username = 'john123',
+    password = 'StrongP@ss1',
+    firstName = 'Alex',
+    lastName = 'Doe',
+    email = 'alex@example.com',
+    phone = '6045551234',
+    language = 'English',
+  } = overrides;
 
-  it('keeps the ineligible immigration status string centralized', () => {
-    expect(INELIGIBLE_CANADA_STATUS).toContain('less than 6 months in Canada');
-  });
-});
+  await user.type(screen.getByPlaceholderText(/e\.g\. john123/i), username);
+  await user.type(screen.getByPlaceholderText(/^enter password$/i), password);
+  await user.type(screen.getByPlaceholderText(/^re-enter password$/i), password);
+  await user.type(screen.getByPlaceholderText(/^e\.g\. alex$/i), firstName);
+  await user.type(screen.getByPlaceholderText(/^e\.g\. doe$/i), lastName);
+  await user.type(screen.getByPlaceholderText(/^e\.g\. alexdoe@gmail\.com$/i), email);
+  await user.type(screen.getByPlaceholderText(/\(123\) 456-7890/i), phone);
+  await user.click(screen.getByLabelText(/^no$/i));
+  await user.type(screen.getByPlaceholderText(/e\.g\. english, french, mandarin, etc\./i), language);
+}
 
 describe('RegisterPage eligibility warnings', () => {
   it('shows an alert for an ineligible immigration status', async () => {
@@ -86,7 +97,7 @@ describe('RegisterPage eligibility warnings', () => {
     );
 
     expect(
-      screen.getByText(/you may not be eligible for this program/i),
+      screen.getByText(/ineligible immigration status/i),
     ).toBeInTheDocument();
   });
 
@@ -98,7 +109,60 @@ describe('RegisterPage eligibility warnings', () => {
     await user.tab();
 
     expect(
-      screen.getByText(/clients must reside within surrey, north delta, or cloverdale/i),
+      screen.getByText(/clients must reside in the surrey, north delta, or cloverdale, north of 40th avenue/i),
     ).toBeInTheDocument();
+  });
+
+  it('shows the province reminder when the province is outside BC', async () => {
+    const user = userEvent.setup();
+    renderRegisterPage();
+
+    await selectProvince(user, 'AB');
+
+    expect(
+      screen.getByText(/clients must reside in british columbia \(bc\), canada/i),
+    ).toBeInTheDocument();
+  });
+});
+
+describe('RegisterPage age validation', () => {
+  it('requires a date of birth before moving past account information', async () => {
+    const user = userEvent.setup();
+    renderRegisterPage();
+
+    await completeEligibilityStep(user);
+    await completeAccountInfoWithoutDob(user);
+    await user.click(screen.getByRole('button', { name: /^next$/i }));
+
+    expect(screen.getByText(/account information/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^next$/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^review$/i })).not.toBeInTheDocument();
+  }, 10000);
+
+  it('shows the age restriction when the entered date of birth is under 18', async () => {
+    const user = userEvent.setup();
+    renderRegisterPage();
+
+    await completeEligibilityStep(user);
+    await user.type(screen.getByLabelText(/date of birth/i), '2020 03 25');
+
+    expect(screen.getByText(/clients must be at least 18 years old/i)).toBeInTheDocument();
+  });
+
+  it('accepts a valid adult date of birth without showing the age alert', async () => {
+    const user = userEvent.setup();
+    renderRegisterPage();
+
+    await completeEligibilityStep(user);
+    const dobInput = screen.getByLabelText(/date of birth/i);
+    await user.type(dobInput, '2020 03 25');
+    expect(screen.getByText(/clients must be at least 18 years old/i)).toBeInTheDocument();
+
+    await user.clear(dobInput);
+    await user.type(dobInput, '2000 03 24');
+
+    await waitFor(() => {
+      expect(screen.queryByText(/clients must be at least 18 years old/i)).not.toBeInTheDocument();
+    });
   });
 });

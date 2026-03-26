@@ -1,15 +1,20 @@
 import { Input, Text, Group, TextInput, Fieldset, Select, PasswordInput, Stack, Radio, NumberInput } from '@mantine/core';
-import { DateInput } from '@mantine/dates'
-import validator from 'validator'
-import { IMaskInput } from 'react-imask'
+import { DateInput } from '@mantine/dates';
+import validator from 'validator';
+import { IMaskInput } from 'react-imask';
 import React from 'react';
-import '../styles/global-styles.css'
-import '../styles/Register.css'
+import '../styles/global-styles.css';
+import '../styles/Register.css';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { usernameExists } from '../../api/accounts';
+import AgeAlert from './alerts/AgeAlert';
+import { isMinAge } from '../utils/registrationHelpers';
 
 export default function AccountInformation({ form }) {
+    const dobError =
+        form.errors['main_family_member.dob']
+        || form.errors.main_family_member?.dob;
 
     const checkUsername = async () => {
         const currentUsername = form.values.username;
@@ -24,6 +29,7 @@ export default function AccountInformation({ form }) {
             );
         }
     };
+
     return (
         <div>
             <div style={{ width: '100%' }}>
@@ -96,6 +102,10 @@ export default function AccountInformation({ form }) {
                         defaultDate={dayjs()}
                         minDate={dayjs().subtract(100, 'year').toDate()}
                     />
+                    {dobError === 'Please enter your date of birth.' && (
+                        <Text c="red" size="sm">Please enter your date of birth.</Text>
+                    )}
+                    {!isMinAge(form.values.main_family_member.dob) && <AgeAlert />}
                     <TextInput
                         label="4. Email"
                         placeholder="e.g. alexdoe@gmail.com"
@@ -145,5 +155,5 @@ export default function AccountInformation({ form }) {
                 </Stack>
             </Group>
         </div>
-    )
+    );
 }

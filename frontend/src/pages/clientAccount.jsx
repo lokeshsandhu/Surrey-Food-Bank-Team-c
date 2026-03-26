@@ -1,5 +1,5 @@
-import React from "react"
-import { useParams } from 'react-router-dom'
+import React from "react";
+import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 
 import '../styles/adminstyles.css';
@@ -7,9 +7,10 @@ import '../styles/clientList.css';
 import AccountInformationTab from "../components/AccountInformationTab";
 import { AdminNavBar, ClientNavBar } from "../components/navBar";
 
-import { ActionIcon, CloseButton, TextInput, Title, Table, Button, Tabs } from '@mantine/core';
+import { ActionIcon, Tabs } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
 import FamilyMembersTab from "../components/FamilyMembersTab";
+import AppointmentsTab from "../components/AppointmentsTab";
 
 export function ClientAccount() {
     const params = useParams();
@@ -36,6 +37,7 @@ export function ClientAccount() {
                 <Tabs.List bg='white' p={10} style={{ borderRadius: 4 }} h={'100%'}>
                     <Tabs.Tab value="account">Account Information</Tabs.Tab>
                     <Tabs.Tab value="family">Family Members</Tabs.Tab>
+                    <Tabs.Tab value="appointments">Appointment History</Tabs.Tab>
                 </Tabs.List>
 
                 <Tabs.Panel
@@ -49,12 +51,19 @@ export function ClientAccount() {
                 <Tabs.Panel
                     value="family"
                     pl={20}
+                    pb={10}
                 >
                     <FamilyMembersTab clientUsername={client_username} />
                 </Tabs.Panel>
+                <Tabs.Panel
+                    value="appointments"
+                    pl={20}
+                >
+                    <AppointmentsTab />
+                </Tabs.Panel>
             </Tabs>
         </>
-    )
+    );
 }
 
 export function ClientAccountAdminView() {
@@ -69,7 +78,7 @@ export function ClientAccountAdminView() {
                 <ClientAccount />
             </div>
         </div>
-    )
+    );
 }
 
 export function ClientAccountClientView() {
@@ -84,5 +93,5 @@ export function ClientAccountClientView() {
                 <ClientAccount />
             </div>
         </div>
-    )
+    );
 }
