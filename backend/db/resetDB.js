@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
+const { Pool } = require('pg');
 
 const envFileCandidates = [
     process.env.ENV_FILE,
@@ -17,9 +18,6 @@ for (const envFile of envFileCandidates) {
         break;
     }
 }
-
-// create a pool connection to database
-const { Pool } = require('pg');
 
 const useConnectionString = Boolean(process.env.DATABASE_URL);
 const enableSsl = process.env.DB_SSL === 'true';
@@ -35,7 +33,7 @@ const pool = new Pool(
             host: process.env.DB_HOST || process.env.HOST,
             database: process.env.DB_NAME || process.env.DATABASE,
             password: process.env.DB_PASSWORD || process.env.PASSWORD,
-            port: Number(process.env.DB_PORT) || 5432,
+            port: Number(process.env.DB_PORT || process.env.PORT) || 5432,
             ssl: enableSsl ? { rejectUnauthorized: false } : undefined,
         }
 );
@@ -48,8 +46,8 @@ async function resetDB() {
 
         const statements = sqlScript
             .split(/;\s*[\r\n]+/)
-            .map(stmt => stmt.trim())
-            .filter(stmt => stmt.length > 0);
+            .map((stmt) => stmt.trim())
+            .filter((stmt) => stmt.length > 0);
 
         let successCount = 0;
         let errorCount = 0;
@@ -65,7 +63,7 @@ async function resetDB() {
         }
 
         console.log(`Database initialized: ${successCount} successful, ${errorCount} errors`);
-        return { success: true, message: `Database reset successfully` };
+        return { success: true, message: 'Database reset successfully' };
     } catch (err) {
         console.error('Initialization error:', err.message);
         return { success: false, message: err.message };
@@ -74,4 +72,7 @@ async function resetDB() {
     }
 }
 
-resetDB();
+resetDB().catch((err) => {
+    console.error('Initialization error:', err.message);
+    process.exitCode = 1;
+});

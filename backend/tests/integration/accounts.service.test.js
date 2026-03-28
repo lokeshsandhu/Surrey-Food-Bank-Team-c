@@ -1,13 +1,5 @@
 const { createAccount, getAccountByUsername, usernameExists, getAccountWithPassword, updateAccount, deleteAccount } = require('../../src/modules/accounts/accounts.service');
-const { Pool } = require('pg');
-
-const pool = new Pool({
-    user: process.env.USER,
-    host: process.env.HOST,
-    database: process.env.DATABASE,
-    password: process.env.PASSWORD,
-    port: process.env.PORT
-});
+const pool = require('../../src/db/postgres').default;
 
 describe('accounts.service', () => {
     beforeEach(async () => {
@@ -123,5 +115,25 @@ describe('accounts.service', () => {
         expect(deleted.username).toBe('testuser');
         const account = await getAccountByUsername('testuser');
         expect(account).toBeNull();
+    });
+
+    it('getAccountByUsername should return null for non-existing username', async () => {
+        const account = await getAccountByUsername('nonexistentuser');
+        expect(account).toBeNull();
+    });
+
+    it('getAccountWithPassword should return null for non-existing username', async () => {
+        const account = await getAccountWithPassword('nonexistentuser');
+        expect(account).toBeNull();
+    });
+
+    it('updateAccount should return null for non-existing username', async () => {
+        const updated = await updateAccount('nonexistentuser', { household_size: 5 });
+        expect(updated).toBeNull();
+    });
+
+    it('deleteAccount should return null for non-existing username', async () => {
+        const deleted = await deleteAccount('nonexistentuser');
+        expect(deleted).toBeNull();
     });
 });
