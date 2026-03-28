@@ -51,7 +51,7 @@ async function sampleJaneData(){
         dob: '2010/01/01',
         phone: '(111) 111-1111',
         email: 'jim@email.com',
-        relationship: 'Son',
+        relationship: 'Child',
     }
     const johnFM = {
         username: 'jane123',
@@ -60,7 +60,7 @@ async function sampleJaneData(){
         dob: '2010/01/01',
         phone: '(111) 111-1111',
         email: 'john@email.com',
-        relationship: 'Son',
+        relationship: 'Other',
     }
 
     const jillFM = {
@@ -70,7 +70,7 @@ async function sampleJaneData(){
         dob: '2012/12/01',
         phone: '(111) 111-1111',
         email: 'jill@email.com',
-        relationship: 'Daughter',
+        relationship: 'Sibling',
     }
 
     const jessFM = {
@@ -80,7 +80,7 @@ async function sampleJaneData(){
         dob: '2026/01/01',
         phone: '(111) 111-1111',
         email: 'jane@email.com',
-        relationship: 'Daughter',
+        relationship: 'Spouse',
     }
 
     await account.createAccount(janeAccount); 

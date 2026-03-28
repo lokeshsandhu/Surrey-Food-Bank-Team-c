@@ -1,25 +1,27 @@
-import React, { useEffect, useRef } from 'react';
-import { act, useState } from 'react'
-import '../styles/global-styles.css'
-import '../styles/Register.css'
+import React, { useEffect, useRef, useState } from 'react';
+import '../styles/global-styles.css';
+import '../styles/Register.css';
 
-import logo from '../assets/surrey-food-bank-logo.png'
+import logo from '../assets/surrey-food-bank-logo.png';
 
-import EligibilityQuestions from '../components/EligibilityQuestions.jsx'
-import AccountInformation from '../components/AccountInformation.jsx'
-import AddFamilyMembers from '../components/AddFamilyMembers.jsx'
-import RegistrationFinished from '../components/RegistrationFinished.jsx'
+import AccountInformation from '../components/AccountInformation.jsx';
+import AddFamilyMembers from '../components/AddFamilyMembers.jsx';
+import EligibilityQuestions from '../components/EligibilityQuestions.jsx';
+import RegistrationFinished from '../components/RegistrationFinished.jsx';
 
-import { Input, Card, Button, Text, NavLink, Typography, Timeline, Image, Stepper, Group, Modal } from '@mantine/core';
-import { useForm, isNotEmpty, hasLength, matchesField, isEmail } from '@mantine/form'
+import { Button, Card, Group, Image, Modal, Stepper, Text, Alert } from '@mantine/core';
+import { isNotEmpty, matchesField, useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 
 import { useNavigate } from 'react-router';
 
-import validator from 'validator'
+import validator from 'validator';
 import { createAccount, usernameExists } from '../../api/accounts.js';
 import { login, me } from '../../api/auth.js';
 import { createFamilyMember } from '../../api/familyMembers.js';
+
+import { canadaStatusOptions } from '../constants/FormOptions.js';
+import { isMinAge } from '../utils/registrationHelpers.js';
 
 export default function RegisterPage() {
     const errorRef = useRef(null);
@@ -64,50 +66,66 @@ export default function RegisterPage() {
             username: (value) => value.trim().length < 5 ? 'Username must be at least 5 characters' : null,
             user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
-            canada_status: (value) => value ? null : 'Please select an option.',
+            canada_status: (value) => {
+                if (value.trim().length === 0) {
+                    return 'Please select an option.';
+                }
+
+                if (value === canadaStatusOptions.visitorIntlStudentLessThan6.value
+                    || value === canadaStatusOptions.other.value) {
+                    return " ";
+                }
+            },
             baby_or_pregnant: (value) => value && value.length > 0 ? null : 'Please select an option.',
             language_spoken: isNotEmpty('Please enter your primary language.'),
             addr: {
                 line1: isNotEmpty('Please enter your address.'),
-                city: isNotEmpty('Please enter your city.'),
-                province: isNotEmpty('Please enter your province.'),
-                postal_code: (value) => value ? (validator.isPostalCode(value, 'CA') ? null : 'Please enter a valid postal code (e.g. V1M 3B5).') : 'Please enter your postal code.'
+                city: (value) => {
+                    const val = value.trim().toLowerCase();
+                    if (val.length === 0) {
+                        return 'Please enter your city.';
+                    } else if (
+                        val !== 'surrey' &&
+                        val !== 'north delta' &&
+                        val !== 'cloverdale') {
+                        return ' ';
+                    }
+                },
+                province: (value) => {
+                    const val = value.trim();
+                    if (val.length === 0) {
+                        return 'Please enter your province.';
+                    } else if (val !== 'BC') {
+                        return ' ';
+                    }
+                },
+                postal_code: (value) => value ? (validator.isPostalCode(value, 'CA') ? null : 'Please enter a valid Canadian postal code (e.g. V1M 3B5).') : 'Please enter your postal code.'
             },
             main_family_member: {
                 f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your first name.',
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your last name.',
-                dob: (value) => value && value.trim().length > 0 ? null : 'Please enter your date of birth.',
+                dob: (value) => {
+                    const val = value.trim();
+                    if (val.length === 0) {
+                        return 'Please enter your date of birth.';
+                    }
+
+                    if (!isMinAge(val)) {
+                        return ' ';
+                    }
+                },
                 email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
                 phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
             family_members: {
-                f_name: (value, values, path) => {
-                    if (value.trim().length === 0) {
-                        return 'Please enter their first name.'
-                    }
-
-                    const ownerFName = form.values.main_family_member.f_name.trim().toLowerCase();
-                    const familyFNames = values.family_members.map(m => m.f_name.trim().toLowerCase());
-
-                    const index = Number(path.split('.')[1]);
-                    const currentFName = value.trim().toLowerCase();
-
-                    const duplicates = familyFNames.filter((fName, i) =>
-                        i !== index && fName === currentFName).length > 0
-                        || currentFName === ownerFName;
-
-                    if (duplicates) {
-                        return 'First name already taken. Please enter a unique name for this family member.';
-                    }
-                    return null;
-                },
+                f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their first name.',
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
                 dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
                 email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
                 relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
             }
         }
-    })
+    });
 
 
     useEffect(() => {
@@ -132,7 +150,7 @@ export default function RegisterPage() {
 
     useEffect(() => {
         checkUsername();
-    }, [form.values.username])
+    }, [form.values.username]);
 
     const prevSection = () => {
         if (activeSection === 0) {
@@ -165,7 +183,7 @@ export default function RegisterPage() {
         } catch (err) {
             setRegisterError('Sorry, we could not log you in automatically. Please try logging in manually.');
         }
-    }
+    };
 
     const nextSection = async () => {
         let fieldsToValidate = [];
@@ -194,6 +212,8 @@ export default function RegisterPage() {
                 "main_family_member.phone",
             ];
 
+            await checkUsername();
+            if (form.errors.username || form.errors.family_members) return;
         }
 
         if (activeSection === 2) {
@@ -205,10 +225,6 @@ export default function RegisterPage() {
                 `family_members.${index}.relationship`,
             ]);
         }
-
-
-        await checkUsername();
-        if (form.errors.username || form.errors.family_members) return;
 
         let hasErrors = false;
         fieldsToValidate.forEach((field) => {
@@ -254,7 +270,7 @@ export default function RegisterPage() {
                             };
                             try {
                                 await createFamilyMember(loginResult.token, ownerData);
-                                console.log('created owner')
+                                console.log('created owner');
                                 // Add each additional family member
                                 for (const member of form.values.family_members) {
                                     const memberData = {
@@ -267,7 +283,7 @@ export default function RegisterPage() {
                                         relationship: member.relationship,
                                     };
                                     await createFamilyMember(loginResult.token, memberData);
-                                    console.log('created family member')
+                                    console.log('created family member');
                                 }
                                 open();
                             } catch (famErr) {
@@ -290,7 +306,7 @@ export default function RegisterPage() {
                 setActiveSection((current) => (current < 3 ? current + 1 : current));
             }
         }
-    }
+    };
 
     return (
         <div className="top-container linear-gradient">
@@ -337,8 +353,8 @@ export default function RegisterPage() {
             </Card>
             <Modal opened={opened} onClose={close} title="Register Success" centered>
                 <Text mb={10}>Select 'Continue' to view your dashboard</Text>
-                <Button mt={4} color='cyan' onClick={() => { loginNavigate() }}>Continue</Button>
+                <Button mt={4} color='cyan' onClick={() => { loginNavigate(); }}>Continue</Button>
             </Modal>
         </div>
-    )
+    );
 }

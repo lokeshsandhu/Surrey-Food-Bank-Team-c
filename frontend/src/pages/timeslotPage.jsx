@@ -4,13 +4,14 @@ import { AdminNavBar } from '../components/navBar';
 import { WeekView } from '@mantine/schedule';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { deleteAppointmentFromUsername, getAppointmentsInDateRange, getAppointmentsInDateTimeRange, updateAppointment } from '../../api/appointments.js';
+import { getAppointmentsInDateRange, createAppointmentsInTimeRange, updateAppointment, deleteAppointment, deleteAppointmentFromUsername } from '../../api/appointments.js';
 import { useNavigate } from 'react-router';
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { LoadingOverlay } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { BookingForm } from '../components/bookingForm';
+import { TimeslotForm } from '../components/timeslotForm.jsx';
 
 export default function TimeslotPage() {
     const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
@@ -18,7 +19,9 @@ export default function TimeslotPage() {
     const [loadingTimeslots, setLoadingTimeslots] = useState(false);
     const [removingBookingUsername, setRemovingBookingUsername] = useState(null);
     const [bookingModalOpened, bookingModalHandlers] = useDisclosure(false);
+    const [timeslotModalOpened, timeslotModalHandlers] = useDisclosure(false);
     const [selectedBookingData, setSelectedBookingData] = useState(null);
+    const [selectedTimeslotData, setSelectedTimeslotData] = useState(null);
 
     const token = sessionStorage.getItem('token');
     const currentUsername = sessionStorage.getItem('username');
@@ -41,11 +44,66 @@ export default function TimeslotPage() {
         return null;
     }
 
+    const handleTimeslotClick = (slotStart, slotEnd) => {
+        setSelectedTimeslotData({start: slotStart, end: slotEnd});
+        timeslotModalHandlers.open();
+    }
+
+    const handleSlotDragEnd = (rangeStart, rangeEnd) => {
+        setSelectedTimeslotData({start: rangeStart, end: rangeEnd});
+        timeslotModalHandlers.open();
+    }
+
     const handleEventClick = (event) => {
         setSelectedBookingData(event);
         bookingModalHandlers.open();
     }
+
+    const handleDeleteBooking = async (values) => {
+        const bookingDate = dayjs(values.start).format('YYYY-MM-DD');
+        const bookingTime = dayjs(values.start, 'YYYY-MM-DD HH:mm').format('HH:mm');
         
+        const res = await updateAppointment(token, bookingDate, bookingTime, { username: null, appt_notes: null });
+
+        if (res.error) {
+            notifications.show({
+                title: 'Error',
+                message: 'Failed to delete booking: ' + (res?.error || ''),
+                color: 'red'
+            });
+        } else {
+            notifications.show({
+                title: 'Success',
+                message: 'Booking successfully deleted',
+                color: 'green'
+            });
+
+            await fetchTimeslots();
+        }
+    }
+
+    const handleDeleteTimeslot = async (values) => {
+        const bookingDate = dayjs(values.start).format('YYYY-MM-DD');
+        const bookingTime = dayjs(values.start, 'YYYY-MM-DD HH:mm').format('HH:mm');
+        
+        const res = await deleteAppointment(token, bookingDate, bookingTime);
+
+        if (res.error) {
+            notifications.show({
+                title: 'Error',
+                message: 'Failed to delete timeslot: ' + (res?.error || ''),
+                color: 'red'
+            });
+        } else {
+            notifications.show({
+                title: 'Success',
+                message: 'Timeslot successfully deleted',
+                color: 'green'
+            });
+
+            await fetchTimeslots();
+        }
+    }
 
     useEffect(() => {
         fetchTimeslots();
@@ -109,7 +167,7 @@ export default function TimeslotPage() {
         const bookingTime = dayjs(values.start, 'YYYY-MM-DD HH:mm').format('HH:mm');
         const normalizedTitle = String(values.title || '').trim().replace(/\s+\d+\/\d+$/, '');
         const titleIndicatesAvailable = /^available slot(s)?$/i.test(normalizedTitle);
-        const username = titleIndicatesAvailable ? null : (values.bookingUsername ?? (normalizedTitle || null));
+        const username = titleIndicatesAvailable ? null : (values.username ?? (normalizedTitle || null));
         const notes = values.appt_notes || '';
 
         console.log('Creating booking with date:', bookingDate, 'start:', bookingTime, 'end:', dayjs(bookingTime, 'HH:mm').add(15, 'minutes').format('HH:mm'), 'username:', username, 'notes:', notes);
@@ -141,6 +199,48 @@ export default function TimeslotPage() {
         }
     }
 
+    const handleTimeslotFormSubmit = async (values) => {
+        const results = await Promise.all(
+            values.dates.map(async (date) => {
+                const data = {
+                    appt_date: dayjs(date).format('YYYY-MM-DD'),
+                    start_time: dayjs(values.start).format('HH:mm'),
+                    end_time: dayjs(values.end).format('HH:mm'),
+                    appt_notes: values.appt_notes,
+                    capacity: values.capacity,
+                };
+                
+                console.log('Creating timeslot with data:', data);
+                const res = await createAppointmentsInTimeRange(token, data);
+                return { date, error: res?.error || null };
+            })
+        );
+
+        const errors = results.filter((result) => result.error);
+
+        await fetchTimeslots();
+
+        if (errors.length === 0) {
+            notifications.show({
+                title: 'Success',
+                message: 'Timeslots successfully created',
+                color: 'green'
+            });
+        } else if (errors.length < values.dates.length) {
+            notifications.show({
+                title: 'Partial Success',
+                message: `Some timeslots were created successfully, but there were errors for the following dates: ${errors.map(e => dayjs(e.date).format('YYYY-MM-DD') + ' (' + e.error + ')').join(', ')}`,
+                color: 'yellow'
+            });
+        } else {
+            notifications.show({
+                title: 'Error',
+                message: 'Failed to create timeslots: ' + errors.map(e => dayjs(e.date).format('YYYY-MM-DD') + ' (' + e.error + ')').join(', '),
+                color: 'red'
+            });
+        }
+    }
+    
     const handleRemoveBookedUser = async (usernameToRemove) => {
         if (!usernameToRemove) {
             return;
@@ -186,6 +286,9 @@ export default function TimeslotPage() {
                 onDateChange={setDate}
                 events={events}
                 onEventClick={handleEventClick}
+                onTimeSlotClick={handleTimeslotClick}
+                withDragSlotSelect
+                onSlotDragEnd={handleSlotDragEnd}
                 renderEventBody={(event) => (
                     <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.displayTitle || event.title}</span>
@@ -194,7 +297,7 @@ export default function TimeslotPage() {
                 )}
                 startTime={'08:00'}
                 endTime={'16:00'}
-                intervalMinutes={30}
+                intervalMinutes={15}
                 withWeekNumber={false}
                 withAllDaySlots={false}
                 slotLabelFormat="h:mm A"
@@ -203,6 +306,7 @@ export default function TimeslotPage() {
                     viewSelect: {visibility: 'hidden'},
                     weekViewDaySlots: {backgroundColor: '#f2f2f2'},
                 }}
+                withWeekendDays={false}
                 style={{
                     background: 'rgba(255, 255, 255, 0.8)',
                     borderRadius: '10px',
@@ -213,9 +317,13 @@ export default function TimeslotPage() {
                     justifySelf: 'top',
                 }}
                 />
+                <TimeslotForm opened={timeslotModalOpened} onClose={timeslotModalHandlers.close} values={selectedTimeslotData} onSubmit={handleTimeslotFormSubmit}/>
+                
                 <BookingForm
                     opened={bookingModalOpened}
                     onClose={bookingModalHandlers.close}
+                    onDeleteBooking={handleDeleteBooking} 
+                    onDeleteTimeslot={handleDeleteTimeslot} 
                     values={selectedBookingData}
                     bookedUsers={selectedBookingData?.bookedUsers || []}
                     removingBookingUsername={removingBookingUsername}

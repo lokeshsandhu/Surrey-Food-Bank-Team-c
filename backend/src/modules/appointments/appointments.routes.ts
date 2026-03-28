@@ -29,7 +29,7 @@ router.patch("/update", authenticate, requireAdmin, controller.updateAppointment
 // Delete appointments by date (admin)
 router.delete("/delete/date", authenticate, requireAdmin, controller.deleteAppointmentFromDate);
 // Delete appointments by username (admin)
-router.delete("/delete/username", authenticate, requireAdmin, controller.deleteAppointmentFromUsername);
+router.delete("/delete/username", authenticate, controller.deleteAppointmentFromUsername);
 // Delete appointment by username, date, and start_time (admin)
 router.delete("/delete/username-date-start", authenticate, requireAdmin, controller.deleteAppointmentFromUsernameDateStart);
 // Find appointment by date and start_time (admin)

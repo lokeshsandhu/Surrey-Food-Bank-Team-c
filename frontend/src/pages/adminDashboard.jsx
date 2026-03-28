@@ -3,7 +3,7 @@ import { DatePicker, DatePickerInput, TimePicker, getTimeRange } from '@mantine/
 import { notifications } from '@mantine/notifications';
 
 import '../styles/adminstyles.css';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AdminNavBar } from '../components/navBar.jsx';
 import { useState } from 'react';
 import dayjs from 'dayjs';
@@ -33,7 +33,7 @@ export default function AdminDashboard() {
 
     // For calendar
     const [hovered, setHovered] = useState(null);
-    const [value, setValue] = useState(null);
+    const [value, setValue] = useState(dayjs());
 
     // For making bookings
     const [createBookingDate, setCreateBookingDate] = useState(dayjs().format('YYYY-MM-DD'));
@@ -171,6 +171,10 @@ export default function AdminDashboard() {
         }
     }
 
+    useEffect(() => {
+        findBookingsForDate(value);
+    }, []);
+
     return (
         <div className="page">
             <AdminNavBar />
@@ -181,17 +185,17 @@ export default function AdminDashboard() {
                     </Text>
                 </div>
                 <div className="box">
-                    <DatePickerInput
+                    {/* <DatePickerInput
                         label="Pick date to make booking for client"
                         value={createBookingDate ? createBookingDate : dayjs()}
                         onChange={setCreateBookingDate}
                     />
 
                     <TimePicker label="Appointment timeslot start time" value={createBookingTime} onChange={setCreateBookingTime} format="12h" withDropdown presets={getTimeRange({ startTime: '08:00:00', endTime: '16:00:00', interval: '00:15:00' })} />
-                    <Button onClick={() => makeBooking()} style={{ marginTop: '20px' }}>Make booking</Button>
+                    <Button onClick={() => makeBooking()} style={{ marginTop: '20px' }}>Make booking</Button> */}
                 </div>
                 <div className="box">
-                    <DatePickerInput
+                    {/* <DatePickerInput
                         label="Pick date for new timeslots"
                         value={createTimeslotDate ? createTimeslotDate : dayjs()}
                         onChange={setCreateTimeslotDate}
@@ -199,7 +203,7 @@ export default function AdminDashboard() {
 
                     <TimePicker label="From" value={createTimeslotStart} onChange={setCreateTimeslotStart} format="12h" withDropdown presets={getTimeRange({ startTime: '08:00:00', endTime: createTimeslotEnd, interval: '00:15:00' })} />
                     <TimePicker label="To" value={createTimeslotEnd} onChange={setCreateTimeslotEnd} format="12h" withDropdown presets={getTimeRange({ startTime: createTimeslotStart, endTime: '16:00:00', interval: '00:15:00' })} />
-                    <Button onClick={createTimeslot} style={{ marginTop: '20px' }}>Create timeslots</Button>
+                    <Button onClick={createTimeslot} style={{ marginTop: '20px' }}>Create timeslots</Button> */}
                 </div>
             </SimpleGrid>
             <Grid verticalspacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>

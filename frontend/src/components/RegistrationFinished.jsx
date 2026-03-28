@@ -151,6 +151,13 @@ export default function RegistrationFinished({ form }) {
                                     value={member.phone.length > 0 ? member.phone : '(Empty)'}
                                     readOnly
                                 />
+
+                                <TextInput
+                                    variant="filled"
+                                    label="6. Relationship"
+                                    value={member.relationship}
+                                    readOnly
+                                />
                                 <hr style={{ color: '#737270', height: 1 }} />
                             </Stack>
                         ))}

@@ -1,12 +1,12 @@
-import React, { useState } from 'react'
-import '../styles/global-styles.css'
-import '../styles/Login.css'
+import React, { useState } from 'react';
+import '../styles/global-styles.css';
+import '../styles/Login.css';
 
-import logo from '../assets/surrey-food-bank-logo.png'
+import logo from '../assets/surrey-food-bank-logo.png';
 
-import { Input, Card, Button, Text, NavLink, Typography, Image, PasswordInput } from '@mantine/core';
-import { useNavigate, useLocation } from 'react-router';
+import { Button, Card, Group, Image, TextInput, NavLink, PasswordInput, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
+import { useLocation, useNavigate } from 'react-router';
 
 import { login, me } from '../../api/auth.js';
 
@@ -70,7 +70,7 @@ export default function LoginPage() {
     <div className="top-container linear-gradient">
       <Card className="login-card card" padding={20}>
         <Image src={logo} h={150} w="auto" m={10} p={2} />
-        <Input placeholder='Username' value={username} onChange={e => setUsername(e.target.value)} />
+        <TextInput placeholder='Username' value={username} onChange={e => setUsername(e.target.value)} />
         <PasswordInput
           placeholder='Password'
           value={password}
@@ -78,15 +78,25 @@ export default function LoginPage() {
         />
         <Button onClick={handleLogin}>Login</Button>
         {error && <Text c="red" mt={10}>{error}</Text>}
-        <div>
-          <NavLink
+        <Group style={{ flexDirection: 'column', gap: 1, alignItems: 'flex-start' }}>
+          <Button
             className='link'
-            label="Don't have an account?"
+            variant='white'
+            size='sm'
             onClick={() => navigate('/register')}
-          />
-          <NavLink className='link' label="Forgot Password?" />
-        </div>
+          >
+            Create Account
+          </Button>
+          <Button
+            className='link'    
+            variant='white'
+            size='sm'
+            onClick={() => navigate('/requestPasswordChange')}
+          >
+            Forgot Password?
+          </Button>
+        </Group>
       </Card>
     </div>
-  )
+  );
 }

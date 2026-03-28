@@ -1,49 +1,46 @@
-import { Input, Radio, Group, Stack, TextInput, Text, Fieldset, Select, Alert } from '@mantine/core';
-import { IconInfoCircle } from '@tabler/icons-react'
+import { Radio, Group, TextInput, Text, Fieldset, Select } from '@mantine/core';
 import React from 'react';
 import { useState, useEffect } from 'react';
-import '../styles/global-styles.css'
-import '../styles/Register.css'
+import '../styles/global-styles.css';
+import '../styles/Register.css';
 import { IMaskInput } from 'react-imask';
+import { provinceOptions, canadaStatusOptions } from '../constants/FormOptions';
+import CanadaStatusAlert from './alerts/CanadaStatusAlert';
+import CityAlert from './alerts/CityAlert';
+import ProvinceAlert from './alerts/ProvinceAlert';
 
 export default function ElegibilityQuestions({ form }) {
     const [isCityEligible, setIsCityEligible] = useState(true);
     const [isProvinceEligible, setIsProvinceEligible] = useState(true);
 
-    const provinceOptions = ['NL', 'PE', 'NS', 'NB', 'QC', 'ON', 'MB', 'SK', 'AB', 'BC', 'YT', 'NT', 'NU']
-    provinceOptions.sort();
+    const checkIsCityEligible = () => {
+        const city = form.getValues().addr.city.trim().toLowerCase();
+        setIsCityEligible(
+            city.length === 0
+            || city === 'surrey'
+            || city === 'north delta'
+            || city === 'cloverdale'
+        );
+    };
+
+    const checkIsProvinceEligible = () => {
+        const province = form.getValues().addr.province.trim().toUpperCase();
+        setIsProvinceEligible(province.length === 0 || province === 'BC');
+    };
 
     useEffect(() => {
-        if (form.values.addr.city.trim().length > 0) {
-            checkIsCityEligible();
-        }
-
-        if (form.values.addr.postal_code.trim().length > 0) {
-            checkIsProvinceEligible();
-        }
-    }, [form.values.addr.city, form.values.addr.postal_code])
-
-    const checkIsCityEligible = () => {
-        const city = form.getValues().addr.city.toLowerCase()
-        const isEligible =
-            city === 'surrey' ||
-            city === 'north delta' ||
-            city === 'cloverdale';
-        setIsCityEligible(isEligible);
-    }
-    const checkIsProvinceEligible = () => {
-        const isEligible = form.getValues().addr.province === 'BC'
-        setIsProvinceEligible(isEligible);
-    }
+        checkIsCityEligible();
+        checkIsProvinceEligible();
+    }, [form.values.addr.city, form.values.addr.province]);
 
     return (
         <Group>
-            <div style={{width: '100%'}}>
+            <div style={{ width: '100%' }}>
                 <h2 className='login-title'>Eligibility Questions</h2>
             </div>
             <Radio.Group
-                name="status-in-canada"
-                label="1. Immigration Status"
+                name="canada-status"
+                label="1. Immigration Status in Canada"
                 withAsterisk
                 className='question-section'
                 key={form.key('canada_status')}
@@ -52,15 +49,35 @@ export default function ElegibilityQuestions({ form }) {
                 <Text size='sm' mb={3}>Please select the option that best describes your status in Canada. </Text>
                 <Text size='sm' my={0} fs='italic'>Note: Visitors or international students that have stayed in Canada for less than 6 months do not qualify for this program.</Text>
                 <Group mt="xs">
-                    <Radio value="Canadian Citizen" label="Canadian Citizen" />
-                    <Radio value="Permanent Resident" label="Permanent Resident" />
-                    <Radio value="International Student > 6 months" label="International student with more than 6 months in Canada" />
-                    <Radio value="(Ineligible) Visitor or International student with less than 6 months in Canada" label="Visitor or International student with less than 6 months in Canada" />
-                    <Radio value="Other" label="Other" />
+                    <Radio
+                        value={canadaStatusOptions.citizen.value}
+                        label={canadaStatusOptions.citizen.label}
+                    />
+                    <Radio
+                        value={canadaStatusOptions.permanentResident.value}
+                        label={canadaStatusOptions.permanentResident.label}
+                    />
+                    <Radio
+                        value={canadaStatusOptions.intlStudentMoreThan6.value}
+                        label={canadaStatusOptions.intlStudentMoreThan6.label}
+                    />
+                    <Radio
+                        value={canadaStatusOptions.visitorIntlStudentLessThan6.value}
+                        label={canadaStatusOptions.visitorIntlStudentLessThan6.label}
+                    />
+                    <Radio
+                        value={canadaStatusOptions.other.value}
+                        label={canadaStatusOptions.other.label}
+                    />
                 </Group>
             </Radio.Group>
-            {form.getValues().canada_status === '(Ineligible) Visitor or International student with less than 6 months in Canada' &&
-                <Alert variant="light" color="red" title="You may not be eligible for this program" icon={<IconInfoCircle />}>Visitors or international students that have stayed in Canada for less than 6 months do not qualify for this program.</Alert>
+            {
+                (
+                    form.values.canada_status === canadaStatusOptions.visitorIntlStudentLessThan6.value ||
+                    form.values.canada_status ===
+                    canadaStatusOptions.other.value
+                ) &&
+                <CanadaStatusAlert />
             }
             <Fieldset legend="2. Address" variant='unstyled'>
                 <Text size='sm' mb={3}>Please enter your residential address.</Text>
@@ -93,7 +110,7 @@ export default function ElegibilityQuestions({ form }) {
                         }}
                         onChange={(e) => {
                             form.getInputProps('addr.city').onChange(e);
-                            setIsCityEligible(true)
+                            setIsCityEligible(true);
                         }}
                     />
                     <Select
@@ -121,26 +138,13 @@ export default function ElegibilityQuestions({ form }) {
                         {...form.getInputProps('addr.postal_code')}
                     />
                 </Group>
-
             </Fieldset>
-            {(!isCityEligible || !isProvinceEligible)
-                &&
-                <Alert
-                    variant="light"
-                    color="red"
-                    title="Reminder - To be eligible for Surrey Food Bank:"
-                    icon={<IconInfoCircle />}
-                    w={582}
-                >
-                    {!isProvinceEligible && <Text size='sm' my={0}>
-                        Clients must reside in British Columbia (BC), Canada
-                    </Text>}
-                    {!isCityEligible &&
-                        <Text size='sm' my={0}>
-                            Clients must reside within Surrey, North Delta, or Cloverdale, North of 40th Avenue
-                        </Text>}
-                </Alert>
+
+            {
+                !isCityEligible
+                && <CityAlert />
             }
+            {!isProvinceEligible && <ProvinceAlert />}
         </Group>
-    )
+    );
 }
