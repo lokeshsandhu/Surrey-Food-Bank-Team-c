@@ -10,4 +10,10 @@ router.post("/send-confirmation", authenticate, controller.sendConfirmation);
 // Send recovery email to reset account password
 router.post("/send-recovery", authenticate, controller.sendRecovery);
 
+// Send confirmation email for successful booking cancellation
+router.post("/send-cancel", authenticate, controller.sendCancellation);
+
+// Send confirmation email for successful booking edit
+router.post("/send-edit", authenticate, controller.sendEdit);
+
 export default router;
