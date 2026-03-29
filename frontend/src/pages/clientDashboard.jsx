@@ -325,7 +325,11 @@ export default function ClientDashboard() {
             <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs">
                 <div className="box">
                     {myAppointment && myAppointment.appt_date ? `You have a booking for ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} at ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')}, ` : `Welcome back ${username}! You do not have any upcoming bookings.`}
-                    {myAppointment && myAppointment.appt_date && <a tabIndex={0} onClick={() => stack.open('base-page')} style={{cursor: 'pointer', textDecoration: 'underline'}}>click here to edit/cancel your booking.</a>}
+                    {myAppointment && myAppointment.appt_date && (
+                        <button type="button" className="text-link-button" onClick={() => stack.open('base-page')}>
+                            click here to edit/cancel your booking.
+                        </button>
+                    )}
                 </div>
                 <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
                     
