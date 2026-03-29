@@ -12,7 +12,7 @@ import { me } from '../../api/auth.js';
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useDisclosure } from '@mantine/hooks';
-import { getAccountEmail } from '../../api/accounts.js';
+import { getAccount, getAccountEmail } from '../../api/accounts.js';
 import { sendConfirmationEmail } from '../../api/email.js';
 
 const excludedDays = [5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
@@ -20,7 +20,7 @@ const excludedDays = [5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sund
 export default function ClientDashboard() {
     const [allTimeslots, setAllTimeslots] = useState([{}]);
     const [currentMonth, setCurrentMonth] = useState(dayjs().format('YYYY-MM'));
-    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedDate, setSelectedDate] = useState();
     const [selectedTime, setSelectedTime] = useState(null);
     const [processingBooking, setProcessingBooking] = useState(false);
     const [loadingTimeGrid, setLoadingTimeGrid] = useState(false);
@@ -29,9 +29,9 @@ export default function ClientDashboard() {
     const [myAppointment, setMyAppointment] = useState({});
     const [modalState, {open, close}] = useDisclosure(false);
     const [modalLoading, setModalLoading] = useState(false);
+    const [tinyBundles, setTinyBundles] = useState(false);
 
-    const [myUsername, setMyUserName] = useState('');
-
+    const username = sessionStorage.getItem('username');
     const token = sessionStorage.getItem('token');
     const navigate = useNavigate();
 
@@ -64,14 +64,13 @@ export default function ClientDashboard() {
         }
 
         if (selectedDate && selectedTime) {
-            // TODO: Send booking information to the backend and handle the response
             setProcessingBooking(true);
 
             const data = { appt_date: selectedDate, start_time: selectedTime };
             const res = await bookAppointment(token, data);
 
             if (res && res.success) {
-                const effectiveUsername = myUsername || (await me(token))?.username || '';
+                const effectiveUsername = username || (await me(token))?.username || '';
                 notifications.show({
                     title: 'Success',
                     message: 'Appointment booked successfully',
@@ -128,7 +127,6 @@ export default function ClientDashboard() {
     };
 
     const handleAvailableTimes = async (date) => {
-        // TODO: Fetch available times for the selected date from the backend and update the state
         setSelectedTime(null);
         setSelectedDate(date);
         setLoadingTimeGrid(true);
@@ -187,6 +185,19 @@ export default function ClientDashboard() {
         
         fetchMyAppointment();
 
+        const checkTinyBundles = async () => {
+            const userInfo = await getAccount(token, username);
+            return userInfo;
+        }
+
+        checkTinyBundles().then(result => {
+            console.log("check ", result.baby_or_pregnant);
+            if (result.baby_or_pregnant) {
+                setTinyBundles(true);
+            }
+        });
+
+
     }, []);
 
     useEffect(() => {
@@ -197,15 +208,6 @@ export default function ClientDashboard() {
 
         fetchTimeslots();
     }, [currentMonth, token]);
-
-    useEffect(() => {
-        const getUserName = async () => {
-            const userInfo = await me(token);
-            setMyUserName(userInfo.username)
-        }
-
-        getUserName();
-    }, [])
 
     return (
         <div className="page">
@@ -233,6 +235,7 @@ export default function ClientDashboard() {
                     <div className="calendar">
                         <DatePicker
                             size="xl"
+                            value={selectedDate}
                             onChange={handleAvailableTimes}
                             onMonthSelect={setCurrentMonth}
                             onNextMonth={setCurrentMonth}
@@ -243,10 +246,12 @@ export default function ClientDashboard() {
                                     return true;
                                 } else if (!allTimeslots.some(timeslot => normalizeApptDate(timeslot.appt_date) === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
                                     return true;
-                                // } else if (dayjs(date).format('YYYY-MM-DD') < dayjs().format('YYYY-MM-DD')) { // Disable past dates
-                                //     return true;
+                                } else if (dayjs(date).format('YYYY-MM-DD') < dayjs().format('YYYY-MM-DD')) { // Disable past dates
+                                    return true;
+                                } else if (tinyBundles) { // If tiny bundles, only allow Wednesdays
+                                    return dayjs(date).day() !== 3;
                                 } else {
-                                    return false;
+                                    return dayjs(date).day() === 3; // If not tiny bundles, disable Wednesdays
                                 }
                             }}
                             hideOutsideDates
@@ -261,7 +266,6 @@ export default function ClientDashboard() {
 
                             <TimeGrid
                                 data={availableTimes}
-                                value={selectedTime}
                                 simpleGridProps={{
                                     type: 'container',
                                     cols: { base: 3 },
@@ -275,6 +279,8 @@ export default function ClientDashboard() {
                                 disabled={selectedDate === null}
                                 style={{marginBottom: '20px', padding: '10px'}}
                             />
+
+                            <div style={{ height: '50px' }} />
 
                             <div className="booking-button">
                                 <Button size="lg" onClick={handleBooking} loading={processingBooking} disabled={!selectedDate || !selectedTime}>
