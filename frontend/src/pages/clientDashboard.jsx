@@ -271,8 +271,10 @@ export default function ClientDashboard() {
             });
         }
         setModalLoading(false);
-        stack.closeAll  ();
-        handleAvailableTimes(selectedDate); // Refresh available times after cancellation
+        stack.closeAll();
+        if (selectedDate) {
+            handleAvailableTimes(selectedDate); // Refresh available times after cancellation
+        }
         fetchMyAppointment(); // Refresh user's appointment information after cancellation
     }
 
@@ -280,6 +282,21 @@ export default function ClientDashboard() {
         const myAppointment = await getMyAppointments(token);
         const earliestAppointment = myAppointment.filter(appointment => normalizeApptDate(appointment.appt_date) >= dayjs().format('YYYY-MM-DD'));
         setMyAppointment(earliestAppointment[0]);
+    };
+
+    const fetchModalTimeslots = async () => {
+        const timeslots = await getAppointmentsInDateRange(
+            token,
+            dayjs(modalCurrentMonth).startOf('month').format('YYYY-MM-DD'),
+            dayjs(modalCurrentMonth).endOf('month').format('YYYY-MM-DD')
+        );
+        setModalAllTimeslots(timeslots);
+        console.log("check2");
+    };
+
+    const openStackPage = (page) => {
+        fetchModalTimeslots();
+        stack.open(page);
     };
 
     useEffect(() => {
@@ -305,19 +322,15 @@ export default function ClientDashboard() {
         const fetchTimeslots = async () => {
             const timeslots = await getAppointmentsInDateRange(token, dayjs(currentMonth).startOf('month').format('YYYY-MM-DD'), dayjs(currentMonth).endOf('month').format('YYYY-MM-DD'))
             setAllTimeslots(timeslots);
+            console.log("check1 ");
         };
 
         fetchTimeslots();
     }, [currentMonth, token]);
 
     useEffect(() => {
-        const fetchTimeslots = async () => {
-            const timeslots = await getAppointmentsInDateRange(token, dayjs(modalCurrentMonth).startOf('month').format('YYYY-MM-DD'), dayjs(modalCurrentMonth).endOf('month').format('YYYY-MM-DD'))
-            setModalAllTimeslots(timeslots);
-        };
-
-        fetchTimeslots();
-    }, [modalCurrentMonth, stack, token]);
+        fetchModalTimeslots();
+    }, [modalCurrentMonth, token]);
 
     return (
         <div className="page">
@@ -326,7 +339,7 @@ export default function ClientDashboard() {
                 <div className="box">
                     {myAppointment && myAppointment.appt_date ? `You have a booking for ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} at ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')}, ` : `Welcome back ${username}! You do not have any upcoming bookings.`}
                     {myAppointment && myAppointment.appt_date && (
-                        <button type="button" className="text-link-button" onClick={() => stack.open('base-page')}>
+                        <button type="button" className="text-link-button" onClick={() => openStackPage('base-page')}>
                             click here to edit/cancel your booking.
                         </button>
                     )}
@@ -457,7 +470,7 @@ export default function ClientDashboard() {
                         <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
                         <p><strong>Notes:</strong> {myAppointment && myAppointment.appt_notes ? myAppointment.appt_notes : 'N/A'}</p>
                         <div>
-                            <Button mr={10} onClick={() => stack.open("calendar-page")}>
+                            <Button mr={10} onClick={() => openStackPage("calendar-page")}>
                                 Edit Booking
                             </Button>
 
