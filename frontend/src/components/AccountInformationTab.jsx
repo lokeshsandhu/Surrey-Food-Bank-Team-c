@@ -89,6 +89,7 @@ export default function AccountInformationTab({ clientUsername }) {
         const familyMembers = await getFamilyMembers(token, clientUsername);
         const ownerTemp = familyMembers.filter(member => member.relationship === 'owner');
         const owner = ownerTemp[0];
+        console.log(familyMembers)
         const address = splitAddress(result.addr);
         // TODO: Rewrite (better practices)
         if (result && owner) {
@@ -190,7 +191,7 @@ export default function AccountInformationTab({ clientUsername }) {
     };
 
     useEffect(() => {
-        getAccountInformation();
+        getAccountInformation()
     }, [location.pathname]);
 
     return (

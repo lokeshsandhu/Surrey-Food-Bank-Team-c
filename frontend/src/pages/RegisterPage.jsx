@@ -329,7 +329,7 @@ export default function RegisterPage() {
                             sessionStorage.setItem('role', 'client');
                             // Add main account holder as a family member with relationship 'owner'
                             const ownerData = {
-                                username: accountData.username,
+                                username: result.username,
                                 f_name: form.values.main_family_member.f_name.trim(),
                                 l_name: form.values.main_family_member.l_name.trim(),
                                 dob: form.values.main_family_member.dob,
