@@ -9,9 +9,11 @@ import { useNavigate } from 'react-router';
 import { useForm, matchesField } from '@mantine/form';
 import validator from 'validator';
 import { notifications } from '@mantine/notifications';
+import { confirmPasswordReset } from '../../api/auth.js';
 
 export default function ResetPasswordPage() {
     const navigate = useNavigate();
+    const [submitting, setSubmitting] = useState(false);
 
     const form = useForm({
         initialValues: {
@@ -27,23 +29,50 @@ export default function ResetPasswordPage() {
     });
 
     const handleResetPassword = async () => {
-        alert('To implement: Reset password');
-        // TODO: API Request to reset password
+        const validation = form.validate();
+        if (validation.hasErrors) {
+            return;
+        }
 
-        // ON SUCCESS: send to login page
-        notifications.show({
-            title: "Password Reset Successfully",
-            message: "Please login with your new password.",
-            color: "green",
-        });
-        navigate('/login');
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        if (!token) {
+            notifications.show({
+                title: "Invalid Reset Link",
+                message: "The reset link is missing or invalid.",
+                color: "red",
+            });
+            return;
+        }
 
-        // TODO: ON FAIL: ?
-        // notifications.show({
-        //     title: "Error Resetting Password",
-        //     message: "Please try agin.",
-        //     color: "red",
-        // });
+        setSubmitting(true);
+        try {
+            const result = await confirmPasswordReset(token, form.values.user_password);
+
+            if (!result?.success) {
+                notifications.show({
+                    title: "Error Resetting Password",
+                    message: result?.error || "Invalid or expired reset link.",
+                    color: "red",
+                });
+                return;
+            }
+
+            notifications.show({
+                title: "Password Reset Successfully",
+                message: "Please login with your new password.",
+                color: "green",
+            });
+            navigate('/login');
+        } catch {
+            notifications.show({
+                title: "Error Resetting Password",
+                message: "Please try again.",
+                color: "red",
+            });
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -78,7 +107,7 @@ export default function ResetPasswordPage() {
                         withAsterisk
                     />
                 </Group>
-                <Button onClick={handleResetPassword}>Reset Password</Button>
+                <Button onClick={handleResetPassword} loading={submitting}>Reset Password</Button>
             </Card>
         </div>
     );

@@ -46,8 +46,9 @@ export async function sendRecoveryMessage(email: string, link: string) {
     });
 
     return data;
-  } catch (error) {
-    return null;
+  } catch (error: any) {
+    const message = error?.details || error?.message || "Unknown Mailgun error";
+    throw new Error(`Recovery email failed: ${message}`);
   }
 }
 

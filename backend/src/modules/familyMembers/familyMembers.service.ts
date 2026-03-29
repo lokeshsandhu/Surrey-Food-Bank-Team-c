@@ -159,6 +159,22 @@ export async function getOwnerFamilyMembers() {
     return rows;
 }
 
+// Select owner email for a username, return first non-empty email or null
+export async function getOwnerEmailByUsername(username: string): Promise<string | null> {
+    const text = `
+        SELECT email
+        FROM familymember
+        WHERE username = $1
+          AND LOWER(COALESCE(relationship, '')) = 'owner'
+          AND email IS NOT NULL
+          AND TRIM(email) <> ''
+        ORDER BY id ASC
+        LIMIT 1
+    `;
+    const { rows } = await pool.query(text, [username]);
+    return rows[0]?.email ?? null;
+}
+
 // Select from familymember table with given username and identifier, return boolean
 export async function usernameFamilyMemberExists(username: string, identifier: number | string): Promise<boolean> {
     const lookup = buildFamilyMemberLookupClause(identifier);

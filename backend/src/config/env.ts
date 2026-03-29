@@ -35,6 +35,8 @@ export const env = {
   NODE_ENV: process.env.NODE_ENV || "development",
   JWT_SECRET: process.env.JWT_SECRET || "dev-secret-change-me",
   CLIENT_ORIGINS: parseOrigins(process.env.CLIENT_ORIGINS || process.env.CLIENT_ORIGIN),
+  FRONTEND_BASE_URL: process.env.FRONTEND_BASE_URL || "http://localhost:5173",
+  PASSWORD_RESET_EXPIRES_MINUTES: parseInt(process.env.PASSWORD_RESET_EXPIRES_MINUTES || "30", 10),
   DATABASE_URL: process.env.DATABASE_URL || "",
   DB_SSL: parseBoolean(process.env.DB_SSL),
   DB_USER: process.env.DB_USER || process.env.USER || "",

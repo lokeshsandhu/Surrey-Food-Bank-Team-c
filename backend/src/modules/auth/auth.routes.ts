@@ -7,5 +7,9 @@ const router = Router();
 router.post("/login", controller.login);
 // check if the token is valid and get user info
 router.post("/me", authenticate, controller.me);
+// request password reset email
+router.post("/password-reset/request", controller.requestPasswordReset);
+// reset password using token from email
+router.post("/password-reset/confirm", controller.confirmPasswordReset);
 
 export default router;

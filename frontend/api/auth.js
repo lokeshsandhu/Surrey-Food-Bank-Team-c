@@ -29,3 +29,29 @@ export function me(token) {
     headers: { Authorization: `Bearer ${token}` }
   }).then(res => res.json());
 }
+
+/**
+ * Request a password reset link.
+ * Example:
+ *   requestPasswordReset("user@example.com");
+ */
+export function requestPasswordReset(identifier) {
+  return fetch(apiUrl("/api/auth/password-reset/request"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ identifier })
+  }).then(res => res.json());
+}
+
+/**
+ * Confirm password reset with token and new password.
+ * Example:
+ *   confirmPasswordReset(token, "NewPassword123!");
+ */
+export function confirmPasswordReset(token, newPassword) {
+  return fetch(apiUrl("/api/auth/password-reset/confirm"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, newPassword })
+  }).then(res => res.json());
+}
