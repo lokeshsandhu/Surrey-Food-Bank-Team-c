@@ -1,7 +1,10 @@
-import { getAccountWithPassword } from "../accounts/accounts.service";
+import { getAccountWithPassword, updateAccountPassword } from "../accounts/accounts.service";
 import { comparePassword } from "../../shared/crypto/password";
-import { signToken } from "../../shared/crypto/jwt";
+import { signPasswordResetToken, signToken, verifyPasswordResetToken } from "../../shared/crypto/jwt";
 import { LoginDTO } from "./auth.dto";
+import { sendRecoveryMessage } from "../email/email.service";
+import { env } from "../../config/env";
+import { getOwnerEmailByUsername } from "../familyMembers/familyMembers.service";
 
 const ADMIN_USERNAMES = new Set(["admin"]);
 
@@ -25,4 +28,34 @@ export async function login(data: LoginDTO) {
         role,
         token,
     };
+}
+
+export async function requestPasswordReset(identifier: string): Promise<void> {
+    const account = await getAccountWithPassword(identifier);
+    if (!account) {
+        return;
+    }
+
+    const emailTo = await getOwnerEmailByUsername(account.username);
+    if (!emailTo) {
+        return;
+    }
+
+    const token = signPasswordResetToken(account.username);
+    const baseUrl = env.FRONTEND_BASE_URL.replace(/\/+$/, "");
+    const link = `${baseUrl}/resetPassword?token=${encodeURIComponent(token)}`;
+
+    const result = await sendRecoveryMessage(emailTo, link);
+    if (!result) {
+        throw new Error("Failed to send recovery email");
+    }
+}
+
+export async function confirmPasswordReset(token: string, newPassword: string): Promise<boolean> {
+    try {
+        const username = verifyPasswordResetToken(token);
+        return updateAccountPassword(username, newPassword);
+    } catch {
+        return false;
+    }
 }

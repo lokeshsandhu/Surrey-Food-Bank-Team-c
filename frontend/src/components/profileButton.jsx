@@ -4,7 +4,6 @@ import logout_icon from '../assets/log-out.svg';
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { notifications } from '@mantine/notifications';
-import { me } from '../../api/auth.js';
 
 export default function ProfileButton() {
     const navigate = useNavigate();
@@ -13,7 +12,7 @@ export default function ProfileButton() {
         <div className="profile-button">
             <Menu withArrow position="bottom-end">
                 <Menu.Target>
-                    <img src={user_icon} width={50} height={50} alt="User Profile Icon" style={{ borderRadius: '50%', cursor: 'pointer' }}/>
+                    <input type="image" src={user_icon} width={50} height={50} alt="User Profile Icon" style={{ borderRadius: '50%', cursor: 'pointer' }}/>
                 </Menu.Target>
 
                 <Menu.Dropdown>
