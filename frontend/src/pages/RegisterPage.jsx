@@ -105,6 +105,8 @@ export default function RegisterPage() {
                 f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your first name.',
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your last name.',
                 dob: (value) => {
+                    if (!value) return 'Please enter your date of birth';
+
                     const val = value.trim();
                     if (val.length === 0) {
                         return 'Please enter your date of birth.';
@@ -114,14 +116,13 @@ export default function RegisterPage() {
                         return ' ';
                     }
                 },
-                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
+                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
                 phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
             family_members: {
                 f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their first name.',
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
                 dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
-                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
                 relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
             }
         }
@@ -221,7 +222,6 @@ export default function RegisterPage() {
                 `family_members.${index}.f_name`,
                 `family_members.${index}.l_name`,
                 `family_members.${index}.dob`,
-                `family_members.${index}.email`,
                 `family_members.${index}.relationship`,
             ]);
         }

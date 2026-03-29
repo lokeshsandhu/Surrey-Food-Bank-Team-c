@@ -73,7 +73,6 @@ export default function AddFamilyMembers({ form }) {
                                 key={form.key(`family_members.${index}.email`)}
                                 {...form.getInputProps(`family_members.${index}.email`)}
                                 w={'45%'}
-                                withAsterisk
                             />
                             <TextInput
                                 label="5. Phone"
