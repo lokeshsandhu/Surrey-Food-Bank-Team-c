@@ -169,6 +169,26 @@ async function marchTimeSlots() {
     }
 }
 
+// create available time slots for the month of March 2026, excluding weekends
+async function aprilTimeSlots() {
+    for(let i=1; i<31; i++) {
+        const weekends: number[] = [4, 5, 11, 12, 18, 19, 25, 26];
+
+        if (!weekends.includes(i)) {
+            const date = '2026-04-' + String(i).padStart(2, '0');;
+            const slot = {
+                appt_date: date,
+                start_time: '08:00',
+                end_time: '16:00',
+                appt_notes: undefined,
+                capacity: 2
+            }
+            await appointment.createAppointmentsInTimeRange(slot);
+        }
+        
+    }
+}
+
 // run init functions
 async function runSample() {
     try {
@@ -177,6 +197,7 @@ async function runSample() {
         await sampleJeffData();
         await sampleApptData();
         await marchTimeSlots();
+        await aprilTimeSlots();
         console.log('Sample data successfully initialized.')
     } catch (err) {
         console.log('Unable to initialize sample data: ', err);
