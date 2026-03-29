@@ -74,7 +74,7 @@ export default function RegistrationFinished({ form }) {
                 <TextInput
                     variant="filled"
                     label="4. Email"
-                    value={form.values.main_family_member.email.length > 0 ? form.values.main_family_member.email : '(Empty)'}
+                    value={form.values.main_family_member.email}
                     readOnly
                 />
                 <TextInput
@@ -140,9 +140,8 @@ export default function RegistrationFinished({ form }) {
                                 <TextInput
                                     variant="filled"
                                     label="4. Email"
-                                    value={member.email}
+                                    value={member.email.length > 0 ? member.email : '(Empty)'}
                                     readOnly
-                                    withAsterisk
                                 />
                                 <TextInput
                                     variant="filled"

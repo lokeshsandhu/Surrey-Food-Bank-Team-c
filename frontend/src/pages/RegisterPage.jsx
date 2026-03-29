@@ -34,32 +34,59 @@ export default function RegisterPage() {
 
     const form = useForm({
         initialValues: {
-            username: '',
-            user_password: '',
-            confirm_password: '',
-            canada_status: '',
+            username: 'allison1',
+            user_password: 'Abc1234$',
+            confirm_password: 'Abc1234$',
+            canada_status: 'Canadian Citizen',
             household_size: 0,
-            baby_or_pregnant: '',
-            language_spoken: '',
+            baby_or_pregnant: 'true',
+            language_spoken: 'English',
             account_notes: '',
             addr: {
-                line1: '',
+                line1: '1234 W',
                 line2: '',
-                city: '',
-                province: '',
-                postal_code: ''
+                city: 'Surrey',
+                province: 'BC',
+                postal_code: 'V6T 1Z1'
             },
             main_family_member:
             {
-                f_name: '',
-                l_name: '',
-                dob: null,
-                phone: '',
-                email: '',
+                f_name: 'allison',
+                l_name: 'k',
+                dob: '2003 02 18',
+                phone: '(111) 111-1111',
+                email: 'a@gmail.com',
                 relationship: 'owner'
             },
             family_members: []
         },
+        // initialValues: {
+        //     username: '',
+        //     user_password: '',
+        //     confirm_password: '',
+        //     canada_status: '',
+        //     household_size: 0,
+        //     baby_or_pregnant: '',
+        //     language_spoken: '',
+        //     account_notes: '',
+        //     addr: {
+        //         line1: '',
+        //         line2: '',
+        //         city: '',
+        //         province: '',
+        //         postal_code: ''
+        //     },
+        //     main_family_member:
+        //     {
+        //         f_name: '',
+        //         l_name: '',
+        //         dob: null,
+        //         phone: '',
+        //         email: '',
+        //         relationship: 'owner'
+        //     },
+        //     family_members: []
+        // },
         validateInputOnBlur: true,
         validateInputOnChange: true,
         validate: {
@@ -116,13 +143,50 @@ export default function RegisterPage() {
                         return ' ';
                     }
                 },
-                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
+                email: (value) => {
+                    // checks if this is a duplicate email within this registration form
+                    if (value.trim().length === 0) {
+                        return 'Please enter a valid email (e.g. alexdoe@gmail.com).';
+                    }
+
+                    const currentEmail = value.trim().toLowerCase();
+                    const familyEmails = form.values.family_members.map(m => m.email.trim().toLowerCase());
+
+
+                    const duplicates = familyEmails.filter((email, i) => email === currentEmail).length > 0;
+
+                    if (duplicates) {
+                        return 'Email is already taken. Please enter another email.';
+                    }
+                    return null;
+                },
+                    // value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
                 phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
             family_members: {
                 f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their first name.',
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
                 dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
+                email: (value, values, path) => {
+                    if (value.trim().length === 0) {
+                        return null;
+                    }
+
+                    const ownerEmail = form.values.main_family_member.email.trim().toLowerCase();
+                    const familyEmail = values.family_members.map(m => m.email.trim().toLowerCase());
+
+                    const index = Number(path.split('.')[1]);
+                    const currentEmail = value.trim().toLowerCase();
+
+                    const duplicates = familyEmail.filter((email, i) =>
+                        i !== index && email === currentEmail).length > 0
+                        || currentEmail === ownerEmail;
+
+                    if (duplicates) {
+                        return 'Email is already taken. Please enter another email.';
+                    }
+                    return null;
+                },
                 relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
             }
         }
@@ -222,6 +286,7 @@ export default function RegisterPage() {
                 `family_members.${index}.f_name`,
                 `family_members.${index}.l_name`,
                 `family_members.${index}.dob`,
+                `family_members.${index}.email`,
                 `family_members.${index}.relationship`,
             ]);
         }
