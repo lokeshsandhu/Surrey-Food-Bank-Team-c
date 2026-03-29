@@ -1,5 +1,5 @@
-import { Button, SimpleGrid, LoadingOverlay, Grid, ScrollArea, Modal, Group, TextInput, Select } from '@mantine/core';
-import { getTimeRange, DatePicker, TimeGrid } from '@mantine/dates';
+import { Button, SimpleGrid, LoadingOverlay, Grid, ScrollArea, Modal, Group, TextInput, Select, useModalsStack } from '@mantine/core';
+import { getTimeRange, DatePicker, TimeGrid, Calendar } from '@mantine/dates';
 import React, { useEffect } from 'react';
 import '../styles/styles.css';
 
@@ -22,14 +22,13 @@ const excludedDays = [5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sund
 export default function ClientDashboard() {
     const [allTimeslots, setAllTimeslots] = useState([{}]);
     const [currentMonth, setCurrentMonth] = useState(dayjs().format('YYYY-MM'));
-    const [selectedDate, setSelectedDate] = useState();
+    const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState(null);
     const [processingBooking, setProcessingBooking] = useState(false);
     const [loadingTimeGrid, setLoadingTimeGrid] = useState(false);
     const [availableTimes, setAvailableTimes] = useState([]);
     const [bookedTimes, setBookedTimes] = useState([]);
     const [myAppointment, setMyAppointment] = useState({});
-    const [modalState, {open, close}] = useDisclosure(false);
     const [successModalState, {open: openSuccessModal, close: closeSuccessModal}] = useDisclosure(false);
     const [modalLoading, setModalLoading] = useState(false);
     const [tinyBundles, setTinyBundles] = useState(false);
@@ -42,6 +41,15 @@ export default function ClientDashboard() {
 
     dayjs.extend(customParseFormat);
 
+    const stack = useModalsStack(['base-page', 'calendar-page', 'confirm-page']);
+    const [modalSelectedDate, setModalSelectedDate] = useState(null);
+    const [modalSelectedTime, setModalSelectedTime] = useState(null);
+    const [modalCurrentMonth, setModalCurrentMonth] = useState(dayjs().format('YYYY-MM'));
+    const [modalAllTimeslots, setModalAllTimeslots] = useState([{}]);
+    const [modalAvailableTimes, setModalAvailableTimes] = useState([]);
+    const [modalBookedTimes, setModalBookedTimes] = useState([]);
+    const [processingEdit, setProcessingEdit] = useState(false);
+    const [modalLoadingEdit, setModalLoadingEdit] = useState(false);
 
     if (!token) {
         navigate('/');
@@ -134,6 +142,74 @@ export default function ClientDashboard() {
         }
     };
 
+    const handleEdit = async () => {
+        await handleCancelBooking(myAppointment); // Cancel existing appointment before booking new one
+        if (modalSelectedDate && modalSelectedTime) {
+            setProcessingEdit(true);
+
+            const data = { appt_date: modalSelectedDate, start_time: modalSelectedTime };
+            const res = await bookAppointment(token, data);
+
+            if (res && res.success) {
+                const effectiveUsername = username || (await me(token))?.username || '';
+                notifications.show({
+                    title: 'Success',
+                    message: 'Appointment booked successfully',
+                    color: 'var(--mantine-color-green-6)',
+                    autoClose: 5000,
+                    withCloseButton: true,
+                    withBorder: true,
+                    style: {
+                        border: '3px solid',
+                        borderColor: 'var(--mantine-color-green-6)',
+                        borderRadius: '8px',
+                    }
+                });
+
+                const userEmail = await getAccountEmail(token, effectiveUsername);
+                if (!userEmail?.email) {
+                    notifications.show({
+                        title: 'Email not sent',
+                        message: 'Appointment was booked but no account email was found.',
+                        color: 'yellow',
+                    });
+                    handleAvailableTimesModal(modalSelectedDate);
+                    fetchMyAppointment();
+                    setProcessingEdit(false);
+                    return;
+                }
+
+                const confirmationEmail = {
+                    date: modalSelectedDate,
+                    time: modalSelectedTime,
+                    username: effectiveUsername,
+                    email: userEmail.email
+                }
+
+                const emailRes = await sendConfirmationEmail(token, confirmationEmail);
+                if (!emailRes?.success) {
+                    notifications.show({
+                        title: 'Email not sent',
+                        message: emailRes?.error || 'Appointment was booked but confirmation email failed.',
+                        color: 'yellow',
+                    });
+                }
+                openSuccessModal();
+                handleAvailableTimesModal(modalSelectedDate); // Refresh available times after booking
+                fetchMyAppointment();
+            } else {
+                notifications.show({
+                    title: 'Error',
+                    message: res?.error || 'Failed to book appointment',
+                    color: 'red',
+                });
+            }
+
+            setProcessingEdit(false);
+
+        }
+    };
+
     const handleAvailableTimes = async (date) => {
         setSelectedTime(null);
         setSelectedDate(date);
@@ -148,6 +224,23 @@ export default function ClientDashboard() {
             console.error('Error fetching booked times:', error);
         } finally {
             setLoadingTimeGrid(false);
+        }
+    }
+
+    const handleAvailableTimesModal = async (date) => {
+        setModalSelectedTime(null);
+        setModalSelectedDate(date);
+        setModalLoadingEdit(true);
+        try {
+            
+            const timeslots = await getAppointmentsInDateRange(token, date, date);
+            const takenTimes = timeslots.filter(slot => slot.username !== null);
+            setModalAvailableTimes(timeslots.map(appointment => appointment.start_time));
+            setModalBookedTimes(takenTimes.map(appointment => appointment.start_time));
+        } catch (error) {
+            console.error('Error fetching booked times:', error);
+        } finally {
+            setModalLoadingEdit(false);
         }
     }
 
@@ -178,7 +271,7 @@ export default function ClientDashboard() {
             });
         }
         setModalLoading(false);
-        close();
+        stack.closeAll  ();
         handleAvailableTimes(selectedDate); // Refresh available times after cancellation
         fetchMyAppointment(); // Refresh user's appointment information after cancellation
     }
@@ -217,13 +310,22 @@ export default function ClientDashboard() {
         fetchTimeslots();
     }, [currentMonth, token]);
 
+    useEffect(() => {
+        const fetchTimeslots = async () => {
+            const timeslots = await getAppointmentsInDateRange(token, dayjs(modalCurrentMonth).startOf('month').format('YYYY-MM-DD'), dayjs(modalCurrentMonth).endOf('month').format('YYYY-MM-DD'))
+            setModalAllTimeslots(timeslots);
+        };
+
+        fetchTimeslots();
+    }, [modalCurrentMonth, stack, token]);
+
     return (
         <div className="page">
             <ClientNavBar />
             <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs">
                 <div className="box">
-                    {myAppointment && myAppointment.appt_date ? `You have a booking for ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} at ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')}, ` : 'You do not have any upcoming bookings. '}
-                    {myAppointment && myAppointment.appt_date && <a tabIndex={0} onClick={open} style={{cursor: 'pointer', textDecoration: 'underline'}}>click here to edit/cancel your booking.</a>}
+                    {myAppointment && myAppointment.appt_date ? `You have a booking for ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} at ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')}, ` : `Welcome back ${username}! You do not have any upcoming bookings.`}
+                    {myAppointment && myAppointment.appt_date && <a tabIndex={0} onClick={() => stack.open('base-page')} style={{cursor: 'pointer', textDecoration: 'underline'}}>click here to edit/cancel your booking.</a>}
                 </div>
                 <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
                     
@@ -236,25 +338,25 @@ export default function ClientDashboard() {
                 <div className="box">
                     <Group justify='space-between'>
                         <div>
-                                <b>Contact Information</b>
-                                <br />
-                                Tel: 604.581.5443
-                                <br />
-                                Fax: 604.588.8697
-                                <br />
-                                Email: info@surreyfoodbank.org
-                                <br />
-                                <br />
-                                <b>Address</b>
-                                <br />
-                                Unit 1 – 13478 78th Ave
-                                <br />
-                                Surrey, BC, V3W 8J6
+                            <b>Contact Information</b>
+                            <br />
+                            Tel: 604.581.5443
+                            <br />
+                            Fax: 604.588.8697
+                            <br />
+                            Email: info@surreyfoodbank.org
+                            <br />
+                            <br />
+                            <b>Address</b>
+                            <br />
+                            Unit 1 – 13478 78th Ave
+                            <br />
+                            Surrey, BC, V3W 8J6
                         </div>
                         <div>
                             <b>Office Hours</b>
                             <br />
-                            Mon – Fri 8:00 a.m. – 4:00 p.m. 
+                            Mon – Fri 8:00 a.m. – 4:00 p.m.
                             <br />
                             <br />
                             <b>Food Distribution Hours</b>
@@ -265,7 +367,7 @@ export default function ClientDashboard() {
                             <br />
                             Thu: 9:00 a.m. – 1:00 p.m.
                             <br />
-                            Fri: 9:00 a.m. – 1:00 p.m. 
+                            Fri: 9:00 a.m. – 1:00 p.m.
                         </div>
                     </Group>
                 </div>
@@ -296,6 +398,7 @@ export default function ClientDashboard() {
                                 }
                             }}
                             hideOutsideDates
+                            style={{justifySelf: 'center', marginTop: '15px'}}
                         />
                     </div>
                 </Grid.Col>
@@ -341,23 +444,96 @@ export default function ClientDashboard() {
                     </div>
                 </Grid.Col>
             </Grid>
-            <Modal opened={modalState} onClose={close} title="Booking Information" centered>
-                <LoadingOverlay visible={modalLoading}/>
-                <div className="modal-content">
-                    <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
-                    <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
-                    <p><strong>Notes:</strong> {myAppointment && myAppointment.appt_notes ? myAppointment.appt_notes : 'N/A'}</p>
-                    <div>
-                        <Button mr={10}>
-                            Edit Booking
-                        </Button>
 
-                        <Button ml={10} onClick={() => handleCancelBooking(myAppointment)}>
-                            Cancel Booking
+            <Modal.Stack>
+                <Modal {...stack.register('base-page')} title="Booking Information" transitionProps={{ transition: 'slide-left' }} centered>
+                    <LoadingOverlay visible={modalLoading}/>
+                    <div className="modal-content">
+                        <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
+                        <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
+                        <p><strong>Notes:</strong> {myAppointment && myAppointment.appt_notes ? myAppointment.appt_notes : 'N/A'}</p>
+                        <div>
+                            <Button mr={10} onClick={() => stack.open("calendar-page")}>
+                                Edit Booking
+                            </Button>
+
+                            <Button ml={10} onClick={() => handleCancelBooking(myAppointment)}>
+                                Cancel Booking
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+
+                <Modal {...stack.register('calendar-page')} title="Choose date" size="70%" transitionProps={{ transition: 'slide-left' }} centered>
+                    <LoadingOverlay visible={modalLoadingEdit} overlayProps={{ radius: "sm", blur: 2 }}/>
+                    <Group grow>
+                        <DatePicker
+                            size="xl"
+                            value={modalSelectedDate}
+                            onChange={handleAvailableTimesModal}
+                            onMonthSelect={setModalCurrentMonth}
+                            onNextMonth={setModalCurrentMonth}
+                            onPreviousMonth={setModalCurrentMonth}
+                            firstDayOfWeek={0}
+                            excludeDate={(date) =>{
+                                if (excludedDays.includes(new Date(date).getDay())) {
+                                    return true;
+                                } else if (!modalAllTimeslots.some(timeslot => normalizeApptDate(timeslot.appt_date) === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
+                                    return true;
+                                } else if (dayjs(date).format('YYYY-MM-DD') < dayjs().format('YYYY-MM-DD')) { // Disable past dates
+                                    return true;
+                                } else if (tinyBundles) { // If tiny bundles, only allow Wednesdays
+                                    return dayjs(date).day() !== 3;
+                                } else {
+                                    return dayjs(date).day() === 3; // If not tiny bundles, disable Wednesdays
+                                }
+                            }}
+                            hideOutsideDates
+                        />
+
+                        <TimeGrid
+                            data={modalAvailableTimes}
+                            simpleGridProps={{
+                                type: 'container',
+                                cols: { base: 3 },
+                                spacing: 'lg',
+                            }}
+                            format="12h"
+                            withSeconds={false}
+                            size="lg"
+                            disableTime={modalBookedTimes}
+                            value={modalSelectedTime}
+                            onChange={setModalSelectedTime}
+                            disabled={modalSelectedDate === null}
+                            style={{marginBottom: '20px', padding: '15px'}}
+                        />
+                    </Group>
+                    <div className="booking-button">
+                        <Button size="lg" onClick={handleEdit} loading={processingEdit} disabled={!modalSelectedDate || !modalSelectedTime}>
+                            Book Appointment
                         </Button>
                     </div>
-                </div>
-            </Modal>
+                </Modal>
+{/* 
+                <Modal {...stack.register('confirm-page')} title="Booking Confirmation"  centered >
+                    <LoadingOverlay visible={modalLoading}/>
+                    <div className="modal-content">
+                        <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
+                        <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
+                        <p><strong>Notes:</strong> {myAppointment && myAppointment.appt_notes ? myAppointment.appt_notes : 'N/A'}</p>
+                        <div>
+                            <Button mr={10}>
+                                Edit Booking
+                            </Button>
+
+                            <Button ml={10} onClick={() => handleCancelBooking(myAppointment)}>
+                                Cancel Booking
+                            </Button>
+                        </div>
+                    </div>
+                </Modal> */}
+            </Modal.Stack>
+
             
             <Modal
                 opened={successModalState}
