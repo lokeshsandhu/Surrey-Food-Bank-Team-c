@@ -14,8 +14,6 @@ import { splitAddress } from '../utils/displayHelpers';
 
 import { mkConfig, generateCsv, download } from "export-to-csv";
 
-
-
 export default function ClientList() {
 
     const token = sessionStorage.getItem('token');
@@ -33,14 +31,11 @@ export default function ClientList() {
     const [searchText, setSearchText] = useState('');
     const [accountOwners, setAccountOwners] = useState([]);
 
-    // Fetch the account owners and their details
-    const getAllAccountOwners = async () => {
-        // get account owners
-        const resultOwners = await getOwnerFamilyMembers(token);
-
+    const getAccountDetails = async (resultOwners) => {
+        let accountOwnerDetails = [];
         // get account details
         if (resultOwners && Array.isArray(resultOwners) && resultOwners.length > 0) {
-            const accountOwnerDetails = await Promise.all(
+            accountOwnerDetails = await Promise.all(
                 resultOwners.map(async (owner) => {
                     const details = await getAccount(token, owner.username);
                     const address = splitAddress(details.addr);
@@ -61,12 +56,19 @@ export default function ClientList() {
                     };
                 })
             );
-            setAccountOwners(accountOwnerDetails);
-            console.log(accountOwnerDetails);
         }
+        setAccountOwners(accountOwnerDetails);
     };
 
-    // Handle search
+    // Fetch the account owners and their details
+    const getAllAccountOwners = async () => {
+        // get account owners
+        const resultOwners = await getOwnerFamilyMembers(token);
+
+        await getAccountDetails(resultOwners);
+    };
+
+    // Handle search locally
     const searchClients = async (input) => {
         let searchQuery = '';
         if (input && input.trim().length > 0) {
@@ -76,13 +78,13 @@ export default function ClientList() {
         }
         const lowercaseSearchText = searchQuery.toLowerCase();
 
-        const byFName = await getFamilyMembersByFName(token, lowercaseSearchText);
-        const byLName = await getFamilyMembersByLName(token, lowercaseSearchText);
+        const filtered = accountOwners.filter(d =>
+            d.f_name.toLowerCase().includes(lowercaseSearchText) ||
+            d.l_name.toLowerCase().includes(lowercaseSearchText) ||
+            d.username.toLowerCase().includes(lowercaseSearchText)
+        );
 
-        const temp = byFName.concat(byLName);
-        const filteredOwners = temp.filter(client => client.relationship === 'owner');
-
-        setAccountOwners(filteredOwners);
+        setAccountOwners(filtered);
     };
 
     // Clear search
@@ -92,7 +94,8 @@ export default function ClientList() {
     };
 
     // Handle export clients to csv
-    const handleExportData = () => {
+    const handleExportData = async () => {
+        getAllAccountOwners();
         const csv = generateCsv(csvConfig)(accountOwners);
         download(csvConfig)(csv);
     };
@@ -161,6 +164,20 @@ export default function ClientList() {
                     }}
                     rightSection={<CloseButton onClick={() => resetSearch()} />}
                 />
+                <div
+                    style={{
+                        width: '100%',
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        marginTop: 10
+                    }}>
+                    <Button
+                        variant='outline'
+                        onClick={handleExportData}
+                    >
+                        Export all Clients to CSV
+                    </Button>
+                </div>
                 <Table.ScrollContainer maxHeight={'80%'}>
                     <Table mt={15} stickyHeader withTableBorder highlightOnHover bgcolor='white' w={'100%'}>
                         <Table.Thead>
@@ -173,6 +190,7 @@ export default function ClientList() {
                                 <Table.Th>Address</Table.Th>
                                 <Table.Th>City</Table.Th>
                                 <Table.Th>Postal Code</Table.Th>
+                                <Table.Th></Table.Th>
                             </Table.Tr>
                         </Table.Thead>
                         <Table.Tbody>{clientRows}</Table.Tbody>
