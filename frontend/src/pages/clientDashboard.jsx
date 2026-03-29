@@ -12,7 +12,6 @@ import { me } from '../../api/auth.js';
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useDisclosure } from '@mantine/hooks';
-
 import { getAccountEmail } from '../../api/accounts.js';
 import { sendConfirmationEmail } from '../../api/email.js';
 
@@ -72,6 +71,7 @@ export default function ClientDashboard() {
             const res = await bookAppointment(token, data);
 
             if (res && res.success) {
+                const effectiveUsername = myUsername || (await me(token))?.username || '';
                 notifications.show({
                     title: 'Success',
                     message: 'Appointment booked successfully',
@@ -85,14 +85,33 @@ export default function ClientDashboard() {
                         borderRadius: '8px',
                     }
                 });
-                const userEmail = await getAccountEmail(token, myUsername);
+                const userEmail = await getAccountEmail(token, effectiveUsername);
+                if (!userEmail?.email) {
+                    notifications.show({
+                        title: 'Email not sent',
+                        message: 'Appointment was booked but no account email was found.',
+                        color: 'yellow',
+                    });
+                    handleAvailableTimes(selectedDate);
+                    fetchMyAppointment();
+                    setProcessingBooking(false);
+                    return;
+                }
+
                 const confirmationEmail = {
                     date: selectedDate,
                     time: selectedTime,
-                    username: myUsername,
+                    username: effectiveUsername,
                     email: userEmail.email
                 }
-                sendConfirmationEmail(token, confirmationEmail);
+                const emailRes = await sendConfirmationEmail(token, confirmationEmail);
+                if (!emailRes?.success) {
+                    notifications.show({
+                        title: 'Email not sent',
+                        message: emailRes?.error || 'Appointment was booked but confirmation email failed.',
+                        color: 'yellow',
+                    });
+                }
                 handleAvailableTimes(selectedDate); // Refresh available times after booking
                 fetchMyAppointment();
             } else {

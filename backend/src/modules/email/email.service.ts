@@ -26,7 +26,7 @@ export async function sendConfirmMessage(apptDate: string, apptTime: string, use
 
     return data;
   } catch (error) {
-    return error;
+    return null;
   }
 }
 
@@ -47,7 +47,7 @@ export async function sendRecoveryMessage(email: string, link: string) {
 
     return data;
   } catch (error) {
-    return error;
+    return null;
   }
 }
 
@@ -69,7 +69,7 @@ export async function sendCancelMessage(apptDate: string, apptTime: string, user
 
     return data;
   } catch (error) {
-    return error;
+    return null;
   }
 }
 
@@ -93,6 +93,6 @@ export async function sendEditMessage(originalApptDate: string, originalApptTime
 
     return data;
   } catch (error) {
-    return error;
+    return null;
   }
 }

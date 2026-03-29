@@ -40,8 +40,13 @@ export async function getAccountByUsername(username: string) {
 export async function getAccountEmail(username: string) {
     const text = `
         SELECT email
-        FROM familymember JOIN account ON familymember.username = account.username
-        WHERE account.username = $1 AND relationship = 'owner'
+                FROM familymember
+                WHERE username = $1
+                    AND LOWER(TRIM(COALESCE(relationship, ''))) = 'owner'
+                    AND email IS NOT NULL
+                    AND TRIM(email) <> ''
+                ORDER BY id ASC
+                LIMIT 1
     `;
     const { rows } = await pool.query(text, [username]);
     return rows[0] ?? null;
