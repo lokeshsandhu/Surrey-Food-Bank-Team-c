@@ -9,6 +9,8 @@ import '../styles/clientList.css';
 import { ActionIcon, CloseButton, TextInput, Title, Table, Button } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
 import { getFamilyMembersByFName, getFamilyMembersByLName, getOwnerFamilyMembers } from '../../api/familyMembers';
+import { getAccount } from '../../api/accounts';
+import { splitAddress } from '../utils/displayHelpers';
 
 export default function ClientList() {
 
@@ -24,9 +26,35 @@ export default function ClientList() {
     }
 
     const getAllAccountOwners = async () => {
-        const result = await getOwnerFamilyMembers(token);
-        setAccountOwners(result);
-    }
+        // get account owners
+        const resultOwners = await getOwnerFamilyMembers(token);
+
+        // get account details
+        if (resultOwners && Array.isArray(resultOwners) && resultOwners.length > 0) {
+            const accountOwnerDetails = await Promise.all(
+                resultOwners.map(async (owner) => {
+                    const details = await getAccount(token, owner.username);
+                    const address = splitAddress(details.addr);
+
+                    return {
+                        ...owner,
+                        addr: {
+                            line1: address.line1,
+                            line2: address.line2,
+                            city: address.city,
+                            province: address.province,
+                            postal_code: address.postal_code
+                        },
+                        household_size: details.household_size,
+                        account_notes: details.account_notes
+
+                    };
+                })
+            );
+            setAccountOwners(accountOwnerDetails);
+            console.log(accountOwnerDetails);
+        }
+    };
 
     const searchClients = async (input) => {
         let searchQuery = '';
@@ -41,19 +69,19 @@ export default function ClientList() {
         const byLName = await getFamilyMembersByLName(token, lowercaseSearchText);
 
         const temp = byFName.concat(byLName);
-        const filteredOwners = temp.filter(client => client.relationship === 'owner')
+        const filteredOwners = temp.filter(client => client.relationship === 'owner');
 
         setAccountOwners(filteredOwners);
-    }
+    };
 
     const resetSearch = async () => {
         getAllAccountOwners();
         setSearchText('');
-    }
+    };
 
     useEffect(() => {
         getAllAccountOwners();
-    }, [])
+    }, []);
 
     const clientRows = accountOwners.map((owner) => (
         <Table.Tr
@@ -68,7 +96,7 @@ export default function ClientList() {
                 </div>
             </Table.Td>
         </Table.Tr>
-    ))
+    ));
 
     return (
         <div className="page">
@@ -118,5 +146,5 @@ export default function ClientList() {
                 </Table.ScrollContainer>
             </div>
         </div>
-    )
+    );
 }

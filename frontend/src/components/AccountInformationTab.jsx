@@ -11,6 +11,7 @@ import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import { provinceOptions, canadaStatusOptions } from "../constants/FormOptions";
+import { splitAddress } from "../utils/displayHelpers";
 
 
 export default function AccountInformationTab({ clientUsername }) {
@@ -117,18 +118,6 @@ export default function AccountInformationTab({ clientUsername }) {
                 }
             });
         }
-    };
-
-    const splitAddress = (address) => {
-        const addrParts = address.split(', ').map(p => p.trim());
-
-        return {
-            line1: addrParts[0] ?? '',
-            line2: addrParts[1] ?? '',
-            city: addrParts[2] ?? '',
-            province: addrParts[3] ?? '',
-            postal_code: addrParts[4] ?? '',
-        };
     };
 
     const updateAccountInformation = async () => {

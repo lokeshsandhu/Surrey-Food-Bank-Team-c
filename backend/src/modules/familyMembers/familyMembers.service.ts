@@ -39,19 +39,19 @@ export async function findFamilyMembersByLName(l_name: string) {
 
 // Insert row into familymember table, return row(s)
 export async function createFamilyMember(data: FamilyMemberDTO) {
-    const duplicateCheck = await pool.query(
-        `
-            SELECT 1
-            FROM familymember
-            WHERE username = $1 AND LOWER(f_name) = LOWER($2)
-            LIMIT 1
-        `,
-        [data.username, data.f_name]
-    );
+    // const duplicateCheck = await pool.query(
+    //     `
+    //         SELECT 1
+    //         FROM familymember
+    //         WHERE username = $1 AND LOWER(f_name) = LOWER($2)
+    //         LIMIT 1
+    //     `,
+    //     [data.username, data.f_name]
+    // );
 
-    if (duplicateCheck.rows.length > 0) {
-        throw new Error("Family member with this first name already exists for the account");
-    }
+    // if (duplicateCheck.rows.length > 0) {
+    //     throw new Error("Family member with this first name already exists for the account");
+    // }
 
     const text = `
         INSERT INTO familymember
