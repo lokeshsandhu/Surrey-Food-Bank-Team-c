@@ -115,7 +115,7 @@ export default function FamilyMembersTab({ clientUsername }) {
         l_name: member.l_name.trim(),
         dob: member.dob,
         phone: member.phone,
-        email: member.email,
+        email: member.email.trim().length > 0 ? member.email : null,
         relationship: member.relationship
       };
       try {
@@ -339,7 +339,6 @@ export default function FamilyMembersTab({ clientUsername }) {
             key={form.key(`email`)}
             {...form.getInputProps(`email`)}
             w={'45%'}
-            withAsterisk
           // TODO: check if email exists in database
           />
           <TextInput

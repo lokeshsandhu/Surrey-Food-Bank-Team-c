@@ -341,6 +341,7 @@ export default function RegisterPage() {
                                 await createFamilyMember(loginResult.token, ownerData);
                                 console.log('created owner');
                                 // Add each additional family member
+                                console.log('familymembers', form.values.family_members)
                                 for (const member of form.values.family_members) {
                                     const memberData = {
                                         username: accountData.username,
@@ -348,7 +349,7 @@ export default function RegisterPage() {
                                         l_name: member.l_name.trim(),
                                         dob: member.dob,
                                         phone: member.phone,
-                                        email: member.email,
+                                        email: member.email.trim().length > 0 ? member.email : null,
                                         relationship: member.relationship,
                                     };
                                     await createFamilyMember(loginResult.token, memberData);
