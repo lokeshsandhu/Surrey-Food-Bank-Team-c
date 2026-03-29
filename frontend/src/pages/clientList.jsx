@@ -123,6 +123,8 @@ export default function ClientList() {
             </Table.Td>
             <Table.Td>{owner.address_city}</Table.Td>
             <Table.Td>{owner.address_postal_code}</Table.Td>
+            <Table.Td>{owner.household_size}</Table.Td>
+            <Table.Td>{owner.account_notes}</Table.Td>
             <Table.Td>
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
                     <Button onClick={() => navigate(`/adminDashboard/clientList/account/${owner.username}`)}>View/Edit</Button>
@@ -190,6 +192,8 @@ export default function ClientList() {
                                 <Table.Th>Address</Table.Th>
                                 <Table.Th>City</Table.Th>
                                 <Table.Th>Postal Code</Table.Th>
+                                <Table.Th>Household Size</Table.Th>
+                                <Table.Th>Account Notes</Table.Th>
                                 <Table.Th></Table.Th>
                             </Table.Tr>
                         </Table.Thead>
