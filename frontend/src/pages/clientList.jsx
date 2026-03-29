@@ -12,19 +12,28 @@ import { getFamilyMembersByFName, getFamilyMembersByLName, getOwnerFamilyMembers
 import { getAccount } from '../../api/accounts';
 import { splitAddress } from '../utils/displayHelpers';
 
+import { mkConfig, generateCsv, download } from "export-to-csv";
+
+
+
 export default function ClientList() {
 
     const token = sessionStorage.getItem('token');
     const navigate = useNavigate();
-
-    const [searchText, setSearchText] = useState('');
-    const [accountOwners, setAccountOwners] = useState([]);
 
     if (!token) {
         navigate('/');
         return null;
     }
 
+    // setting export to csv configurations
+    const csvConfig = mkConfig({ useKeysAsHeaders: true });
+
+    // state
+    const [searchText, setSearchText] = useState('');
+    const [accountOwners, setAccountOwners] = useState([]);
+
+    // Fetch the account owners and their details
     const getAllAccountOwners = async () => {
         // get account owners
         const resultOwners = await getOwnerFamilyMembers(token);
@@ -37,14 +46,15 @@ export default function ClientList() {
                     const address = splitAddress(details.addr);
 
                     return {
-                        ...owner,
-                        addr: {
-                            line1: address.line1,
-                            line2: address.line2,
-                            city: address.city,
-                            province: address.province,
-                            postal_code: address.postal_code
-                        },
+                        username: owner.username,
+                        f_name: owner.f_name,
+                        l_name: owner.l_name,
+                        email: owner.email,
+                        phone: owner.phone,
+                        address_line1: address.line1,
+                        address_line2: address.line2,
+                        address_city: address.city,
+                        address_postal_code: address.postal_code,
                         household_size: details.household_size,
                         account_notes: details.account_notes
 
@@ -56,6 +66,7 @@ export default function ClientList() {
         }
     };
 
+    // Handle search
     const searchClients = async (input) => {
         let searchQuery = '';
         if (input && input.trim().length > 0) {
@@ -74,9 +85,16 @@ export default function ClientList() {
         setAccountOwners(filteredOwners);
     };
 
+    // Clear search
     const resetSearch = async () => {
         getAllAccountOwners();
         setSearchText('');
+    };
+
+    // Handle export clients to csv
+    const handleExportData = () => {
+        const csv = generateCsv(csvConfig)(accountOwners);
+        download(csvConfig)(csv);
     };
 
     useEffect(() => {
@@ -87,9 +105,21 @@ export default function ClientList() {
         <Table.Tr
             key={owner.username}
         >
-            <Table.Td>{owner.l_name}, {owner.f_name}</Table.Td>
-            <Table.Td><a href={`mailto:${owner.email}`}>{owner.email}</a></Table.Td>
+            <Table.Td>{owner.l_name}</Table.Td>
+            <Table.Td>{owner.f_name}</Table.Td>
+            <Table.Td>{owner.username}</Table.Td>
+            <Table.Td>
+                <a href={`mailto:${owner.email}`}>{owner.email}</a>
+            </Table.Td>
             <Table.Td>{owner.phone}</Table.Td>
+            <Table.Td>
+                {owner.address_line1}
+                {owner.address_line2 && owner.address_line2.length > 0
+                    ?
+                    `, ${owner.address_line2}` : null}
+            </Table.Td>
+            <Table.Td>{owner.address_city}</Table.Td>
+            <Table.Td>{owner.address_postal_code}</Table.Td>
             <Table.Td>
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
                     <Button onClick={() => navigate(`/adminDashboard/clientList/account/${owner.username}`)}>View/Edit</Button>
@@ -135,10 +165,14 @@ export default function ClientList() {
                     <Table mt={15} stickyHeader withTableBorder highlightOnHover bgcolor='white' w={'100%'}>
                         <Table.Thead>
                             <Table.Tr>
-                                <Table.Th>Last Name, First Name</Table.Th>
+                                <Table.Th>Last Name</Table.Th>
+                                <Table.Th>First Name</Table.Th>
+                                <Table.Th>Username</Table.Th>
                                 <Table.Th>Email</Table.Th>
                                 <Table.Th>Phone</Table.Th>
-                                <Table.Th></Table.Th>
+                                <Table.Th>Address</Table.Th>
+                                <Table.Th>City</Table.Th>
+                                <Table.Th>Postal Code</Table.Th>
                             </Table.Tr>
                         </Table.Thead>
                         <Table.Tbody>{clientRows}</Table.Tbody>
