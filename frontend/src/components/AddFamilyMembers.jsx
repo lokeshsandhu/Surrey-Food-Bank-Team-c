@@ -19,6 +19,8 @@ export default function AddFamilyMembers({ form }) {
             });
     };
 
+    // TODO: check if email exists in database
+
     return (
         <div className='registration-section'>
             <h2 className='login-title'>Add Family Members</h2>
@@ -73,6 +75,7 @@ export default function AddFamilyMembers({ form }) {
                                 key={form.key(`family_members.${index}.email`)}
                                 {...form.getInputProps(`family_members.${index}.email`)}
                                 w={'45%'}
+                                // TODO: check if email exists in database onBlur
                             />
                             <TextInput
                                 label="5. Phone"

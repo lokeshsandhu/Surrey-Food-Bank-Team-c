@@ -278,7 +278,9 @@ export default function RegisterPage() {
             ];
 
             await checkUsername();
-            if (form.errors.username || form.errors.family_members) return;
+            // TODO: check if email exists in database
+            if (form.errors.username || form.errors.email || form.errors.family_members) return;
+
         }
 
         if (activeSection === 2) {
@@ -289,6 +291,8 @@ export default function RegisterPage() {
                 `family_members.${index}.email`,
                 `family_members.${index}.relationship`,
             ]);
+
+            // TODO: check if any email exists in database
         }
 
         let hasErrors = false;
