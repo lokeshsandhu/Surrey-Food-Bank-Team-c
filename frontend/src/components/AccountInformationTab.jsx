@@ -81,6 +81,8 @@ export default function AccountInformationTab({ clientUsername }) {
         }
     });
 
+    // TODO: check if email exists in database
+
     const getAccountInformation = async () => {
         const result = await getAccount(token, clientUsername);
         const familyMembers = await getFamilyMembers(token, clientUsername);
@@ -151,6 +153,8 @@ export default function AccountInformationTab({ clientUsername }) {
                 hasErrors = true;
             }
         });
+
+        // TODO: check if email exists in database
 
         if (!hasErrors) {
             const accountInfo = form.values.accountInformation;
@@ -247,6 +251,7 @@ export default function AccountInformationTab({ clientUsername }) {
                         {...form.getInputProps('accountOwner.email')}
                         withAsterisk
                         w={'45%'}
+                    // TODO: check if email exists in database
                     />
                     <TextInput
                         label="Phone"

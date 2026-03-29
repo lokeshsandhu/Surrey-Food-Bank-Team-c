@@ -55,6 +55,8 @@ export default function FamilyMembersTab({ clientUsername }) {
     }
   });
 
+  // TODO: check if email exists in database
+
   const isMemberOwner = () => {
     const currentMember = { f_name: form.values.f_name, relationship: form.values.relationship };
     const relationships = familyMemberInfo.map(m => { return { f_name: m.f_name, relationship: m.relationship }; });
@@ -104,6 +106,8 @@ export default function FamilyMembersTab({ clientUsername }) {
       }
     });
 
+    // TODO: check if email exists in database
+
     if (!hasErrors) {
       const member = form.values;
       const memberData = {
@@ -151,6 +155,8 @@ export default function FamilyMembersTab({ clientUsername }) {
         hasErrors = true;
       }
     });
+
+    // TODO: check if email exists in database
 
     if (!hasErrors) {
       const member = form.values;
@@ -334,6 +340,7 @@ export default function FamilyMembersTab({ clientUsername }) {
             {...form.getInputProps(`email`)}
             w={'45%'}
             withAsterisk
+          // TODO: check if email exists in database
           />
           <TextInput
             label="Phone"
