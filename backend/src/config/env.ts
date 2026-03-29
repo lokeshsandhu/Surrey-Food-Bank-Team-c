@@ -42,4 +42,5 @@ export const env = {
   DB_NAME: process.env.DB_NAME || process.env.DATABASE || "",
   DB_PASSWORD: process.env.DB_PASSWORD || process.env.PASSWORD || "",
   DB_PORT: parseInt(process.env.DB_PORT || "5432", 10),
+  MAILGUN_KEY: process.env.MAILGUN_KEY || "",
 };

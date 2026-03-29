@@ -36,6 +36,17 @@ export function getAccount(token, username) {
   }).then(res => res.json());
 }
 
+/**
+ * Get account email by username.
+ * Example:
+ *   getAccountEmail("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "johndoe");
+ */
+export function getAccountEmail(token, username) {
+  return fetch(`${API_BASE}/email/${username}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(res => res.json());
+}
+
 
 /**
  * Update account details.

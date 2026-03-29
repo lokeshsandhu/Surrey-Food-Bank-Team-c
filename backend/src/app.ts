@@ -7,6 +7,7 @@ import accountsRoutes from "./modules/accounts/accounts.routes";
 import adminRoutes from "./modules/admin/admin.routes";
 import appointmentsRoutes from "./modules/appointments/appointments.routes";
 import familyMembersRoutes from "./modules/familyMembers/familyMembers.routes";
+import emailRoutes from "./modules/email/email.routes";
 
 import { env } from "./config/env";
 import { errorHandler } from "./middleware/error.middleware";
@@ -31,6 +32,7 @@ app.use("/api/accounts", accountsRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/appointments", appointmentsRoutes);
 app.use("/api/family-members", familyMembersRoutes);
+app.use("/api/email", emailRoutes);
 app.use(errorHandler);
 
 export default app;
