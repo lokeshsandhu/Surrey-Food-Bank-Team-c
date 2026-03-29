@@ -26,6 +26,21 @@ export async function getMyAccount(req: Request, res: Response) {
     }
 }
 
+// Find email from account with given username
+export async function getAccountEmail(req: Request, res: Response) {
+    try {
+        const username = req.params.username;
+        const account = await service.getAccountEmail(username);
+        if (!account) {
+            res.status(404).json({ error: "Account not found" });
+            return;
+        }
+        res.status(200).json(account);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 // Update select fields in account with given username
 export async function updateMyAccount(req: Request, res: Response) {
     try {

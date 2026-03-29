@@ -7,6 +7,9 @@ const router = Router();
 // POST /api/accounts — create a new account 
 router.post("/", controller.createAccount);
 
+// GET /api/accounts/email/:username — get account owner's email
+router.get("/email/:username", authenticate, controller.getAccountEmail);
+
 // GET /api/accounts/:username — get account details
 router.get("/:username", authenticate, controller.getMyAccount);
 
