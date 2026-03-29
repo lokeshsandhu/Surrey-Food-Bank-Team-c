@@ -39,3 +39,42 @@ export async function me(req: Request, res: Response) {
         res.status(500).json({ error: err.message });
     }
 }
+
+// Request password reset email. Response is intentionally generic.
+export async function requestPasswordReset(req: Request, res: Response) {
+    try {
+        const { identifier } = req.body;
+
+        if (!identifier || typeof identifier !== "string") {
+            res.status(400).json({ success: false, error: "Identifier is required" });
+            return;
+        }
+
+        await service.requestPasswordReset(identifier);
+        res.status(200).json({ success: true, message: "If an account exists, a reset link has been sent." });
+    } catch (err: any) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+}
+
+// Reset account password with token + new password
+export async function confirmPasswordReset(req: Request, res: Response) {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword || typeof token !== "string" || typeof newPassword !== "string") {
+            res.status(400).json({ success: false, error: "Token and newPassword are required" });
+            return;
+        }
+
+        const updated = await service.confirmPasswordReset(token, newPassword);
+        if (!updated) {
+            res.status(400).json({ success: false, error: "Invalid or expired reset link" });
+            return;
+        }
+
+        res.status(200).json({ success: true });
+    } catch (err: any) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+}

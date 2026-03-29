@@ -54,6 +54,19 @@ export async function getAccountWithPassword(username: string) {
     return rows[0] ?? null;
 }
 
+// Update password hash for account with given username
+export async function updateAccountPassword(username: string, newPassword: string): Promise<boolean> {
+    const hashedPassword = await hashPassword(newPassword);
+    const text = `
+        UPDATE account
+        SET user_password = $1
+        WHERE username = $2
+        RETURNING username
+    `;
+    const { rows } = await pool.query(text, [hashedPassword, username]);
+    return rows.length > 0;
+}
+
 // Update row in account table with given username, return row
 // Only the fields you specify are updated
 export async function updateAccount(username: string, data: UpdateAccountDTO) {
