@@ -10,6 +10,9 @@ router.post("/", controller.createAccount);
 // GET /api/accounts/:username — get account details
 router.get("/:username", authenticate, controller.getMyAccount);
 
+// GET /api/accounts/email/:username — get account owner's email
+router.get("/email/:username", authenticate, controller.getAccountEmail);
+
 // PATCH /api/accounts/:username — update a specific detail
 router.patch("/:username", authenticate, controller.updateMyAccount);
 

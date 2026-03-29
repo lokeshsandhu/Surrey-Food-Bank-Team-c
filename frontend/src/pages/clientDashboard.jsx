@@ -13,6 +13,9 @@ import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useDisclosure } from '@mantine/hooks';
 
+import { getAccountEmail } from '../../api/accounts.js';
+import { sendConfirmationEmail } from '../../api/email.js';
+
 const excludedDays = [5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
 
 export default function ClientDashboard() {
@@ -82,6 +85,14 @@ export default function ClientDashboard() {
                         borderRadius: '8px',
                     }
                 });
+                const userEmail = await getAccountEmail(token, myUsername);
+                const confirmationEmail = {
+                    date: selectedDate,
+                    time: selectedTime,
+                    username: myUsername,
+                    email: userEmail.email
+                }
+                sendConfirmationEmail(token, confirmationEmail);
                 handleAvailableTimes(selectedDate); // Refresh available times after booking
                 fetchMyAppointment();
             } else {

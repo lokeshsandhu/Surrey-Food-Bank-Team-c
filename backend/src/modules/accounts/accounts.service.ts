@@ -36,6 +36,17 @@ export async function getAccountByUsername(username: string) {
     return rows[0] ?? null;
 }
 
+// Select from account table join family member with given username, return owner's email
+export async function getAccountEmail(username: string) {
+    const text = `
+        SELECT email
+        FROM familymember JOIN account ON familymember.username = account.username
+        WHERE account.username = $1 AND relationship = 'owner'
+    `;
+    const { rows } = await pool.query(text, [username]);
+    return rows[0] ?? null;
+}
+
 // Select from account table with given username, return boolean
 export async function usernameExists(username: string): Promise<boolean> {
     const text = `SELECT 1 FROM account WHERE username = $1 LIMIT 1`;
