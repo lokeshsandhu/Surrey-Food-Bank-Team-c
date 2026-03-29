@@ -100,6 +100,23 @@ export default function ClientList() {
         download(csvConfig)(csv);
     };
 
+    const colStyles = {
+        name: { width: '10%' },
+        username: { width: '10%' },
+        email: { width: '18%' },
+        phone: { width: '17%' },
+        address: { width: '18%' },
+        city: { width: '8%' },
+        postal: { width: '8%' },
+        household: { width: '3%' },
+        notes: { width: '5%' },
+        action: { width: '3%'}
+    };
+    const cellBase = {
+        whiteSpace: 'normal',
+        wordBreak: 'break-word',
+    };
+
     useEffect(() => {
         getAllAccountOwners();
     }, []);
@@ -108,26 +125,38 @@ export default function ClientList() {
         <Table.Tr
             key={owner.username}
         >
-            <Table.Td>{owner.l_name}</Table.Td>
-            <Table.Td>{owner.f_name}</Table.Td>
-            <Table.Td>{owner.username}</Table.Td>
-            <Table.Td>
+            <Table.Td
+                style={{ ...cellBase, ...colStyles.name }}>
+                {owner.l_name}
+            </Table.Td>
+            <Table.Td
+                style={{ ...cellBase, ...colStyles.name }}>
+                {owner.f_name}
+            </Table.Td>
+            <Table.Td
+                style={{ ...cellBase, ...colStyles.username }}>
+                {owner.username}
+            </Table.Td>
+            <Table.Td
+                style={{ ...cellBase, ...colStyles.email }}>
                 <a href={`mailto:${owner.email}`}>{owner.email}</a>
             </Table.Td>
-            <Table.Td>{owner.phone}</Table.Td>
-            <Table.Td>
+            <Table.Td
+                style={{ ...cellBase, ...colStyles.phone }}>{owner.phone}</Table.Td>
+            <Table.Td
+                style={{ ...cellBase, ...colStyles.address }}>
                 {owner.address_line1}
                 {owner.address_line2 && owner.address_line2.length > 0
                     ?
                     `, ${owner.address_line2}` : null}
             </Table.Td>
-            <Table.Td>{owner.address_city}</Table.Td>
-            <Table.Td>{owner.address_postal_code}</Table.Td>
-            <Table.Td>{owner.household_size}</Table.Td>
-            <Table.Td>{owner.account_notes}</Table.Td>
-            <Table.Td>
+            <Table.Td style={{ ...cellBase, ...colStyles.city }}>{owner.address_city}</Table.Td>
+            <Table.Td style={{ ...cellBase, ...colStyles.postal }}>{owner.address_postal_code}</Table.Td>
+            <Table.Td style={{ ...cellBase, ...colStyles.household }}>{owner.household_size}</Table.Td>
+            <Table.Td style={{ ...cellBase, ...colStyles.notes }}>{owner.account_notes}</Table.Td>
+            <Table.Td style={{ ...cellBase, ...colStyles.action }}>
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
-                    <Button onClick={() => navigate(`/adminDashboard/clientList/account/${owner.username}`)}>View/Edit</Button>
+                    <Button size='compact-sm' onClick={() => navigate(`/adminDashboard/clientList/account/${owner.username}`)}>View</Button>
                 </div>
             </Table.Td>
         </Table.Tr>
@@ -177,11 +206,11 @@ export default function ClientList() {
                         variant='outline'
                         onClick={handleExportData}
                     >
-                        Export all Clients to CSV
+                        Export All Clients to CSV
                     </Button>
                 </div>
-                <Table.ScrollContainer maxHeight={'80%'}>
-                    <Table mt={15} stickyHeader withTableBorder highlightOnHover bgcolor='white' w={'100%'}>
+                <Table.ScrollContainer height={'80%'} style={{ overflowY: 'auto' }}>
+                    <Table mt={15} stickyHeader withTableBorder highlightOnHover bgcolor='white' w={'100%'} style={{tableLayout: 'fixed', width: '100%'}}>
                         <Table.Thead>
                             <Table.Tr>
                                 <Table.Th>Last Name</Table.Th>
@@ -192,7 +221,7 @@ export default function ClientList() {
                                 <Table.Th>Address</Table.Th>
                                 <Table.Th>City</Table.Th>
                                 <Table.Th>Postal Code</Table.Th>
-                                <Table.Th>Household Size</Table.Th>
+                                <Table.Th>Family Members</Table.Th>
                                 <Table.Th>Account Notes</Table.Th>
                                 <Table.Th></Table.Th>
                             </Table.Tr>

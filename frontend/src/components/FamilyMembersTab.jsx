@@ -165,8 +165,8 @@ export default function FamilyMembersTab({ clientUsername }) {
         f_name: member.f_name,
         l_name: member.l_name,
         dob: member.dob,
-        phone: member.phone,
         email: member.email,
+        phone: member.phone,
         relationship: member.relationship
       };
       try {
