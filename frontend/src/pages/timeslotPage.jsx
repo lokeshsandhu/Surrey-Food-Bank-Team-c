@@ -176,7 +176,7 @@ export default function TimeslotPage() {
         console.log('Creating booking with date:', bookingDate, 'start:', bookingTime, 'end:', dayjs(bookingTime, 'HH:mm').add(15, 'minutes').format('HH:mm'), 'username:', username, 'notes:', notes, 'capacity:', values.capacity);
         let res;
         if (username === '') {
-            res = await updateAppointment(token, bookingDate, bookingTime, { capacity: capacity });
+            res = await updateAppointment(token, bookingDate, bookingTime, { appt_notes: notes, capacity: capacity });
         } else {
             res = await updateAppointment(token, bookingDate, bookingTime, { username: username, appt_notes: notes, capacity: capacity });
         }
