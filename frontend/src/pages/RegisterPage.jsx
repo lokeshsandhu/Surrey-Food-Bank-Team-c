@@ -233,6 +233,7 @@ export default function RegisterPage() {
                     window.location.href = '/adminDashboard';
                 } else if (userInfo && userInfo.role === 'client') {
                     window.location.href = '/clientDashboard';
+                    sessionStorage.setItem('firstTime', true);
                 } else {
                     window.location.href = '/dashboard'; // fallback
                 }
