@@ -207,6 +207,22 @@ export default function AdminDashboard() {
                     </Text>
                 </div>
                 <div className="box">
+                    <Text>Use the Navigation bar above to access the following:</Text>
+                    <hr></hr>
+                    <Text><strong>Timeslots Page</strong>
+                        <ul> 
+                            <li>Create or edit available timeslots</li>
+                            <li>View booked appointments</li>
+                            <li>Create bookings for clients</li>
+                        </ul>
+                    </Text>
+                    <Text><strong>Client List</strong>
+                        <ul> 
+                            <li>View all clients</li>
+                            <li>View or edit a client's account information</li>
+                            <li>View a client's past appointment history</li>
+                        </ul>
+                    </Text>
                     {/* <DatePickerInput
                         label="Pick date to make booking for client"
                         value={createBookingDate ? createBookingDate : dayjs()}
@@ -218,6 +234,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="box">
                     <Text style={{ textAlign: 'center' }} fw={600}>Export booked appointments</Text>
+                    <Text style={{ textAlign: 'center' }}>Select a start and end date and click the button below to export all bookings within that time range.</Text>
                     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', justifyContent: 'center', alignItems: 'center', marginTop: 10 }}>
                         <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'center', alignItems: 'center', marginBottom: 10, gap: 10 }}>
                             <DatePickerInput
@@ -249,7 +266,7 @@ export default function AdminDashboard() {
                     <Button onClick={createTimeslot} style={{ marginTop: '20px' }}>Create timeslots</Button> */}
                 </div>
             </SimpleGrid>
-            <Grid verticalspacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
+            {/* <Grid verticalspacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
                 <Grid.Col span={4} style={{ height: "500px" }}>
                     <div className="calendar">
                         <DatePicker
@@ -321,7 +338,7 @@ export default function AdminDashboard() {
                         </ScrollArea>
                     </div>
                 </Grid.Col>
-            </Grid>
+            </Grid> */}
         </div>
     );
 }
