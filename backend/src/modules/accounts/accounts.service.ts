@@ -135,13 +135,14 @@ export async function updateAccount(username: string, data: UpdateAccountDTO) {
     return rows[0] ?? null;
 }
 
+// NOTUSED
 // Delete row in account table with given username, return row
-export async function deleteAccount(username: string) {
-    const text = `
-        DELETE FROM account
-        WHERE username = $1
-        RETURNING username
-    `;
-    const { rows } = await pool.query(text, [username]);
-    return rows[0] ?? null;
-}
+// export async function deleteAccount(username: string) {
+//     const text = `
+//         DELETE FROM account
+//         WHERE username = $1
+//         RETURNING username
+//     `;
+//     const { rows } = await pool.query(text, [username]);
+//     return rows[0] ?? null;
+// }

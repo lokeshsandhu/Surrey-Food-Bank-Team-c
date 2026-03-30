@@ -62,50 +62,51 @@ beforeEach(async () => {
     await pool.query('DELETE FROM appointment_slot WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
 });
 
-// ─── Admin: Create Single Appointment ────────────────────────────────
-describe('POST /api/appointments/appointment (admin create)', () => {
-    it('should return 401 without auth', async () => {
-        const res = await request(app)
-            .post('/api/appointments/appointment')
-            .send({ appt_date: APPT_DATE, start_time: '09:00', end_time: '09:15' });
+// NOTUSED
+// // ─── Admin: Create Single Appointment ────────────────────────────────
+// describe('POST /api/appointments/appointment (admin create)', () => {
+//     it('should return 401 without auth', async () => {
+//         const res = await request(app)
+//             .post('/api/appointments/appointment')
+//             .send({ appt_date: APPT_DATE, start_time: '09:00', end_time: '09:15' });
 
-        expect(res.status).toBe(401);
-    });
+//         expect(res.status).toBe(401);
+//     });
 
-    it('should return 403 for non-admin', async () => {
-        const res = await request(app)
-            .post('/api/appointments/appointment')
-            .set('Authorization', `Bearer ${clientToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '09:00', end_time: '09:15' });
+//     it('should return 403 for non-admin', async () => {
+//         const res = await request(app)
+//             .post('/api/appointments/appointment')
+//             .set('Authorization', `Bearer ${clientToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '09:00', end_time: '09:15' });
 
-        expect(res.status).toBe(403);
-    });
+//         expect(res.status).toBe(403);
+//     });
 
-    it('should create an appointment slot', async () => {
-        const res = await request(app)
-            .post('/api/appointments/appointment')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '09:00', end_time: '09:15', appt_notes: 'test slot' });
+//     it('should create an appointment slot', async () => {
+//         const res = await request(app)
+//             .post('/api/appointments/appointment')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '09:00', end_time: '09:15', appt_notes: 'test slot' });
 
-        expect(res.status).toBe(201);
-        expect(res.body.success).toBe(true);
-        expect(res.body.appointment.appt_notes).toBe('test slot');
-    });
+//         expect(res.status).toBe(201);
+//         expect(res.body.success).toBe(true);
+//         expect(res.body.appointment.appt_notes).toBe('test slot');
+//     });
 
-    it('should reject overlapping appointment', async () => {
-        await request(app)
-            .post('/api/appointments/appointment')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '09:00', end_time: '09:15' });
+//     it('should reject overlapping appointment', async () => {
+//         await request(app)
+//             .post('/api/appointments/appointment')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '09:00', end_time: '09:15' });
 
-        const res = await request(app)
-            .post('/api/appointments/appointment')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '09:00', end_time: '09:15' });
+//         const res = await request(app)
+//             .post('/api/appointments/appointment')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '09:00', end_time: '09:15' });
 
-        expect(res.status).toBe(500);
-    });
-});
+//         expect(res.status).toBe(500);
+//     });
+// });
 
 // ─── Admin: Create Appointments in Time Range ────────────────────────
 describe('POST /api/appointments/appointments-in-range (admin batch create)', () => {
@@ -140,65 +141,67 @@ describe('POST /api/appointments/appointments-in-range (admin batch create)', ()
     });
 });
 
-// ─── Admin: Get All Appointments ─────────────────────────────────────
-describe('GET /api/appointments/all (admin view)', () => {
-    it('should return 403 for non-admin', async () => {
-        const res = await request(app)
-            .get('/api/appointments/all')
-            .set('Authorization', `Bearer ${clientToken}`);
+// NOTUSED
+// // ─── Admin: Get All Appointments ─────────────────────────────────────
+// describe('GET /api/appointments/all (admin view)', () => {
+//     it('should return 403 for non-admin', async () => {
+//         const res = await request(app)
+//             .get('/api/appointments/all')
+//             .set('Authorization', `Bearer ${clientToken}`);
 
-        expect(res.status).toBe(403);
-    });
+//         expect(res.status).toBe(403);
+//     });
 
-    it('should return all appointments', async () => {
-        // Create a slot first
-        await request(app)
-            .post('/api/appointments/appointment')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '08:00', end_time: '08:15' });
+//     it('should return all appointments', async () => {
+//         // Create a slot first
+//         await request(app)
+//             .post('/api/appointments/appointment')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '08:00', end_time: '08:15' });
 
-        const res = await request(app)
-            .get('/api/appointments/all')
-            .set('Authorization', `Bearer ${adminToken}`);
+//         const res = await request(app)
+//             .get('/api/appointments/all')
+//             .set('Authorization', `Bearer ${adminToken}`);
 
-        expect(res.status).toBe(200);
-        expect(Array.isArray(res.body)).toBe(true);
-        expect(res.body.length).toBeGreaterThanOrEqual(1);
-    });
-});
+//         expect(res.status).toBe(200);
+//         expect(Array.isArray(res.body)).toBe(true);
+//         expect(res.body.length).toBeGreaterThanOrEqual(1);
+//     });
+// });
 
+// NOTUSED
 // ─── Admin: Delete Appointment ───────────────────────────────────────
-describe('DELETE /api/appointments/appointment (admin delete)', () => {
-    it('should delete an existing appointment', async () => {
-        await request(app)
-            .post('/api/appointments/appointment')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '12:00', end_time: '12:15' });
+// describe('DELETE /api/appointments/appointment (admin delete)', () => {
+//     it('should delete an existing appointment', async () => {
+//         await request(app)
+//             .post('/api/appointments/appointment')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '12:00', end_time: '12:15' });
 
-        const res = await request(app)
-            .delete('/api/appointments/appointment')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '12:00' });
+//         const res = await request(app)
+//             .delete('/api/appointments/appointment')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '12:00' });
 
-        expect(res.status).toBe(200);
-        expect(res.body.success).toBe(true);
-    });
+//         expect(res.status).toBe(200);
+//         expect(res.body.success).toBe(true);
+//     });
 
-    it('should return 404 for non-existent appointment', async () => {
-        const res = await request(app)
-            .delete('/api/appointments/appointment')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: '2099-01-01', start_time: '12:00' });
+//     it('should return 404 for non-existent appointment', async () => {
+//         const res = await request(app)
+//             .delete('/api/appointments/appointment')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: '2099-01-01', start_time: '12:00' });
 
-        expect(res.status).toBe(404);
-    });
-});
+//         expect(res.status).toBe(404);
+//     });
+// });
 
 // ─── Admin: Update Appointment ───────────────────────────────────────
 describe('PATCH /api/appointments/update (admin update)', () => {
     it('should update appointment notes', async () => {
         await request(app)
-            .post('/api/appointments/appointment')
+            .post('/api/appointments/appointments-in-range')
             .set('Authorization', `Bearer ${adminToken}`)
             .send({ appt_date: APPT_DATE, start_time: '13:00', end_time: '13:15', appt_notes: 'original' });
 
@@ -241,15 +244,16 @@ describe('GET /api/appointments/search/* (admin search)', () => {
         expect(res.body.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('should find appointments in time range', async () => {
-        const res = await request(app)
-            .get('/api/appointments/search/time-range')
-            .query({ start: '09:00', end: '10:00' })
-            .set('Authorization', `Bearer ${adminToken}`);
+    // NOTUSED
+    // it('should find appointments in time range', async () => {
+    //     const res = await request(app)
+    //         .get('/api/appointments/search/time-range')
+    //         .query({ start: '09:00', end: '10:00' })
+    //         .set('Authorization', `Bearer ${adminToken}`);
 
-        expect(res.status).toBe(200);
-        expect(res.body.length).toBeGreaterThanOrEqual(1);
-    });
+    //     expect(res.status).toBe(200);
+    //     expect(res.body.length).toBeGreaterThanOrEqual(1);
+    // });
 
     it('should find appointments in date-time range', async () => {
         const res = await request(app)
@@ -270,22 +274,23 @@ describe('GET /api/appointments/search/* (admin search)', () => {
     });
 });
 
+// NOTUSED
 // ─── Admin: Delete by Date / Username ────────────────────────────────
 describe('DELETE /api/appointments/delete/* (admin bulk delete)', () => {
-    it('should delete appointments by date', async () => {
-        await request(app)
-            .post('/api/appointments/appointment')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '14:00', end_time: '14:15' });
+//     it('should delete appointments by date', async () => {
+//         await request(app)
+//             .post('/api/appointments/appointment')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '14:00', end_time: '14:15' });
 
-        const res = await request(app)
-            .delete('/api/appointments/delete/date')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: APPT_DATE });
+//         const res = await request(app)
+//             .delete('/api/appointments/delete/date')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: APPT_DATE });
 
-        expect(res.status).toBe(200);
-        expect(res.body.deleted.length).toBeGreaterThanOrEqual(1);
-    });
+//         expect(res.status).toBe(200);
+//         expect(res.body.deleted.length).toBeGreaterThanOrEqual(1);
+//     });
 
     it('should delete appointments by username', async () => {
         // Create and book a slot
@@ -308,57 +313,59 @@ describe('DELETE /api/appointments/delete/* (admin bulk delete)', () => {
     });
 });
 
+// NOTUSED
 // ─── Admin: Find by date and start_time ──────────────────────────────
-describe('GET /api/appointments/find/date-start (admin find)', () => {
-    it('should find appointment by date and start_time', async () => {
-        await request(app)
-            .post('/api/appointments/appointment')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '15:00', end_time: '15:15' });
+// describe('GET /api/appointments/find/date-start (admin find)', () => {
+//     it('should find appointment by date and start_time', async () => {
+//         await request(app)
+//             .post('/api/appointments/appointment')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '15:00', end_time: '15:15' });
 
-        const res = await request(app)
-            .get('/api/appointments/find/date-start')
-            .query({ appt_date: APPT_DATE, start_time: '15:00' })
-            .set('Authorization', `Bearer ${adminToken}`);
+//         const res = await request(app)
+//             .get('/api/appointments/find/date-start')
+//             .query({ appt_date: APPT_DATE, start_time: '15:00' })
+//             .set('Authorization', `Bearer ${adminToken}`);
 
-        expect(res.status).toBe(200);
-        expect(res.body.start_time).toContain('15:00');
-    });
+//         expect(res.status).toBe(200);
+//         expect(res.body.start_time).toContain('15:00');
+//     });
 
-    it('should return 404 for non-existent slot', async () => {
-        const res = await request(app)
-            .get('/api/appointments/find/date-start')
-            .query({ appt_date: '2099-01-01', start_time: '08:00' })
-            .set('Authorization', `Bearer ${adminToken}`);
+//     it('should return 404 for non-existent slot', async () => {
+//         const res = await request(app)
+//             .get('/api/appointments/find/date-start')
+//             .query({ appt_date: '2099-01-01', start_time: '08:00' })
+//             .set('Authorization', `Bearer ${adminToken}`);
 
-        expect(res.status).toBe(404);
-    });
-});
+//         expect(res.status).toBe(404);
+//     });
+// });
 
+// NOTUSED
 // ─── Client: Get Available Appointments ──────────────────────────────
-describe('GET /api/appointments/available (client)', () => {
-    it('should return 401 without auth', async () => {
-        const res = await request(app)
-            .get('/api/appointments/available');
+// describe('GET /api/appointments/available (client)', () => {
+//     it('should return 401 without auth', async () => {
+//         const res = await request(app)
+//             .get('/api/appointments/available');
 
-        expect(res.status).toBe(401);
-    });
+//         expect(res.status).toBe(401);
+//     });
 
-    it('should return available (unbooked) appointments', async () => {
-        await request(app)
-            .post('/api/appointments/appointments-in-range')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '08:00', end_time: '09:00' });
+//     it('should return available (unbooked) appointments', async () => {
+//         await request(app)
+//             .post('/api/appointments/appointments-in-range')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '08:00', end_time: '09:00' });
 
-        const res = await request(app)
-            .get('/api/appointments/available')
-            .set('Authorization', `Bearer ${clientToken}`);
+//         const res = await request(app)
+//             .get('/api/appointments/available')
+//             .set('Authorization', `Bearer ${clientToken}`);
 
-        expect(res.status).toBe(200);
-        expect(Array.isArray(res.body)).toBe(true);
-        expect(res.body.length).toBeGreaterThanOrEqual(1);
-    });
-});
+//         expect(res.status).toBe(200);
+//         expect(Array.isArray(res.body)).toBe(true);
+//         expect(res.body.length).toBeGreaterThanOrEqual(1);
+//     });
+// });
 
 // ─── Client: Book Appointment ────────────────────────────────────────
 describe('POST /api/appointments/book (client)', () => {
@@ -413,7 +420,7 @@ describe('GET /api/appointments/mine (client)', () => {
     it('should return booked appointments for authenticated user', async () => {
         // Create and book a slot
         await request(app)
-            .post('/api/appointments/appointment')
+            .post('/api/appointments/appointments-in-range')
             .set('Authorization', `Bearer ${adminToken}`)
             .send({ appt_date: APPT_DATE, start_time: '10:00', end_time: '10:15' });
 
@@ -433,106 +440,108 @@ describe('GET /api/appointments/mine (client)', () => {
     });
 });
 
+// NOTUSED
 // ─── Client: Cancel Booking ──────────────────────────────────────────
-describe('POST /api/appointments/cancel (client)', () => {
-    it('should cancel a booked appointment', async () => {
-        await request(app)
-            .post('/api/appointments/appointment')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '11:00', end_time: '11:15' });
+// describe('POST /api/appointments/cancel (client)', () => {
+//     it('should cancel a booked appointment', async () => {
+//         await request(app)
+//             .post('/api/appointments/appointment')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '11:00', end_time: '11:15' });
 
-        await request(app)
-            .post('/api/appointments/book')
-            .set('Authorization', `Bearer ${clientToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '11:00' });
+//         await request(app)
+//             .post('/api/appointments/book')
+//             .set('Authorization', `Bearer ${clientToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '11:00' });
 
-        const res = await request(app)
-            .post('/api/appointments/cancel')
-            .set('Authorization', `Bearer ${clientToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '11:00' });
+//         const res = await request(app)
+//             .post('/api/appointments/cancel')
+//             .set('Authorization', `Bearer ${clientToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '11:00' });
 
-        expect(res.status).toBe(200);
-        expect(res.body.success).toBe(true);
-    });
+//         expect(res.status).toBe(200);
+//         expect(res.body.success).toBe(true);
+//     });
 
-    it('should return 200 when cancelling with no booking (no-op)', async () => {
-        const res = await request(app)
-            .post('/api/appointments/cancel')
-            .set('Authorization', `Bearer ${clientToken}`)
-            .send({ appt_date: '2099-01-01', start_time: '08:00' });
+//     it('should return 200 when cancelling with no booking (no-op)', async () => {
+//         const res = await request(app)
+//             .post('/api/appointments/cancel')
+//             .set('Authorization', `Bearer ${clientToken}`)
+//             .send({ appt_date: '2099-01-01', start_time: '08:00' });
 
-        expect(res.status).toBe(200);
-        expect(res.body.success).toBe(true);
-    });
+//         expect(res.status).toBe(200);
+//         expect(res.body.success).toBe(true);
+//     });
 
-    it('should return 401 without auth', async () => {
-        const res = await request(app)
-            .post('/api/appointments/cancel')
-            .send({ appt_date: APPT_DATE, start_time: '11:00' });
+//     it('should return 401 without auth', async () => {
+//         const res = await request(app)
+//             .post('/api/appointments/cancel')
+//             .send({ appt_date: APPT_DATE, start_time: '11:00' });
 
-        expect(res.status).toBe(401);
-    });
-});
+//         expect(res.status).toBe(401);
+//     });
+// });
 
+// NOTUSED
 // ─── Client: Update Own Appointment (cancel + rebook) ────────────────
-describe('POST /api/appointments/update-mine (client)', () => {
-    it('should cancel old booking and rebook a new slot', async () => {
-        // Create two slots
-        await request(app)
-            .post('/api/appointments/appointment')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '08:00', end_time: '08:15' });
-        await request(app)
-            .post('/api/appointments/appointment')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '08:15', end_time: '08:30' });
+// describe('POST /api/appointments/update-mine (client)', () => {
+//     it('should cancel old booking and rebook a new slot', async () => {
+//         // Create two slots
+//         await request(app)
+//             .post('/api/appointments/appointment')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '08:00', end_time: '08:15' });
+//         await request(app)
+//             .post('/api/appointments/appointment')
+//             .set('Authorization', `Bearer ${adminToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '08:15', end_time: '08:30' });
 
-        // Book first slot
-        await request(app)
-            .post('/api/appointments/book')
-            .set('Authorization', `Bearer ${clientToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '08:00' });
+//         // Book first slot
+//         await request(app)
+//             .post('/api/appointments/book')
+//             .set('Authorization', `Bearer ${clientToken}`)
+//             .send({ appt_date: APPT_DATE, start_time: '08:00' });
 
-        // Update to second slot
-        const res = await request(app)
-            .post('/api/appointments/update-mine')
-            .set('Authorization', `Bearer ${clientToken}`)
-            .send({
-                appt_date: APPT_DATE,
-                start_time: '08:00',
-                newAppointment: { appt_date: APPT_DATE, start_time: '08:15' }
-            });
+//         // Update to second slot
+//         const res = await request(app)
+//             .post('/api/appointments/update-mine')
+//             .set('Authorization', `Bearer ${clientToken}`)
+//             .send({
+//                 appt_date: APPT_DATE,
+//                 start_time: '08:00',
+//                 newAppointment: { appt_date: APPT_DATE, start_time: '08:15' }
+//             });
 
-        expect(res.status).toBe(200);
-        expect(res.body.success).toBe(true);
-    });
+//         expect(res.status).toBe(200);
+//         expect(res.body.success).toBe(true);
+//     });
 
-    it('should return 500 when user has no current booking to update', async () => {
-        const res = await request(app)
-            .post('/api/appointments/update-mine')
-            .set('Authorization', `Bearer ${clientToken}`)
-            .send({
-                appt_date: APPT_DATE,
-                start_time: '08:00',
-                newAppointment: { appt_date: APPT_DATE, start_time: '08:15' }
-            });
+//     it('should return 500 when user has no current booking to update', async () => {
+//         const res = await request(app)
+//             .post('/api/appointments/update-mine')
+//             .set('Authorization', `Bearer ${clientToken}`)
+//             .send({
+//                 appt_date: APPT_DATE,
+//                 start_time: '08:00',
+//                 newAppointment: { appt_date: APPT_DATE, start_time: '08:15' }
+//             });
 
-        expect(res.status).toBe(500);
-        expect(res.body.success).toBe(false);
-    });
+//         expect(res.status).toBe(500);
+//         expect(res.body.success).toBe(false);
+//     });
 
-    it('should return 401 without auth', async () => {
-        const res = await request(app)
-            .post('/api/appointments/update-mine')
-            .send({
-                appt_date: APPT_DATE,
-                start_time: '08:00',
-                newAppointment: { appt_date: APPT_DATE, start_time: '08:15' }
-            });
+//     it('should return 401 without auth', async () => {
+//         const res = await request(app)
+//             .post('/api/appointments/update-mine')
+//             .send({
+//                 appt_date: APPT_DATE,
+//                 start_time: '08:00',
+//                 newAppointment: { appt_date: APPT_DATE, start_time: '08:15' }
+//             });
 
-        expect(res.status).toBe(401);
-    });
-});
+//         expect(res.status).toBe(401);
+//     });
+// });
 
 // ─── Client: Large Household (30-min booking) ────────────────────────
 describe('Booking for household_size >= 4', () => {
@@ -566,11 +575,11 @@ describe('Booking for household_size >= 4', () => {
     it('should book two consecutive slots (30 min) for large household', async () => {
         // Create two consecutive slots
         await request(app)
-            .post('/api/appointments/appointment')
+            .post('/api/appointments/appointments-in-range')
             .set('Authorization', `Bearer ${adminToken}`)
             .send({ appt_date: APPT_DATE, start_time: '09:00', end_time: '09:15' });
         await request(app)
-            .post('/api/appointments/appointment')
+            .post('/api/appointments/appointments-in-range')
             .set('Authorization', `Bearer ${adminToken}`)
             .send({ appt_date: APPT_DATE, start_time: '09:15', end_time: '09:30' });
 

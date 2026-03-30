@@ -127,27 +127,13 @@ async function sampleApptData() {
         appt_notes: undefined
     }
 
-    const feb28FullSlot = {
-        appt_date: '2026-02-28',
-        start_time: '08:00',
-        end_time: '08:30',
-        appt_notes: undefined
-    }
-
     const janeBookingFeb25 = {
         appt_date: '2026-02-25',
         start_time: '10:00',
     }
 
-    const jeffBookingFeb28 = {
-        appt_date: '2026-02-28',
-        start_time: '08:00',
-    }
-
     await appointment.createAppointmentsInTimeRange(feb25Slots);
-    await appointment.createAppointment(feb28FullSlot);
     await appointment.bookAppointment(janeBookingFeb25, 'jane123');
-    await appointment.bookAppointment(jeffBookingFeb28, 'big_jeff');
 }
 
 // create available time slots for the month of March 2026, excluding weekends

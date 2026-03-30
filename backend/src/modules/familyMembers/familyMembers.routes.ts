@@ -23,7 +23,8 @@ router.put("/:username/:memberRef", authenticate,controller.updateFamilyMember);
 // DELETE /api/family-members/:username/:memberRef — delete a family member by id or first name
 router.delete("/:username/:memberRef", authenticate, controller.deleteFamilyMember);
 
+// NOTUSED
 // GET /api/family-members/exists/:username/:memberRef — check if family member exists by id or first name
-router.get("/exists/:username/:memberRef", controller.checkUsernameFamilyMemberExists);
+// router.get("/exists/:username/:memberRef", controller.checkUsernameFamilyMemberExists);
 
 export default router;

@@ -1,4 +1,4 @@
-const { createAccount, getAccountByUsername, usernameExists, getAccountWithPassword, updateAccount, deleteAccount } = require('../../src/modules/accounts/accounts.service');
+const { createAccount, getAccountByUsername, usernameExists, getAccountWithPassword, updateAccount } = require('../../src/modules/accounts/accounts.service');
 const pool = require('../../src/db/postgres').default;
 
 describe('accounts.service', () => {
@@ -98,24 +98,25 @@ describe('accounts.service', () => {
         expect(updated.account_notes).toBe('updated');
     });
 
-    it('deleteAccount should remove the account', async () => {
-        const accountData = {
-            username: 'testuser',
-            user_password: 'password123',
-            canada_status: 'citizen',
-            household_size: 1,
-            addr: '123 Main St',
-            baby_or_pregnant: false,
-            language_spoken: 'English',
-            account_notes: 'none'
-        };
-        await createAccount(accountData);
-        const deleted = await deleteAccount('testuser');
-        expect(deleted).not.toBeNull();
-        expect(deleted.username).toBe('testuser');
-        const account = await getAccountByUsername('testuser');
-        expect(account).toBeNull();
-    });
+    // NOTUSED
+    // it('deleteAccount should remove the account', async () => {
+    //     const accountData = {
+    //         username: 'testuser',
+    //         user_password: 'password123',
+    //         canada_status: 'citizen',
+    //         household_size: 1,
+    //         addr: '123 Main St',
+    //         baby_or_pregnant: false,
+    //         language_spoken: 'English',
+    //         account_notes: 'none'
+    //     };
+    //     await createAccount(accountData);
+    //     const deleted = await deleteAccount('testuser');
+    //     expect(deleted).not.toBeNull();
+    //     expect(deleted.username).toBe('testuser');
+    //     const account = await getAccountByUsername('testuser');
+    //     expect(account).toBeNull();
+    // });
 
     it('getAccountByUsername should return null for non-existing username', async () => {
         const account = await getAccountByUsername('nonexistentuser');
@@ -132,8 +133,9 @@ describe('accounts.service', () => {
         expect(updated).toBeNull();
     });
 
-    it('deleteAccount should return null for non-existing username', async () => {
-        const deleted = await deleteAccount('nonexistentuser');
-        expect(deleted).toBeNull();
-    });
+    // NOTUSED
+    // it('deleteAccount should return null for non-existing username', async () => {
+    //     const deleted = await deleteAccount('nonexistentuser');
+    //     expect(deleted).toBeNull();
+    // });
 });

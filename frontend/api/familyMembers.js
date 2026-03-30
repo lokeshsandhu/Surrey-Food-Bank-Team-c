@@ -108,7 +108,8 @@ export function getOwnerFamilyMembers(token) {
   }).then(res => res.json());
 }
 
+// NOTUSED
 // return true if family member with given id and username already exists
-export function familyMemberExists(username, id) {
-  return fetch(`${API_BASE}/exists/${username}/${id}`).then(res => res.json());
-}
+// export function familyMemberExists(username, id) {
+//   return fetch(`${API_BASE}/exists/${username}/${id}`).then(res => res.json());
+// }

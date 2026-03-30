@@ -161,10 +161,11 @@ export async function getOwnerEmailByUsername(username: string): Promise<string 
     return rows[0]?.email ?? null;
 }
 
+// NOTUSED
 // Select from familymember table with given username and identifier, return boolean
-export async function usernameFamilyMemberExists(username: string, identifier: number | string): Promise<boolean> {
-    const lookup = buildFamilyMemberLookupClause(identifier);
-    const text = `SELECT * FROM familymember WHERE ${lookup.clause}`;
-    const { rows } = await pool.query(text, [username, ...lookup.values]);
-    return rows.length > 0;
-}
+// export async function usernameFamilyMemberExists(username: string, identifier: number | string): Promise<boolean> {
+//     const lookup = buildFamilyMemberLookupClause(identifier);
+//     const text = `SELECT * FROM familymember WHERE ${lookup.clause}`;
+//     const { rows } = await pool.query(text, [username, ...lookup.values]);
+//     return rows.length > 0;
+// }
