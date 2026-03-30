@@ -19,4 +19,7 @@ router.patch("/:username", authenticate, controller.updateMyAccount);
 // GET /api/accounts/exists/:username — check if username exists
 router.get("/exists/:username", controller.checkUsernameExists);
 
+// GET /api/accounts/email-exists/:email — check if a registration email exists
+router.get("/email-exists/:email", controller.checkEmailExists);
+
 export default router;

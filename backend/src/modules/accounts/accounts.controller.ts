@@ -66,3 +66,13 @@ export async function checkUsernameExists(req: Request, res: Response) {
         res.status(500).json({ error: err.message });
     }
 }
+
+export async function checkEmailExists(req: Request, res: Response) {
+    try {
+        const { email } = req.params;
+        const exists = await service.emailExists(email);
+        res.status(200).json({ exists });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}

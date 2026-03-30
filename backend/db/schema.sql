@@ -52,8 +52,10 @@ CREATE TABLE IF NOT EXISTS public.appointment_booking
     appt_date date NOT NULL,
     start_time time without time zone NOT NULL,
     username varchar NOT NULL,
+    booking_status varchar NOT NULL DEFAULT 'upcoming',
     created_at timestamp with time zone NOT NULL DEFAULT now(),
     CONSTRAINT appointment_booking_pkey PRIMARY KEY (appt_date, start_time, username),
+    CONSTRAINT appointment_booking_status_check CHECK (booking_status IN ('upcoming', 'arrived', 'did_not_show')),
     CONSTRAINT appointment_booking_fkey_slot FOREIGN KEY (appt_date, start_time)
         REFERENCES public.appointment_slot (appt_date, start_time) MATCH SIMPLE
         ON UPDATE CASCADE
@@ -66,3 +68,6 @@ CREATE TABLE IF NOT EXISTS public.appointment_booking
 
 CREATE INDEX IF NOT EXISTS idx_appointment_booking_username_date
     ON public.appointment_booking (username, appt_date, start_time);
+
+CREATE INDEX IF NOT EXISTS idx_appointment_booking_status
+    ON public.appointment_booking (booking_status);

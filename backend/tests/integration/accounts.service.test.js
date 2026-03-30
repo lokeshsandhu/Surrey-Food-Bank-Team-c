@@ -1,9 +1,10 @@
-const { createAccount, getAccountByUsername, usernameExists, getAccountWithPassword, updateAccount } = require('../../src/modules/accounts/accounts.service');
+const { createAccount, getAccountByUsername, usernameExists, emailExists, getAccountWithPassword, updateAccount } = require('../../src/modules/accounts/accounts.service');
 const pool = require('../../src/db/postgres').default;
 
 describe('accounts.service', () => {
     beforeEach(async () => {
         await pool.query('DELETE FROM account WHERE username = $1 OR username = $2', ['testuser', 'updatedtestuser']);
+        await pool.query('DELETE FROM familymember WHERE username = $1', ['testuser']);
     });
 
     afterAll(async () => {
@@ -60,6 +61,55 @@ describe('accounts.service', () => {
 
     it('usernameExists should return false for non-existing username', async () => {
         const exists = await usernameExists('nonexistentuser');
+        expect(exists).toBe(false);
+    });
+
+    it('emailExists should return true for an existing registration email', async () => {
+        const accountData = {
+            username: 'testuser',
+            user_password: 'password123',
+            canada_status: 'citizen',
+            household_size: 1,
+            addr: '123 Main St',
+            baby_or_pregnant: false,
+            language_spoken: 'English',
+            account_notes: 'none'
+        };
+        await createAccount(accountData);
+        await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
+             VALUES ($1, 'owner', 'user', 'email@email.com', 'owner')`,
+            ['testuser']
+        );
+
+        const exists = await emailExists('email@email.com');
+        expect(exists).toBe(true);
+    });
+
+    it('emailExists should return true for a case-insensitive trimmed match', async () => {
+        const accountData = {
+            username: 'testuser',
+            user_password: 'password123',
+            canada_status: 'citizen',
+            household_size: 1,
+            addr: '123 Main St',
+            baby_or_pregnant: false,
+            language_spoken: 'English',
+            account_notes: 'none'
+        };
+        await createAccount(accountData);
+        await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
+             VALUES ($1, 'owner', 'user', 'Email@Email.com', 'owner')`,
+            ['testuser']
+        );
+
+        const exists = await emailExists('  email@email.com  ');
+        expect(exists).toBe(true);
+    });
+
+    it('emailExists should return false for a non-existing registration email', async () => {
+        const exists = await emailExists('missing@email.com');
         expect(exists).toBe(false);
     });
 

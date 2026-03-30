@@ -75,3 +75,7 @@ export function updateAccount(token, username, data) {
 export function usernameExists(username) {
   return fetch(`${API_BASE}/exists/${username}`).then(res => res.json());
 }
+
+export function emailExists(email) {
+  return fetch(`${API_BASE}/email-exists/${encodeURIComponent(email)}`).then(res => res.json());
+}

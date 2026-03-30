@@ -1,12 +1,12 @@
 import pool from "../../db/postgres";
-import { BookAppointmentDTO, CreateAppointmentsInRangeDTO } from "./appointments.dto";
+import { CreateSlotDTO, BookAppointmentDTO, CreateAppointmentsInRangeDTO, BookingStatus } from "./appointments.dto";
 
 export async function updateAppointment(
     appt_date: string,
     start_time: string,
-    updateData: Partial<{ end_time: string; appt_notes: string; capacity: number; username: string | null }>
+    updateData: Partial<{ end_time: string; appt_notes: string; capacity: number; username: string | null; booking_status: BookingStatus }>
 ) {
-    const { username, ...slotFields } = updateData;
+    const { username, booking_status, ...slotFields } = updateData;
 
     if (Object.keys(slotFields).length > 0) {
         const fields: string[] = [];
@@ -41,6 +41,43 @@ export async function updateAppointment(
                 [appt_date, start_time]
             );
         } else {
+            if (booking_status !== undefined) {
+                const statusResult = await pool.query(
+                    `
+                    UPDATE appointment_booking
+                    SET booking_status = $4
+                    WHERE appt_date = $1
+                      AND start_time = $2::time
+                      AND username = $3
+                `,
+                    [appt_date, start_time, username, booking_status]
+                );
+
+                // If booking already exists, treat this as a status update only.
+                if (statusResult.rowCount && statusResult.rowCount > 0) {
+                    const summaryText = `
+                        SELECT
+                            s.appt_date,
+                            s.start_time,
+                            s.end_time,
+                            s.appt_notes,
+                            s.capacity,
+                            COUNT(b.username)::int AS booked_count,
+                            GREATEST(s.capacity - COUNT(b.username)::int, 0) AS remaining_capacity,
+                            COALESCE(array_agg(b.username ORDER BY b.username) FILTER (WHERE b.username IS NOT NULL), '{}')::varchar[] AS usernames,
+                            CASE WHEN COUNT(b.username)::int >= s.capacity THEN MAX(b.username) ELSE NULL END AS username
+                        FROM appointment_slot s
+                        LEFT JOIN appointment_booking b
+                          ON b.appt_date = s.appt_date
+                         AND b.start_time = s.start_time
+                        WHERE s.appt_date = $1 AND s.start_time = $2::time
+                        GROUP BY s.appt_date, s.start_time, s.end_time, s.appt_notes, s.capacity
+                    `;
+                    const { rows: summaryRows } = await pool.query(summaryText, [appt_date, start_time]);
+                    return summaryRows[0] ?? null;
+                }
+            }
+
             const client = await pool.connect();
             try {
                 await client.query("BEGIN");
@@ -94,13 +131,23 @@ export async function updateAppointment(
                 }
 
                 try {
-                    await client.query(
-                        `
-                        INSERT INTO appointment_booking (appt_date, start_time, username)
-                        VALUES ($1, $2::time, $3)
-                    `,
-                        [appt_date, start_time, username]
-                    );
+                    if (booking_status !== undefined) {
+                        await client.query(
+                            `
+                            INSERT INTO appointment_booking (appt_date, start_time, username, booking_status)
+                            VALUES ($1, $2::time, $3, $4)
+                        `,
+                            [appt_date, start_time, username, booking_status]
+                        );
+                    } else {
+                        await client.query(
+                            `
+                            INSERT INTO appointment_booking (appt_date, start_time, username)
+                            VALUES ($1, $2::time, $3)
+                        `,
+                            [appt_date, start_time, username]
+                        );
+                    }
                 } catch (err: any) {
                     if (err?.code === "23505") {
                         throw new Error("User already has a booking for this slot");
@@ -116,6 +163,8 @@ export async function updateAppointment(
                 client.release();
             }
         }
+    } else if (booking_status !== undefined) {
+        throw new Error("username is required when updating booking_status");
     }
 
     const summaryText = `
@@ -433,7 +482,8 @@ export async function getMyAppointments(username: string) {
             s.end_time,
             s.appt_notes,
             s.capacity,
-            b.username
+            b.username,
+            b.booking_status
         FROM appointment_booking b
         JOIN appointment_slot s
           ON s.appt_date = b.appt_date
