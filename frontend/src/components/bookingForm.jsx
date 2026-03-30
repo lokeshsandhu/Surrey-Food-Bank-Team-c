@@ -1,7 +1,7 @@
 // Heavily inspired/referenced from mantine ui's demo from https://alpha.mantine.dev/schedule/schedule/#create-and-update-events
 
 import { useEffect, useState } from 'react';
-import { Modal, TextInput, Text, Button, Stack, Group, NativeSelect, Box, Paper } from '@mantine/core';
+import { Modal, TextInput, Text, Button, Stack, Group, NativeSelect, Box, Paper, NumberInput } from '@mantine/core';
 import React from 'react';
 import { DateTimePicker } from '@mantine/dates';
 import { isNotEmpty, useForm } from '@mantine/form';
@@ -16,6 +16,8 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
       start: values?.start || new Date(),
       end: values?.end || new Date(),
       appt_notes: values?.appt_notes || '',
+      capacity: values?.capacity || 1,
+      mincapacity: values?.mincapacity || 1,
     },
     validate: {
       title: isNotEmpty('Event title is required'),
@@ -35,7 +37,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
   });
 
   const [clients, setClients] = useState([]);
-  const [currClient, setCurrClient] = useState("admin");
+  const [currClient, setCurrClient] = useState("");
   const token = sessionStorage.getItem('token');
 
   const handleFetchClients = async () => {
@@ -55,8 +57,11 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
       start: values?.start || new Date(),
       end: values?.end || new Date(),
       appt_notes: values?.appt_notes || '',
+      capacity: values?.capacity || 1,
+      mincapacity: values?.mincapacity || 1,
     });
     handleFetchClients();
+    setCurrClient("");
   }, [values]);
 
   useEffect(() => {
@@ -70,14 +75,16 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
       start: values.start,
       end: values.end,
       appt_notes: values.appt_notes,
+      capacity: values.capacity,
     });
     onClose();
   };
 
-  const handleDeleteBooking = () => {
-    onDeleteBooking?.(form.values);
-    onClose();
-  };
+  // no longer useful
+  // const handleDeleteBooking = () => {
+  //   onDeleteBooking?.(form.values);
+  //   onClose();
+  // };
 
   const handleDeleteTimeslot = () => {
     onDeleteTimeslot?.(form.values);
@@ -97,13 +104,13 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="md">
             <NativeSelect
-              label="Name for Booking"
-              placeholder="Select a name for the booking"
+              label="Select Client to add to this timeslot"
+              placeholder="Client username"
               radius="md"
               data-autofocus
               value={currClient}
               onChange={(event) => setCurrClient(event.currentTarget.value)}
-              data={[...clients.map(client => ({ value: client.username, label: client.username })), { value: 'admin', label: 'Admin' }]}
+              data={[...clients.map(client => ({ value: client.username, label: client.username })), { value: 'admin', label: 'Admin' }, { value: "", label: '', disabled: true, selected: true, hidden: true }]}
             />
 
               <DateTimePicker
@@ -115,6 +122,13 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
               />
               <DateTimePicker label="End Time" {...form.getInputProps('end')} clearable radius="md" disabled/>
 
+              <NumberInput
+                label="Capacity"
+                radius="md"
+                min={form.values.mincapacity}
+                {...form.getInputProps('capacity')}
+              />
+
               <TextInput
                 label="Additional Notes"
                 placeholder="Enter any additional notes"
@@ -122,15 +136,10 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
               />
 
             <Group justify="space-between" align="flex-end" gap="sm" w="100%">
-              <Stack align="flex-start" gap="xs">
-                <Button color="red" onClick={handleDeleteTimeslot} mie="auto" radius="md">
-                  Delete Timeslot
-                </Button>
 
-                <Button color="red" onClick={handleDeleteBooking} mie="auto" radius="md">
-                  Delete Booking
-                </Button>
-              </Stack>
+              <Button color="red" onClick={handleDeleteTimeslot} mie="auto" radius="md">
+                Delete Timeslot
+              </Button>
 
               <Button type="submit" radius="md">
                 {form.values.id ? 'Update' : 'Create'}
