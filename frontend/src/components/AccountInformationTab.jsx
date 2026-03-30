@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import { provinceOptions, canadaStatusOptions } from "../constants/FormOptions";
 import { splitAddress } from "../utils/displayHelpers";
+import { emailExists } from "../../api/accounts";
 
 
 export default function AccountInformationTab({ clientUsername }) {
@@ -50,6 +51,7 @@ export default function AccountInformationTab({ clientUsername }) {
             },
             accountOwner: {
                 username: '',
+                id: null,
                 f_name: '',
                 l_name: '',
                 dob: null,
@@ -82,14 +84,33 @@ export default function AccountInformationTab({ clientUsername }) {
         }
     });
 
-    // TODO: check if email exists in database
+    // check if email exists in database
+    // duplicate error if exists: true AND is_member_email: false
+    const checkEmail = async () => {
+        const currentEmail = form.values.accountOwner.email.trim();
+        if (currentEmail.length === 0) return;
+
+        console.log(form.values.accountOwner.id);
+
+        const result = await emailExists(currentEmail, clientUsername, form.values.accountOwner.id);
+        console.log(currentEmail, result.exists);
+
+        if (result.exists.exists && result.exists.is_member_email === false) {
+            form.setFieldError(
+                'accountOwner.email',
+                'Email already taken. Try a different email.'
+            );
+            return true;
+        }
+
+        return false;
+    };
 
     const getAccountInformation = async () => {
         const result = await getAccount(token, clientUsername);
         const familyMembers = await getFamilyMembers(token, clientUsername);
         const ownerTemp = familyMembers.filter(member => member.relationship === 'owner');
         const owner = ownerTemp[0];
-        console.log(familyMembers)
         const address = splitAddress(result.addr);
         // TODO: Rewrite (better practices)
         if (result && owner) {
@@ -111,6 +132,7 @@ export default function AccountInformationTab({ clientUsername }) {
                     account_notes: result.account_notes
                 },
                 accountOwner: {
+                    id: owner.id,
                     f_name: owner.f_name,
                     l_name: owner.l_name,
                     dob: owner.dob,
@@ -144,9 +166,16 @@ export default function AccountInformationTab({ clientUsername }) {
             }
         });
 
-        // TODO: check if email exists in database
+        const hasDupEmail = await checkEmail();
+        if (form.errors.accountOwner) return;
 
-        if (!hasErrors) {
+        if (hasDupEmail) {
+            notifications.show({
+                title: 'Email is already taken',
+                message: 'Please enter a different email.',
+                color: 'red',
+            });
+        } else if (!hasErrors) {
             const accountInfo = form.values.accountInformation;
             const ownerInfo = form.values.accountOwner;
             const accountData = {
@@ -191,8 +220,12 @@ export default function AccountInformationTab({ clientUsername }) {
     };
 
     useEffect(() => {
-        getAccountInformation()
+        getAccountInformation();
     }, [location.pathname]);
+
+    useEffect(() => {
+        checkEmail();
+    }, [form.values.accountOwner.email]);
 
     return (
         <div>
@@ -241,7 +274,11 @@ export default function AccountInformationTab({ clientUsername }) {
                         {...form.getInputProps('accountOwner.email')}
                         withAsterisk
                         w={'45%'}
-                    // TODO: check if email exists in database
+                        onBlur={async (event) => {
+                            form.getInputProps('accountOwner.email').onBlur(event);
+
+                            await checkEmail();
+                        }}
                     />
                     <TextInput
                         label="Phone"

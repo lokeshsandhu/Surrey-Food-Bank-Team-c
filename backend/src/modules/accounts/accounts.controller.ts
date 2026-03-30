@@ -67,10 +67,12 @@ export async function checkUsernameExists(req: Request, res: Response) {
     }
 }
 
+// Written with the assistance of ChatGPT
 export async function checkEmailExists(req: Request, res: Response) {
     try {
         const { email } = req.params;
-        const exists = await service.emailExists(email);
+        const { username, id } = req.query;
+        const exists = await service.emailExists(email, username ? String(username) : null, id ? Number(id) : null);
         res.status(200).json({ exists });
     } catch (err: any) {
         res.status(500).json({ error: err.message });

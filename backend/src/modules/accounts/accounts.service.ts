@@ -61,17 +61,22 @@ export async function usernameExists(username: string): Promise<boolean> {
 
 // Select from owner family member email with given email, return boolean
 // Created with the assistance of ChatGPT
-export async function emailExists(email: string, username: string | null, id: string | null): Promise<{ exists: boolean; is_member_email: boolean | null; }> {
+export async function emailExists(email: string, username: string | null, id: number | null): Promise<{ exists: boolean; is_member_email: boolean | null; }> {
+    console.log('emailExists', username, id);
     const normalizedEmail = email.trim();
     if (normalizedEmail.length === 0) {
         return { exists: false, is_member_email: null };
     }
 
+
     const text = `
         SELECT
         COUNT(*) > 0 AS exists,
         ${username !== null && id !== null
-            ? `BOOL_OR(LOWER(TRIM(username)) = LOWER(TRIM($2))) AND BOOL_OR(id = $3)`
+            ? `BOOL_OR(
+            LOWER(TRIM(username)) = LOWER(TRIM($2))
+            AND id = $3
+            )`
             : `NULL`
         } AS is_member_email
         FROM familymember

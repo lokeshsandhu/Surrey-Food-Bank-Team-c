@@ -218,7 +218,6 @@ export default function RegisterPage() {
         if (currentEmail.length === 0) return;
 
         const result = await emailExists(currentEmail, null, null);
-        console.log(currentEmail, result.exists);
 
         if (result.exists.exists) {
             form.setFieldError(
