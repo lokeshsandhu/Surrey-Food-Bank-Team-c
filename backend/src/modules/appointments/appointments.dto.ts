@@ -18,14 +18,6 @@ export interface AppointmentDTO {
     usernames?: string[];
 }
 
-export interface CreateSlotDTO {
-    appt_date: string;
-    start_time: string;
-    end_time: string;
-    appt_notes?: string;
-    capacity?: number;
-}
-
 export interface BookAppointmentDTO {
     appt_date: string;
     start_time: string;

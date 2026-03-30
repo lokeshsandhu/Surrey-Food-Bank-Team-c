@@ -94,17 +94,3 @@ export async function getOwnerFamilyMembers(req: Request, res: Response) {
         res.status(500).json({ error: err.message });
     }
 }
-
-// NOTUSED
-// Check if family member with given username and identifier already exists
-// export async function checkUsernameFamilyMemberExists(req: Request, res: Response) {
-//     try {
-//         const { username, memberRef } = req.params;
-//         const numericId = Number(memberRef);
-//         const identifier = Number.isNaN(numericId) ? memberRef : numericId;
-//         const exists = await service.usernameFamilyMemberExists(username, identifier);
-//         res.status(200).json({ exists });
-//     } catch (err: any) {
-//         res.status(500).json({ error: err.message });
-//     }
-// }

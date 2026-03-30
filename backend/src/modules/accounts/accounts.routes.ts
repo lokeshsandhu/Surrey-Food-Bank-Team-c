@@ -16,10 +16,6 @@ router.get("/:username", authenticate, controller.getMyAccount);
 // PATCH /api/accounts/:username — update a specific detail
 router.patch("/:username", authenticate, controller.updateMyAccount);
 
-// NOTUSED
-// DELETE /api/accounts/:username — delete account (admin only)
-// router.delete("/:username", authenticate, requireAdmin, controller.deleteAccount);
-
 // GET /api/accounts/exists/:username — check if username exists
 router.get("/exists/:username", controller.checkUsernameExists);
 

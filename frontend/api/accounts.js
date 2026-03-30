@@ -66,18 +66,6 @@ export function updateAccount(token, username, data) {
   }).then(res => res.json());
 }
 
-// NOTUSED
-/**
- * Delete an account by username.
- * Example:
- *   deleteAccount("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "johndoe");
- */
-// export function deleteAccount(token, username) {
-//   return fetch(`${API_BASE}/${username}`, {
-//     method: "DELETE",
-//     headers: { Authorization: `Bearer ${token}` }
-//   }).then(res => res.json());
-// }
 
 /**
  * Delete an account by username.
