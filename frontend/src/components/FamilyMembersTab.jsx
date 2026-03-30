@@ -214,10 +214,10 @@ export default function FamilyMembersTab({ clientUsername }) {
       }
     });
 
-    const memberEmailIsValid = await checkMemberEmail();
-    if (!memberEmailIsValid) {
-      hasErrors = true;
-    }
+    // const memberEmailIsValid = await checkMemberEmail();
+    // if (!memberEmailIsValid) {
+    //   hasErrors = true;
+    // }
 
     const hasDupEmail = await checkEmail();
     if (form.errors.email) return;
@@ -235,7 +235,7 @@ export default function FamilyMembersTab({ clientUsername }) {
         f_name: member.f_name,
         l_name: member.l_name,
         dob: member.dob,
-        email: member.email,
+        email: member.email.trim().length > 0 ? member.email : null,
         phone: member.phone,
         relationship: member.relationship
       };
