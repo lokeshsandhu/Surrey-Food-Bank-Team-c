@@ -151,6 +151,8 @@ export default function TimeslotPage() {
                             ? 'yellow'
                             : 'red',
                 appt_notes: slot.appt_notes,
+                capacity: slot.capacity,
+                mincapacity: slot.capacity - slot.remaining_capacity,
             });
             });
 
@@ -169,9 +171,15 @@ export default function TimeslotPage() {
         const titleIndicatesAvailable = /^available slot(s)?$/i.test(normalizedTitle);
         const username = titleIndicatesAvailable ? null : (values.username ?? (normalizedTitle || null));
         const notes = values.appt_notes || '';
+        const capacity = values.capacity || 1;
 
-        console.log('Creating booking with date:', bookingDate, 'start:', bookingTime, 'end:', dayjs(bookingTime, 'HH:mm').add(15, 'minutes').format('HH:mm'), 'username:', username, 'notes:', notes);
-        const res = await updateAppointment(token, bookingDate, bookingTime, { username: username, appt_notes: notes });
+        console.log('Creating booking with date:', bookingDate, 'start:', bookingTime, 'end:', dayjs(bookingTime, 'HH:mm').add(15, 'minutes').format('HH:mm'), 'username:', username, 'notes:', notes, 'capacity:', values.capacity);
+        let res;
+        if (username === '') {
+            res = await updateAppointment(token, bookingDate, bookingTime, { appt_notes: notes, capacity: capacity });
+        } else {
+            res = await updateAppointment(token, bookingDate, bookingTime, { username: username, appt_notes: notes, capacity: capacity });
+        }
         console.log('Make booking response:', res);
 
         if (res.error == 'insert or update on table "appointment" violates foreign key constraint "appointment_fkey_user"') {
