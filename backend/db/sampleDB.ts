@@ -127,27 +127,13 @@ async function sampleApptData() {
         appt_notes: undefined
     }
 
-    const feb28FullSlot = {
-        appt_date: '2026-02-28',
-        start_time: '08:00',
-        end_time: '08:30',
-        appt_notes: undefined
-    }
-
     const janeBookingFeb25 = {
         appt_date: '2026-02-25',
         start_time: '10:00',
     }
 
-    const jeffBookingFeb28 = {
-        appt_date: '2026-02-28',
-        start_time: '08:00',
-    }
-
     await appointment.createAppointmentsInTimeRange(feb25Slots);
-    await appointment.createAppointment(feb28FullSlot);
     await appointment.bookAppointment(janeBookingFeb25, 'jane123');
-    await appointment.bookAppointment(jeffBookingFeb28, 'big_jeff');
 }
 
 // create available time slots for the month of March 2026, excluding weekends
@@ -169,6 +155,26 @@ async function marchTimeSlots() {
     }
 }
 
+// create available time slots for the month of March 2026, excluding weekends
+async function aprilTimeSlots() {
+    for(let i=1; i<31; i++) {
+        const weekends: number[] = [4, 5, 11, 12, 18, 19, 25, 26];
+
+        if (!weekends.includes(i)) {
+            const date = '2026-04-' + String(i).padStart(2, '0');;
+            const slot = {
+                appt_date: date,
+                start_time: '08:00',
+                end_time: '16:00',
+                appt_notes: undefined,
+                capacity: 2
+            }
+            await appointment.createAppointmentsInTimeRange(slot);
+        }
+        
+    }
+}
+
 // run init functions
 async function runSample() {
     try {
@@ -177,6 +183,7 @@ async function runSample() {
         await sampleJeffData();
         await sampleApptData();
         await marchTimeSlots();
+        await aprilTimeSlots();
         console.log('Sample data successfully initialized.')
     } catch (err) {
         console.log('Unable to initialize sample data: ', err);

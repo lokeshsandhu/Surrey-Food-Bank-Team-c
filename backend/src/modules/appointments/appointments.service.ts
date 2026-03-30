@@ -1,5 +1,5 @@
 import pool from "../../db/postgres";
-import { CreateSlotDTO, BookAppointmentDTO, CreateAppointmentsInRangeDTO, BookingStatus } from "./appointments.dto";
+import { BookAppointmentDTO, CreateAppointmentsInRangeDTO, BookingStatus } from "./appointments.dto";
 
 export async function updateAppointment(
     appt_date: string,
@@ -189,15 +189,6 @@ export async function updateAppointment(
     return summaryRows[0] ?? null;
 }
 
-export async function deleteAppointmentFromDate(appt_date: string) {
-    const text = `
-        DELETE FROM appointment_slot
-        WHERE appt_date = $1
-        RETURNING *
-    `;
-    const { rows } = await pool.query(text, [appt_date]);
-    return rows;
-}
 
 export async function deleteAppointmentFromUsername(username: string) {
     const text = `
@@ -209,40 +200,6 @@ export async function deleteAppointmentFromUsername(username: string) {
     return rows;
 }
 
-export async function deleteAppointmentFromUsernameDateStart(username: string, appt_date: string, start_time: string) {
-    const text = `
-        DELETE FROM appointment_booking
-        WHERE username = $1
-          AND appt_date = $2
-          AND start_time = $3::time
-        RETURNING *
-    `;
-    const { rows } = await pool.query(text, [username, appt_date, start_time]);
-    return rows[0] ?? null;
-}
-
-export async function findAppointmentFromApptDateAndStartTime(appt_date: string, start_time: string) {
-    const text = `
-        SELECT
-            s.appt_date,
-            s.start_time,
-            s.end_time,
-            s.appt_notes,
-            s.capacity,
-            COUNT(b.username)::int AS booked_count,
-            GREATEST(s.capacity - COUNT(b.username)::int, 0) AS remaining_capacity,
-            COALESCE(array_agg(b.username ORDER BY b.username) FILTER (WHERE b.username IS NOT NULL), '{}')::varchar[] AS usernames,
-            CASE WHEN COUNT(b.username)::int >= s.capacity THEN MAX(b.username) ELSE NULL END AS username
-        FROM appointment_slot s
-        LEFT JOIN appointment_booking b
-          ON b.appt_date = s.appt_date
-         AND b.start_time = s.start_time
-        WHERE s.appt_date = $1 AND s.start_time = $2::time
-        GROUP BY s.appt_date, s.start_time, s.end_time, s.appt_notes, s.capacity
-    `;
-    const { rows } = await pool.query(text, [appt_date, start_time]);
-    return rows[0] ?? null;
-}
 
 export async function createAppointmentsInTimeRange(data: CreateAppointmentsInRangeDTO) {
     const [startHour, startMin] = data.start_time.split(":").map(Number);
@@ -323,29 +280,6 @@ export async function findAppointmentsInDateRange(startDate: string, endDate: st
     return rows;
 }
 
-export async function findAppointmentsInTimeRange(startTime: string, endTime: string) {
-    const text = `
-        SELECT
-            s.appt_date,
-            s.start_time,
-            s.end_time,
-            s.appt_notes,
-            s.capacity,
-            COUNT(b.username)::int AS booked_count,
-            GREATEST(s.capacity - COUNT(b.username)::int, 0) AS remaining_capacity,
-            COALESCE(array_agg(b.username ORDER BY b.username) FILTER (WHERE b.username IS NOT NULL), '{}')::varchar[] AS usernames,
-            CASE WHEN COUNT(b.username)::int >= s.capacity THEN MAX(b.username) ELSE NULL END AS username
-        FROM appointment_slot s
-        LEFT JOIN appointment_booking b
-          ON b.appt_date = s.appt_date
-         AND b.start_time = s.start_time
-        WHERE s.start_time >= $1::time AND s.end_time <= $2::time
-        GROUP BY s.appt_date, s.start_time, s.end_time, s.appt_notes, s.capacity
-        ORDER BY s.appt_date, s.start_time
-    `;
-    const { rows } = await pool.query(text, [startTime, endTime]);
-    return rows;
-}
 
 export async function findAppointmentsInDateTimeRange(apptDate: string, startTime: string, endTime: string) {
     const text = `
@@ -371,34 +305,8 @@ export async function findAppointmentsInDateTimeRange(apptDate: string, startTim
     return rows;
 }
 
-export async function createAppointment(data: CreateSlotDTO) {
-    const overlapText = `
-        SELECT 1 FROM appointment_slot
-        WHERE appt_date = $1
-          AND start_time < $3::time
-          AND end_time > $2::time
-        LIMIT 1
-    `;
-    const { rows: overlapRows } = await pool.query(overlapText, [data.appt_date, data.start_time, data.end_time]);
-    if (overlapRows.length > 0) {
-        throw new Error("Time slot overlaps with an existing appointment");
-    }
 
-    const capacity = data.capacity ?? 1;
-    if (capacity < 1) {
-        throw new Error("capacity must be at least 1");
-    }
-
-    const text = `
-        INSERT INTO appointment_slot (appt_date, start_time, end_time, appt_notes, capacity)
-        VALUES ($1, $2::time, $3::time, $4, $5)
-        RETURNING *
-    `;
-    const values = [data.appt_date, data.start_time, data.end_time, data.appt_notes || null, capacity];
-    const { rows } = await pool.query(text, values);
-    return rows[0];
-}
-
+// Delete appointment slot at given date and time
 export async function deleteAppointment(appt_date: string, start_time: string) {
     const text = `
         DELETE FROM appointment_slot
@@ -409,75 +317,7 @@ export async function deleteAppointment(appt_date: string, start_time: string) {
     return rows[0] ?? null;
 }
 
-export async function getAvailableAppointments(babyOrPregnant: boolean, username?: string) {
-    const rowsQuery = `
-        SELECT
-            s.appt_date,
-            s.start_time,
-            s.end_time,
-            s.appt_notes,
-            s.capacity,
-            COUNT(b.username)::int AS booked_count,
-            GREATEST(s.capacity - COUNT(b.username)::int, 0) AS remaining_capacity,
-            COALESCE(array_agg(b.username ORDER BY b.username) FILTER (WHERE b.username IS NOT NULL), '{}')::varchar[] AS usernames,
-            CASE WHEN COUNT(b.username)::int >= s.capacity THEN MAX(b.username) ELSE NULL END AS username
-        FROM appointment_slot s
-        LEFT JOIN appointment_booking b
-          ON b.appt_date = s.appt_date
-         AND b.start_time = s.start_time
-        WHERE s.capacity > (
-            SELECT COUNT(*)::int
-            FROM appointment_booking b2
-            WHERE b2.appt_date = s.appt_date
-              AND b2.start_time = s.start_time
-        )
-        ${babyOrPregnant ? "AND EXTRACT(DOW FROM s.appt_date) = 3" : ""}
-        GROUP BY s.appt_date, s.start_time, s.end_time, s.appt_notes, s.capacity
-        ORDER BY s.appt_date, s.start_time
-    `;
-
-    const { rows } = await pool.query(rowsQuery);
-
-    if (!babyOrPregnant) {
-        return rows;
-    }
-
-    const householdText = `SELECT household_size FROM account WHERE username = $1`;
-    const { rows: householdRows } = await pool.query(householdText, [username]);
-    const householdSize = householdRows[0]?.household_size ?? 1;
-
-    if (householdSize < 5) {
-        return rows;
-    }
-
-    const validSlots = [];
-    for (let i = 0; i < rows.length - 1; i++) {
-        const curr = rows[i];
-        const next = rows[i + 1];
-        const currDate = String(curr.appt_date);
-        const nextDate = String(next.appt_date);
-        const currEnd = String(curr.end_time).slice(0, 5);
-        const nextStart = String(next.start_time).slice(0, 5);
-
-        if (currDate === nextDate && currEnd === nextStart) {
-            validSlots.push({
-                appt_date: curr.appt_date,
-                start_time: curr.start_time,
-                end_time: next.end_time,
-                appt_notes: curr.appt_notes,
-                capacity: Math.min(curr.capacity, next.capacity),
-                booked_count: Math.max(curr.booked_count, next.booked_count),
-                remaining_capacity: Math.min(curr.remaining_capacity, next.remaining_capacity),
-                usernames: Array.from(new Set([...(curr.usernames || []), ...(next.usernames || [])])),
-                username: null,
-                slot_pair: [curr, next],
-            });
-        }
-    }
-
-    return validSlots;
-}
-
+// Find account's household size
 export async function getHouseholdSize(username: string): Promise<number> {
     const text = `SELECT household_size FROM account WHERE username = $1`;
     const { rows } = await pool.query(text, [username]);
@@ -633,28 +473,7 @@ export async function bookAppointment(data: BookAppointmentDTO, username: string
     };
 }
 
-export async function cancelBooking(username: string, appt_date?: string, start_time?: string) {
-    if (appt_date && start_time) {
-        const text = `
-            DELETE FROM appointment_booking
-            WHERE username = $1
-              AND appt_date = $2
-              AND start_time = $3::time
-            RETURNING *
-        `;
-        const { rows } = await pool.query(text, [username, appt_date, start_time]);
-        return rows;
-    }
-
-    const text = `
-        DELETE FROM appointment_booking
-        WHERE username = $1
-        RETURNING *
-    `;
-    const { rows } = await pool.query(text, [username]);
-    return rows;
-}
-
+// Select all appointments booked by username
 export async function getMyAppointments(username: string) {
     const text = `
         SELECT
@@ -676,29 +495,7 @@ export async function getMyAppointments(username: string) {
     return rows;
 }
 
-export async function getAllAppointments() {
-    const text = `
-        SELECT
-            s.appt_date,
-            s.start_time,
-            s.end_time,
-            s.appt_notes,
-            s.capacity,
-            COUNT(b.username)::int AS booked_count,
-            GREATEST(s.capacity - COUNT(b.username)::int, 0) AS remaining_capacity,
-            COALESCE(array_agg(b.username ORDER BY b.username) FILTER (WHERE b.username IS NOT NULL), '{}')::varchar[] AS usernames,
-            CASE WHEN COUNT(b.username)::int >= s.capacity THEN MAX(b.username) ELSE NULL END AS username
-        FROM appointment_slot s
-        LEFT JOIN appointment_booking b
-          ON b.appt_date = s.appt_date
-         AND b.start_time = s.start_time
-        GROUP BY s.appt_date, s.start_time, s.end_time, s.appt_notes, s.capacity
-        ORDER BY s.appt_date, s.start_time
-    `;
-    const { rows } = await pool.query(text);
-    return rows;
-}
-
+// Checks if account has babyOrPregnant set to true
 export async function hasBabyOrPregnant(username: string): Promise<boolean> {
     const text = `
         SELECT baby_or_pregnant FROM account WHERE username = $1

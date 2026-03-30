@@ -39,20 +39,6 @@ export async function findFamilyMembersByLName(l_name: string) {
 
 // Insert row into familymember table, return row(s)
 export async function createFamilyMember(data: FamilyMemberDTO) {
-    const duplicateCheck = await pool.query(
-        `
-            SELECT 1
-            FROM familymember
-            WHERE username = $1 AND LOWER(f_name) = LOWER($2)
-            LIMIT 1
-        `,
-        [data.username, data.f_name]
-    );
-
-    if (duplicateCheck.rows.length > 0) {
-        throw new Error("Family member with this first name already exists for the account");
-    }
-
     const text = `
         INSERT INTO familymember
         (username, f_name, l_name, dob, phone, email, relationship)
@@ -173,12 +159,4 @@ export async function getOwnerEmailByUsername(username: string): Promise<string 
     `;
     const { rows } = await pool.query(text, [username]);
     return rows[0]?.email ?? null;
-}
-
-// Select from familymember table with given username and identifier, return boolean
-export async function usernameFamilyMemberExists(username: string, identifier: number | string): Promise<boolean> {
-    const lookup = buildFamilyMemberLookupClause(identifier);
-    const text = `SELECT * FROM familymember WHERE ${lookup.clause}`;
-    const { rows } = await pool.query(text, [username, ...lookup.values]);
-    return rows.length > 0;
 }

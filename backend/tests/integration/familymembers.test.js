@@ -1,4 +1,4 @@
-const { findFamilyMembersByFName, findFamilyMembersByLName, createFamilyMember, getFamilyMembers, updateFamilyMember, deleteFamilyMember, getOwnerFamilyMembers, usernameFamilyMemberExists} = require('../../src/modules/familyMembers/familyMembers.service');
+const { findFamilyMembersByFName, findFamilyMembersByLName, createFamilyMember, getFamilyMembers, updateFamilyMember, deleteFamilyMember, getOwnerFamilyMembers } = require('../../src/modules/familyMembers/familyMembers.service');
 const pool = require('../../src/db/postgres').default;
 
 function normalizeDateOnly(value) {
@@ -98,31 +98,6 @@ describe('familyMembers.service', () => {
         expect(newMember3.username).toBe('testuser');
         expect(newMember3.f_name).toBe('third');
         expect(newMember3.l_name).toBe('user');
-    });
-
-    // createFamilyMembers should throw an error if adding a family member with existing first name in the same account
-    it('createFamilyMembers should throw an error when trying to add a new FM with existing fname', async () => {
-        const fmData = {
-            username: 'testuser',
-            f_name: 'TEST',
-            l_name: 'uSeR',
-            dob: '1990/01/01',
-            phone: '(111) 111-111',
-            email: 'email@email.com',
-            relationship: 'owner'
-        };
-        const fmSameFNameData = {
-            username: 'testuser',
-            f_name: 'test',
-            l_name: 'lastname',
-            dob: '2000/11/11',
-            phone: '(222) 222-222',
-            email: 'abc@def.com',
-            relationship: 'owner'
-        };
-
-        await createFamilyMember(fmData);
-        await expect(createFamilyMember(fmSameFNameData)).rejects.toThrow();
     });
 
     // createFamilyMembers should throw an error if adding a FM to account that does not exist
@@ -649,49 +624,50 @@ describe('familyMembers.service', () => {
         expect(ours).toHaveLength(0);
     });
 
-    // usernameFamilyMemberExists should return true if FM is in account
-    it('usernameFamilyMemberExists should return true if FM is in account', async () => {
-        const fm1Data = {
-            username: 'testuser',
-            f_name: 'First',
-            l_name: 'User',
-            dob: '1990/01/01',
-            phone: '(111) 111-111',
-            email: 'email@email.com',
-            relationship: 'Main'
-        };
+    // NOT USED
+    // // usernameFamilyMemberExists should return true if FM is in account
+    // it('usernameFamilyMemberExists should return true if FM is in account', async () => {
+    //     const fm1Data = {
+    //         username: 'testuser',
+    //         f_name: 'First',
+    //         l_name: 'User',
+    //         dob: '1990/01/01',
+    //         phone: '(111) 111-111',
+    //         email: 'email@email.com',
+    //         relationship: 'Main'
+    //     };
 
-        await createFamilyMember(fm1Data);
-        const result = await usernameFamilyMemberExists('testuser', 'first');
-        expect(result).toBe(true);
-    });
+    //     await createFamilyMember(fm1Data);
+    //     const result = await usernameFamilyMemberExists('testuser', 'first');
+    //     expect(result).toBe(true);
+    // });
 
-    // usernameFamilyMemberExists should return false if FM is not in account
-    it('usernameFamilyMemberExists should return false if FM is not in account', async () => {
-        const fm1Data = {
-            username: 'testuser',
-            f_name: 'First',
-            l_name: 'User',
-            dob: '1990/01/01',
-            phone: '(111) 111-111',
-            email: 'email@email.com',
-            relationship: 'Main'
-        };
+    // // usernameFamilyMemberExists should return false if FM is not in account
+    // it('usernameFamilyMemberExists should return false if FM is not in account', async () => {
+    //     const fm1Data = {
+    //         username: 'testuser',
+    //         f_name: 'First',
+    //         l_name: 'User',
+    //         dob: '1990/01/01',
+    //         phone: '(111) 111-111',
+    //         email: 'email@email.com',
+    //         relationship: 'Main'
+    //     };
 
-        await createFamilyMember(fm1Data);
-        const result = await usernameFamilyMemberExists('otheruser', 'first');
-        expect(result).toBe(false);
-    });
+    //     await createFamilyMember(fm1Data);
+    //     const result = await usernameFamilyMemberExists('otheruser', 'first');
+    //     expect(result).toBe(false);
+    // });
 
-    // usernameFamilyMemberExists should return false if FM does not exist
-    it('usernameFamilyMemberExists should return false if FM does not exist', async () => {
-        const result = await usernameFamilyMemberExists('testuser', 'doesnotexist');
-        expect(result).toBe(false);
-    });
+    // // usernameFamilyMemberExists should return false if FM does not exist
+    // it('usernameFamilyMemberExists should return false if FM does not exist', async () => {
+    //     const result = await usernameFamilyMemberExists('testuser', 'doesnotexist');
+    //     expect(result).toBe(false);
+    // });
 
-    // usernameFamilyMemberExists should return false if account does not exist
-    it('usernameFamilyMemberExists should return false if account does not exist', async () => {
-        const result = await usernameFamilyMemberExists('doesnotexist', 'first');
-        expect(result).toBe(false);
-    });
+    // // usernameFamilyMemberExists should return false if account does not exist
+    // it('usernameFamilyMemberExists should return false if account does not exist', async () => {
+    //     const result = await usernameFamilyMemberExists('doesnotexist', 'first');
+    //     expect(result).toBe(false);
+    // });
 });
