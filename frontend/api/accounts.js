@@ -79,15 +79,22 @@ export function usernameExists(username) {
 /**
  * Check if email exists in database
  * Example:
- *   usernameExists("email@email.com");
- * 
- * Written with the assistance of ChatGPT
+ *   emailExists("email@email.com");
+ *   emailExists("email@email.com", "johndoe", 5);
  */
-export function emailExists(email, username = null, id = null) {
+export function emailExists(email, username = null, familyMemberId = null) {
   const params = new URLSearchParams();
 
-  if (username) params.append('username', username);
-  if (id) params.append('id', id);
+  if (username) {
+    params.set("username", username);
+  }
 
-  return fetch(`${API_BASE}/email-exists/${encodeURIComponent(email)}?${params.toString()}`).then(res => res.json());
+  if (familyMemberId !== null && familyMemberId !== undefined) {
+    params.set("family_member_id", String(familyMemberId));
+  }
+
+  const queryString = params.toString();
+  const url = `${API_BASE}/email-exists/${encodeURIComponent(email)}${queryString ? `?${queryString}` : ""}`;
+
+  return fetch(url).then(res => res.json());
 }

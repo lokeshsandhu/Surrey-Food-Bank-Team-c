@@ -1,7 +1,7 @@
 import { Title, Text, Stack, TextInput, Radio, Group, Fieldset, Select, Button } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import React, { useEffect, useState } from "react";
-import { getAccount, updateAccount } from "../../api/accounts";
+import { emailExists, getAccount, updateAccount } from "../../api/accounts";
 import { getFamilyMembers, updateFamilyMember } from "../../api/familyMembers";
 import { useForm, isNotEmpty } from "@mantine/form";
 import validator from 'validator';
@@ -143,6 +143,37 @@ export default function AccountInformationTab({ clientUsername }) {
         }
     };
 
+    const splitAddress = (address) => {
+        const addrParts = address.split(', ').map(p => p.trim());
+
+        return {
+            line1: addrParts[0] ?? '',
+            line2: addrParts[1] ?? '',
+            city: addrParts[2] ?? '',
+            province: addrParts[3] ?? '',
+            postal_code: addrParts[4] ?? '',
+        };
+    };
+
+    const checkOwnerEmail = async () => {
+        const currentEmail = form.values.accountOwner.email.trim();
+        if (!validator.isEmail(currentEmail)) {
+            return false;
+        }
+
+        const result = await emailExists(currentEmail, clientUsername, ownerId);
+        if (result.exists && result.is_family_member !== true) {
+            form.setFieldError(
+                'accountOwner.email',
+                'Email already taken. Try a different email.'
+            );
+            return false;
+        }
+
+        form.validateField('accountOwner.email');
+        return true;
+    };
+
     const updateAccountInformation = async () => {
         const fieldsToValidate = [
             "accountOwner.f_name",
@@ -165,6 +196,12 @@ export default function AccountInformationTab({ clientUsername }) {
                 hasErrors = true;
             }
         });
+
+        const ownerEmailIsValid = await checkOwnerEmail();
+
+        if (!ownerEmailIsValid) {
+            hasErrors = true;
+        }
 
         const hasDupEmail = await checkEmail();
         if (form.errors.accountOwner) return;
