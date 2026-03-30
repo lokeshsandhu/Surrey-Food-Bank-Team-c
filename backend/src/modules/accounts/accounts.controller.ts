@@ -73,7 +73,8 @@ export async function checkEmailExists(req: Request, res: Response) {
         const { email } = req.params;
         const { username, id } = req.query;
         const exists = await service.emailExists(email, username ? String(username) : null, id ? Number(id) : null);
-        res.status(200).json({ exists });
+        console.log('controller exists', exists)
+        res.status(200).json(exists);
     } catch (err: any) {
         res.status(500).json({ error: err.message });
     }

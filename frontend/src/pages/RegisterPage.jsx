@@ -219,7 +219,7 @@ export default function RegisterPage() {
 
         const result = await emailExists(currentEmail, null, null);
 
-        if (result.exists.exists) {
+        if (result.exists && result.exists.exists) {
             form.setFieldError(
                 field_name,
                 'Email already taken. Try a different email.'

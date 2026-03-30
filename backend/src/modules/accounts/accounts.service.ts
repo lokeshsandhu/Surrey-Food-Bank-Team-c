@@ -68,7 +68,6 @@ export async function emailExists(email: string, username: string | null, id: nu
         return { exists: false, is_member_email: null };
     }
 
-
     const text = `
         SELECT
         COUNT(*) > 0 AS exists,
@@ -84,6 +83,11 @@ export async function emailExists(email: string, username: string | null, id: nu
             AND LOWER(TRIM(email)) = LOWER(TRIM($1))
     `;
     const { rows } = await pool.query(text, [normalizedEmail, username ?? null, id ?? null]);
+
+    if (!rows || rows.length === 0) {
+        return { exists: false, is_member_email: null };
+    }
+    
     return { exists: rows[0].exists, is_member_email: rows[0].is_member_email };
 }
 

@@ -12,6 +12,7 @@ import { IconUserPlus } from '@tabler/icons-react';
 import { FMRelationshipOptions } from '../constants/FormOptions';
 import { useNavigate } from "react-router";
 import { updateAccount } from "../../api/accounts";
+import { emailExists } from "../../api/accounts";
 
 // enum for the modal mode
 const modeEnum = { updateMember: 1, addMember: 2 };
@@ -36,6 +37,7 @@ export default function FamilyMembersTab({ clientUsername }) {
 
   const form = useForm({
     initialValues: {
+      id: null,
       f_name: '',
       l_name: '',
       dob: null,
@@ -49,13 +51,40 @@ export default function FamilyMembersTab({ clientUsername }) {
       f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their first name.',
       l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
       dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
+      email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
       phone: (value) => form.values.relationship === 'owner' && isMemberOwner() ?
         (value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).') : null,
       relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' && !isMemberOwner() ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
     }
   });
 
-  // TODO: check if email exists in database
+  // check if email exists in database
+  // duplicate error if exists: true AND is_member_email: false
+  const checkEmail = async () => {
+    const currentEmail = form.values.email.trim();
+    if (currentEmail.length === 0) return;
+
+    let currentUsername = null;
+    let currentId = null;
+
+    if (mode === modeEnum.updateMember) {
+      currentUsername = clientUsername;
+      currentId = form.values.id;
+    }
+
+    const result = await emailExists(currentEmail, currentUsername, currentId);
+    console.log(currentEmail, result.exists);
+
+    if (result.exists.exists && result.exists.is_member_email === false) {
+      form.setFieldError(
+        'email',
+        'Email already taken. Try a different email.'
+      );
+      return true;
+    }
+
+    return false;
+  };
 
   const isMemberOwner = () => {
     const currentMember = { f_name: form.values.f_name, relationship: form.values.relationship };
@@ -106,9 +135,16 @@ export default function FamilyMembersTab({ clientUsername }) {
       }
     });
 
-    // TODO: check if email exists in database
+    const hasDupEmail = await checkEmail();
+    if (form.errors.email) return;
 
-    if (!hasErrors) {
+    if (hasDupEmail) {
+      notifications.show({
+        title: 'Email is already taken',
+        message: 'Please enter a different email.',
+        color: 'red',
+      });
+    } else if (!hasErrors) {
       const member = form.values;
       const memberData = {
         f_name: member.f_name.trim(),
@@ -139,6 +175,7 @@ export default function FamilyMembersTab({ clientUsername }) {
   };
 
   const addMember = async () => {
+    console.log(form.values)
     const fieldsToValidate = [
       "f_name",
       "l_name",
@@ -156,9 +193,16 @@ export default function FamilyMembersTab({ clientUsername }) {
       }
     });
 
-    // TODO: check if email exists in database
+    const hasDupEmail = await checkEmail();
+    if (form.errors.email) return;
 
-    if (!hasErrors) {
+    if (hasDupEmail) {
+      notifications.show({
+        title: 'Email is already taken',
+        message: 'Please enter a different email.',
+        color: 'red',
+      });
+    } else if (!hasErrors) {
       const member = form.values;
       const memberData = {
         username: clientUsername,
