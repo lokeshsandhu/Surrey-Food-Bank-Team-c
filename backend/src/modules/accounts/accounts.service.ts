@@ -59,22 +59,43 @@ export async function usernameExists(username: string): Promise<boolean> {
     return rows.length > 0;
 }
 
-// Select from owner family member email with given email, return boolean
-export async function emailExists(email: string): Promise<boolean> {
+type EmailExistsResult = {
+    exists: boolean;
+    is_family_member: boolean | null;
+};
+
+// Select from family member email with given email and optionally compare against a specific member
+export async function emailExists(
+    email: string,
+    username?: string | null,
+    familyMemberId?: number | null
+): Promise<EmailExistsResult> {
     const normalizedEmail = email.trim();
     if (normalizedEmail.length === 0) {
-        return false;
+        return { exists: false, is_family_member: null };
     }
 
     const text = `
-        SELECT 1
+        SELECT username, id
         FROM familymember
         WHERE email IS NOT NULL
           AND LOWER(TRIM(email)) = LOWER(TRIM($1))
-        LIMIT 1
     `;
     const { rows } = await pool.query(text, [normalizedEmail]);
-    return rows.length > 0;
+    if (rows.length === 0) {
+        return { exists: false, is_family_member: null };
+    }
+
+    const normalizedUsername = username?.trim();
+    if (!normalizedUsername || familyMemberId == null) {
+        return { exists: true, is_family_member: null };
+    }
+
+    const isFamilyMember = rows.some(
+        (row) => row.username === normalizedUsername && Number(row.id) === familyMemberId
+    );
+
+    return { exists: true, is_family_member: isFamilyMember };
 }
 
 // Select from account table with given username, return username and password

@@ -1,7 +1,7 @@
 import { Title, Text, Stack, TextInput, Radio, Group, Fieldset, Select, Button } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import React, { useEffect, useState } from "react";
-import { getAccount, updateAccount } from "../../api/accounts";
+import { emailExists, getAccount, updateAccount } from "../../api/accounts";
 import { getFamilyMembers, updateFamilyMember } from "../../api/familyMembers";
 import { useForm, isNotEmpty } from "@mantine/form";
 import validator from 'validator';
@@ -11,7 +11,7 @@ import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import { provinceOptions, canadaStatusOptions } from "../constants/FormOptions";
-
+import { splitAddress } from "../utils/displayHelpers";
 
 export default function AccountInformationTab({ clientUsername }) {
     const token = sessionStorage.getItem('token');
@@ -49,6 +49,7 @@ export default function AccountInformationTab({ clientUsername }) {
             },
             accountOwner: {
                 username: '',
+                id: null,
                 f_name: '',
                 l_name: '',
                 dob: null,
@@ -75,11 +76,49 @@ export default function AccountInformationTab({ clientUsername }) {
                 f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your first name.',
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your last name.',
                 dob: (value) => value && value.trim().length > 0 ? null : 'Please enter your date of birth.',
-                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
+                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
                 phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             }
         }
     });
+
+    // check if email exists in database
+    // duplicate error if exists: true AND is_member_email: false
+    const checkEmail = async () => {
+        const currentEmail = form.values.accountOwner.email.trim();
+        if (currentEmail.length === 0) return;
+
+        const result = await emailExists(currentEmail, clientUsername, form.values.accountOwner.id);
+
+        if (result.exists && result.is_family_member !== true) {
+            form.setFieldError(
+                'accountOwner.email',
+                'Email already taken. Try a different email.'
+            );
+            return true;
+        }
+
+        return false;
+    };
+
+    // const checkOwnerEmail = async () => {
+    //     const currentEmail = form.values.accountOwner.email.trim();
+    //     if (!validator.isEmail(currentEmail)) {
+    //         return false;
+    //     }
+
+    //     const result = await emailExists(currentEmail, clientUsername, ownerId);
+    //     if (result.exists && result.is_family_member !== true) {
+    //         form.setFieldError(
+    //             'accountOwner.email',
+    //             'Email already taken. Try a different email.'
+    //         );
+    //         return false;
+    //     }
+
+    //     form.validateField('accountOwner.email');
+    //     return true;
+    // };
 
     const getAccountInformation = async () => {
         const result = await getAccount(token, clientUsername);
@@ -107,6 +146,7 @@ export default function AccountInformationTab({ clientUsername }) {
                     account_notes: result.account_notes
                 },
                 accountOwner: {
+                    id: owner.id,
                     f_name: owner.f_name,
                     l_name: owner.l_name,
                     dob: owner.dob,
@@ -128,6 +168,8 @@ export default function AccountInformationTab({ clientUsername }) {
             postal_code: addrParts[4] ?? '',
         };
     };
+
+  
 
     const updateAccountInformation = async () => {
         const fieldsToValidate = [
@@ -152,7 +194,16 @@ export default function AccountInformationTab({ clientUsername }) {
             }
         });
 
-        if (!hasErrors) {
+        const hasDupEmail = await checkEmail();
+        if (form.errors.accountOwner) return;
+
+        if (hasDupEmail) {
+            notifications.show({
+                title: 'Email is already taken',
+                message: 'Please enter a different email.',
+                color: 'red',
+            });
+        } else if (!hasErrors) {
             const accountInfo = form.values.accountInformation;
             const ownerInfo = form.values.accountOwner;
             const accountData = {
@@ -199,6 +250,10 @@ export default function AccountInformationTab({ clientUsername }) {
     useEffect(() => {
         getAccountInformation();
     }, [location.pathname]);
+
+    useEffect(() => {
+        checkEmail();
+    }, [form.values.accountOwner.email]);
 
     return (
         <div>
@@ -247,6 +302,11 @@ export default function AccountInformationTab({ clientUsername }) {
                         {...form.getInputProps('accountOwner.email')}
                         withAsterisk
                         w={'45%'}
+                        onBlur={async (event) => {
+                            form.getInputProps('accountOwner.email').onBlur(event);
+
+                            await checkEmail();
+                        }}
                     />
                     <TextInput
                         label="Phone"

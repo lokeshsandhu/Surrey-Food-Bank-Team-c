@@ -73,7 +73,7 @@ export default function AddFamilyMembers({ form }) {
                                 key={form.key(`family_members.${index}.email`)}
                                 {...form.getInputProps(`family_members.${index}.email`)}
                                 w={'45%'}
-                                withAsterisk
+                                // TODO: check if email exists in database onBlur
                             />
                             <TextInput
                                 label="5. Phone"

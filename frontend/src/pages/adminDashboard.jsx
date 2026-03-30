@@ -1,4 +1,4 @@
-import { Button, SimpleGrid, LoadingOverlay, ScrollArea, Grid, Text, Switch, Menu } from '@mantine/core';
+import { Button, SimpleGrid, LoadingOverlay, ScrollArea, Grid, Switch, Menu, Text } from '@mantine/core';
 import { DatePicker, DatePickerInput, TimePicker, getTimeRange } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 
@@ -9,6 +9,7 @@ import { useState } from 'react';
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { getAppointmentsInDateRange, createAppointmentsInTimeRange, updateAppointment, getAppointmentsInDateTimeRange } from '../../api/appointments.js';
+import { mkConfig, generateCsv, download } from "export-to-csv";
 
 import { useNavigate } from 'react-router';
 
@@ -39,7 +40,13 @@ export default function AdminDashboard() {
     const [createBookingDate, setCreateBookingDate] = useState(dayjs().format('YYYY-MM-DD'));
     const [createBookingTime, setCreateBookingTime] = useState("08:00:00");
 
+    // For export csv
+    const [csvStartDate, setCsvStartDate] = useState(dayjs().format('YYYY-MM-DD'));
+    const [csvEndDate, setCsvEndDate] = useState(dayjs().format('YYYY-MM-DD'));
+
     const navigate = useNavigate();
+    // setting export to csv configurations
+    const csvConfig = mkConfig({ useKeysAsHeaders: true });
 
     if (!token) {
         navigate('/');
@@ -65,8 +72,8 @@ export default function AdminDashboard() {
     const findBookingsForDate = async (date, onlyBooked = showOnlyBooked) => {
         setLoadingTimeList(true);
         setCurrWeek(dayjs(date));
-        
-        const timeslotsbyday = [[],[],[],[],[],[],[]];
+
+        const timeslotsbyday = [[], [], [], [], [], [], []];
         const timeslots = await getAppointmentsInDateRange(token, dayjs(startOfWeek(date)).format('YYYY-MM-DD'), dayjs(endOfWeek(date)).format('YYYY-MM-DD'));
 
         console.log('Finding bookings for date between:', dayjs(startOfWeek(date)).format('YYYY-MM-DD'), 'and', dayjs(endOfWeek(date)).format('YYYY-MM-DD'));
@@ -123,7 +130,7 @@ export default function AdminDashboard() {
                 color: 'red'
             });
         }
-    }
+    };
 
     const makeBooking = async (bookingDate = createBookingDate, bookingTime = createBookingTime) => {
 
@@ -132,7 +139,7 @@ export default function AdminDashboard() {
 
         const times = await getAppointmentsInDateTimeRange(token, apptDate, dayjs(bookingTime, 'HH:mm:ss').format('HH:mm'), dayjs(bookingTime, 'HH:mm:ss').add(15, 'minutes').format('HH:mm'));
         console.log('Received timeslots for booking:', times);
-        
+
         if (times.length === 0) {
             notifications.show({
                 title: 'Error',
@@ -169,7 +176,22 @@ export default function AdminDashboard() {
                 await findBookingsForDate(value);
             }
         }
-    }
+    };
+
+    // Get appointments within a time range to export to csv
+    const handleApptRangeExport = async () => {
+        const appointments = await getAppointmentsInDateRange(token, dayjs(csvStartDate).format('YYYY-MM-DD'), dayjs(csvEndDate).format('YYYY-MM-DD'));
+        let bookedAppointments = appointments.filter(d => d.booked_count > 0);
+        bookedAppointments = bookedAppointments.map(d => {
+            let clients = d.usernames.join(',');
+            return {
+                ...d,
+                usernames: clients
+            };
+        });
+        const csv = generateCsv(csvConfig)(bookedAppointments);
+        download(csvConfig)(csv);
+    };
 
     useEffect(() => {
         findBookingsForDate(value);
@@ -179,7 +201,7 @@ export default function AdminDashboard() {
         <div className="page">
             <AdminNavBar />
             <SimpleGrid cols={3} spacing="xs" verticalspacing="xs" style={{ height: '100%' }}>
-                <div className="box" style={{height: '100%'}}>
+                <div className="box" style={{ height: '100%' }}>
                     <Text>
                         Welcome back {sessionStorage.getItem('username')}!
                     </Text>
@@ -195,6 +217,27 @@ export default function AdminDashboard() {
                     <Button onClick={() => makeBooking()} style={{ marginTop: '20px' }}>Make booking</Button> */}
                 </div>
                 <div className="box">
+                    <Text style={{ textAlign: 'center' }} fw={600}>Export booked appointments</Text>
+                    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', justifyContent: 'center', alignItems: 'center', marginTop: 10 }}>
+                        <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'center', alignItems: 'center', marginBottom: 10, gap: 10 }}>
+                            <DatePickerInput
+                                label='Start Date'
+                                placeholder='Pick a start date'
+                                value={csvStartDate}
+                                onChange={setCsvStartDate}
+                            />
+                            <DatePickerInput
+                                label='End Date'
+                                placeholder='Pick a end date'
+                                value={csvEndDate}
+                                onChange={setCsvEndDate}
+                            />
+                        </div>
+                        <Button
+                            onClick={handleApptRangeExport}
+                        >Export Bookings to CSV</Button>
+                    </div>
+
                     {/* <DatePickerInput
                         label="Pick date for new timeslots"
                         value={createTimeslotDate ? createTimeslotDate : dayjs()}
@@ -207,7 +250,7 @@ export default function AdminDashboard() {
                 </div>
             </SimpleGrid>
             <Grid verticalspacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
-                <Grid.Col span={4} style={{height: "500px"}}>
+                <Grid.Col span={4} style={{ height: "500px" }}>
                     <div className="calendar">
                         <DatePicker
                             size="xl"
@@ -231,17 +274,17 @@ export default function AdminDashboard() {
                         />
                     </div>
                 </Grid.Col>
-                
-                <Grid.Col span={8} style={{ height: '500px'}}>
+
+                <Grid.Col span={8} style={{ height: '500px' }}>
                     <div className="time-list">
 
                         <LoadingOverlay visible={loadingTimeList} overlayProps={{ radius: "sm", blur: 2 }} />
-                        
+
                         <Switch label="Show only booked timeslots" checked={showOnlyBooked} onChange={(event) => {
                             const next = event.currentTarget.checked;
                             setShowOnlyBooked(next);
                             findBookingsForDate(currWeek, next);
-                            }} />
+                        }} />
 
                         <ScrollArea style={{ flex: 1, minHeight: 0 }}>
                             {bookedTimeslots.map((day, i) => (

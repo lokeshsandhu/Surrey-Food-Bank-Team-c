@@ -105,6 +105,8 @@ export default function RegisterPage() {
                 f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your first name.',
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your last name.',
                 dob: (value) => {
+                    if (!value) return 'Please enter your date of birth';
+
                     const val = value.trim();
                     if (val.length === 0) {
                         return 'Please enter your date of birth.';
@@ -114,14 +116,50 @@ export default function RegisterPage() {
                         return ' ';
                     }
                 },
-                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
+                email: (value) => {
+                    // checks if this is a duplicate email within this registration form
+                    if (value.trim().length === 0) {
+                        return 'Please enter a valid email (e.g. alexdoe@gmail.com).';
+                    }
+
+                    const currentEmail = value.trim().toLowerCase();
+                    const familyEmails = form.values.family_members.map(m => m.email.trim().toLowerCase());
+
+
+                    const duplicates = familyEmails.filter((email, i) => email === currentEmail).length > 0;
+
+                    if (duplicates) {
+                        return 'Email is already taken. Please enter another email.';
+                    }
+                    return null;
+                },
+                // value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
                 phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
             family_members: {
                 f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their first name.',
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
                 dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
-                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
+                email: (value, values, path) => {
+                    if (value.trim().length === 0) {
+                        return null;
+                    }
+
+                    const ownerEmail = form.values.main_family_member.email.trim().toLowerCase();
+                    const familyEmail = values.family_members.map(m => m.email.trim().toLowerCase());
+
+                    const index = Number(path.split('.')[1]);
+                    const currentEmail = value.trim().toLowerCase();
+
+                    const duplicates = familyEmail.filter((email, i) =>
+                        i !== index && email === currentEmail).length > 0
+                        || currentEmail === ownerEmail;
+
+                    if (duplicates) {
+                        return 'Email is already taken. Please enter another email.';
+                    }
+                    return null;
+                },
                 relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
             }
         }
@@ -148,21 +186,21 @@ export default function RegisterPage() {
         }
     };
 
-    const checkEmail = async () => {
-        const currentEmail = form.values.main_family_member.email.trim();
-        if (!validator.isEmail(currentEmail)) return;
+    const checkEmail = async (email, field_name) => {
+        const currentEmail = email.trim();
+        if (currentEmail.length === 0) return;
 
-        const result = await emailExists(currentEmail);
+        const result = await emailExists(currentEmail, null, null);
 
         if (result.exists) {
             form.setFieldError(
-                'main_family_member.email',
+                field_name,
                 'Email already taken. Try a different email.'
             );
-            return;
+            return true;
         }
 
-        form.validateField('main_family_member.email');
+        return false;
     };
 
     useEffect(() => {
@@ -170,7 +208,7 @@ export default function RegisterPage() {
     }, [form.values.username]);
 
     useEffect(() => {
-        checkEmail();
+        checkEmail(form.values.main_family_member.email, 'main_family_member.email');
     }, [form.values.main_family_member.email]);
 
     const prevSection = () => {
@@ -234,8 +272,8 @@ export default function RegisterPage() {
             ];
 
             await checkUsername();
-            await checkEmail();
-            if (form.errors.username || form.errors.main_family_member?.email || form.errors.family_members) return;
+            await checkEmail(form.values.main_family_member.email, 'main_family_member.email');
+            if (form.errors.username || form.errors.main_family_member) return;
         }
 
         if (activeSection === 2) {
@@ -256,7 +294,21 @@ export default function RegisterPage() {
             }
         });
 
-        if (!hasErrors) {
+        // check that family members do not have existing emails in the client base
+        const fm_emails_check = await Promise.all(
+            form.values.family_members.map((member, i) =>
+                checkEmail(member.email, `family_members.${i}.email`)
+            )
+        );
+
+        const hasDuplicate = fm_emails_check.some(d => d === true);
+        if (hasDuplicate) {
+            notifications.show({
+                title: 'Email is already taken',
+                message: 'Please enter a different email.',
+                color: 'red',
+            });
+        } else if (!hasErrors) {
             if (activeSection === 3) {
                 setLoading(true);
                 setRegisterError('');
@@ -282,7 +334,7 @@ export default function RegisterPage() {
                             sessionStorage.setItem('role', 'client');
                             // Add main account holder as a family member with relationship 'owner'
                             const ownerData = {
-                                username: accountData.username,
+                                username: result.username,
                                 f_name: form.values.main_family_member.f_name.trim(),
                                 l_name: form.values.main_family_member.l_name.trim(),
                                 dob: form.values.main_family_member.dob,
@@ -301,7 +353,7 @@ export default function RegisterPage() {
                                         l_name: member.l_name.trim(),
                                         dob: member.dob,
                                         phone: member.phone,
-                                        email: member.email,
+                                        email: member.email.trim().length > 0 ? member.email : null,
                                         relationship: member.relationship,
                                     };
                                     await createFamilyMember(loginResult.token, memberData);

@@ -79,8 +79,22 @@ export function usernameExists(username) {
 /**
  * Check if email exists in database
  * Example:
- *   usernameExists("email@email.com");
+ *   emailExists("email@email.com");
+ *   emailExists("email@email.com", "johndoe", 5);
  */
-export function emailExists(email) {
-  return fetch(`${API_BASE}/email-exists/${encodeURIComponent(email)}`).then(res => res.json());
+export function emailExists(email, username = null, familyMemberId = null) {
+  const params = new URLSearchParams();
+
+  if (username) {
+    params.set("username", username);
+  }
+
+  if (familyMemberId !== null && familyMemberId !== undefined) {
+    params.set("family_member_id", String(familyMemberId));
+  }
+
+  const queryString = params.toString();
+  const url = `${API_BASE}/email-exists/${encodeURIComponent(email)}${queryString ? `?${queryString}` : ""}`;
+
+  return fetch(url).then(res => res.json());
 }

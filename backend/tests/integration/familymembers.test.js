@@ -61,7 +61,7 @@ describe('familyMembers.service', () => {
             l_name: 'User',
             dob: '1990/01/01',
             phone: '(111) 111-111',
-            email: 'email@email.com',
+            email: 'email1@email.com',
             relationship: 'owner'
         };
         const fm2Data = {
@@ -70,7 +70,7 @@ describe('familyMembers.service', () => {
             l_name: 'User',
             dob: '1990/01/01',
             phone: '(111) 111-111',
-            email: 'email@email.com',
+            email: 'email2@email.com',
             relationship: 'owner'
         };
         const fm3Data = {
@@ -79,7 +79,7 @@ describe('familyMembers.service', () => {
             l_name: 'User',
             dob: '1990/01/01',
             phone: '(111) 111-111',
-            email: 'email@email.com',
+            email: 'email3@email.com',
             relationship: 'owner'
         };
         const newMember1 = await createFamilyMember(fm1Data);
@@ -123,7 +123,7 @@ describe('familyMembers.service', () => {
             l_name: 'User',
             dob: '1990/01/01',
             phone: '(111) 111-111',
-            email: 'email@email.com',
+            email: 'email1@email.com',
             relationship: 'owner'
         };
         const fm2Data = {
@@ -132,7 +132,7 @@ describe('familyMembers.service', () => {
             l_name: 'Lastname',
             dob: '2000/01/01',
             phone: '(222) 222-222',
-            email: 'email@email.com',
+            email: 'email2@email.com',
             relationship: 'owner'
         };
         const fm3Data = {
@@ -184,7 +184,7 @@ describe('familyMembers.service', () => {
             l_name: 'lastname',
             dob: '1990/01/01',
             phone: '(111) 111-111',
-            email: 'email@email.com',
+            email: 'email1@email.com',
             relationship: 'owner'
         };
         const fm2Data = {
@@ -193,7 +193,7 @@ describe('familyMembers.service', () => {
             l_name: 'lastname',
             dob: '2000/01/01',
             phone: '(222) 222-222',
-            email: 'email@email.com',
+            email: 'email2@email.com',
             relationship: 'owner'
         };
         const fm3Data = {

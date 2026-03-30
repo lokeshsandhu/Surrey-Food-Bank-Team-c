@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS public.familymember
     l_name varchar,
     dob date,
     phone varchar,
-    email varchar,
+    email varchar UNIQUE,
     relationship varchar,
     CONSTRAINT familymember_pkey PRIMARY KEY (username, id),
     CONSTRAINT familymember_fkey_username FOREIGN KEY (username)

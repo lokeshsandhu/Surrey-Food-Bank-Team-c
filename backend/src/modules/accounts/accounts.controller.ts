@@ -67,11 +67,22 @@ export async function checkUsernameExists(req: Request, res: Response) {
     }
 }
 
+// Written with the assistance of ChatGPT
 export async function checkEmailExists(req: Request, res: Response) {
     try {
         const { email } = req.params;
-        const exists = await service.emailExists(email);
-        res.status(200).json({ exists });
+        const username = typeof req.query.username === "string" ? req.query.username : null;
+        const familyMemberId =
+            typeof req.query.family_member_id === "string" && req.query.family_member_id.trim() !== ""
+                ? Number(req.query.family_member_id)
+                : null;
+
+        const result = await service.emailExists(
+            email,
+            username,
+            Number.isFinite(familyMemberId) ? familyMemberId : null
+        );
+        res.status(200).json(result);
     } catch (err: any) {
         res.status(500).json({ error: err.message });
     }
