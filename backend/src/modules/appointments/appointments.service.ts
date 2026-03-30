@@ -1,5 +1,5 @@
 import pool from "../../db/postgres";
-import { CreateSlotDTO, BookAppointmentDTO, CreateAppointmentsInRangeDTO, BookingStatus } from "./appointments.dto";
+import { BookAppointmentDTO, CreateAppointmentsInRangeDTO, BookingStatus } from "./appointments.dto";
 
 export async function updateAppointment(
     appt_date: string,
