@@ -435,7 +435,9 @@ export default function ClientDashboard() {
                                 format="12h"
                                 withSeconds={false}
                                 size="lg"
-                                disableTime={bookedTimes}
+                                disableTime={(time) =>
+                                    bookedTimes.includes(time) || (dayjs(time, 'HH:mm:ss').isBefore(dayjs()) && selectedDate === dayjs().format('YYYY-MM-DD'))
+                                }
                                 value={selectedTime}
                                 onChange={setSelectedTime}
                                 disabled={selectedDate === null}
@@ -518,7 +520,9 @@ export default function ClientDashboard() {
                             format="12h"
                             withSeconds={false}
                             size="lg"
-                            disableTime={modalBookedTimes}
+                            disableTime={(time) =>
+                                modalBookedTimes.includes(time) || (dayjs(time, 'HH:mm:ss').isBefore(dayjs()) && modalSelectedDate === dayjs().format('YYYY-MM-DD'))
+                            }
                             value={modalSelectedTime}
                             onChange={setModalSelectedTime}
                             disabled={modalSelectedDate === null}
