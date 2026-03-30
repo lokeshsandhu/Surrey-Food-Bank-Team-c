@@ -6,6 +6,8 @@ const { hashPassword } = require('../../src/shared/crypto/password');
 const TEST_USER = 'acct_testuser';
 const TEST_PASS = 'password123';
 const ADMIN_USER = 'admin';
+const EMAIL_TEST_USER = 'acct_email_user';
+const EMAIL_OTHER_USER = 'acct_email_other';
 
 let clientToken;
 let adminToken;
@@ -122,6 +124,74 @@ describe('GET /api/accounts/exists/:username', () => {
 
         expect(res.status).toBe(200);
         expect(res.body.exists).toBe(false);
+    });
+});
+
+describe('GET /api/accounts/email-exists/:email', () => {
+    beforeAll(async () => {
+        await pool.query('DELETE FROM familymember WHERE username IN ($1, $2)', [EMAIL_TEST_USER, EMAIL_OTHER_USER]);
+        await pool.query('DELETE FROM account WHERE username IN ($1, $2)', [EMAIL_TEST_USER, EMAIL_OTHER_USER]);
+
+        await pool.query(
+            `INSERT INTO account (username, user_password, canada_status, household_size, addr, baby_or_pregnant, language_spoken, account_notes)
+             VALUES ($1, 'password', 'citizen', 1, '123 Main St', false, 'English', 'test')`,
+            [EMAIL_TEST_USER]
+        );
+        await pool.query(
+            `INSERT INTO account (username, user_password, canada_status, household_size, addr, baby_or_pregnant, language_spoken, account_notes)
+             VALUES ($1, 'password', 'citizen', 1, '456 Main St', false, 'English', 'test')`,
+            [EMAIL_OTHER_USER]
+        );
+
+        await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
+             VALUES ($1, 'owner', 'user', 'owner@example.com', 'owner')
+             RETURNING id`,
+            [EMAIL_TEST_USER]
+        );
+
+        await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
+             VALUES ($1, 'other', 'user', 'other@example.com', 'owner')
+             RETURNING id`,
+            [EMAIL_OTHER_USER]
+        );
+    });
+
+    afterAll(async () => {
+        await pool.query('DELETE FROM familymember WHERE username IN ($1, $2)', [EMAIL_TEST_USER, EMAIL_OTHER_USER]);
+        await pool.query('DELETE FROM account WHERE username IN ($1, $2)', [EMAIL_TEST_USER, EMAIL_OTHER_USER]);
+    });
+
+    it('should allow public access', async () => {
+        const res = await request(app)
+            .get(`/api/accounts/email-exists/${encodeURIComponent('owner@example.com')}`);
+
+        expect(res.status).toBe(200);
+    });
+
+    it('should return exists true for an existing email', async () => {
+        const res = await request(app)
+            .get(`/api/accounts/email-exists/${encodeURIComponent('owner@example.com')}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({ exists: true });
+    });
+
+    it('should return exists true for a case-insensitive trimmed match', async () => {
+        const res = await request(app)
+            .get(`/api/accounts/email-exists/${encodeURIComponent('  OWNER@example.com  ')}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({ exists: true });
+    });
+
+    it('should return exists false for a non-existing email', async () => {
+        const res = await request(app)
+            .get(`/api/accounts/email-exists/${encodeURIComponent('missing@example.com')}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({ exists: false });
     });
 });
 

@@ -12,6 +12,7 @@ vi.mock('react-router', () => ({
 vi.mock('../../api/accounts.js', () => ({
   createAccount: vi.fn(),
   usernameExists: vi.fn().mockResolvedValue({ exists: false }),
+  emailExists: vi.fn().mockResolvedValue({ exists: false }),
 }));
 
 vi.mock('../../api/auth.js', () => ({
