@@ -219,7 +219,7 @@ export default function RegisterPage() {
 
         const result = await emailExists(currentEmail, null, null);
 
-        if (result.exists && result.exists.exists) {
+        if (result.exists) {
             form.setFieldError(
                 field_name,
                 'Email already taken. Try a different email.'
@@ -329,9 +329,13 @@ export default function RegisterPage() {
         );
 
         const hasDuplicate = fm_emails_check.some(d => d === true);
-        if (hasDuplicate) return; // do not let user advance
-
-        if (!hasErrors) {
+        if (hasDuplicate) {
+            notifications.show({
+                title: 'Email is already taken',
+                message: 'Please enter a different email.',
+                color: 'red',
+            });
+        }  else if (!hasErrors) {
             if (activeSection === 3) {
                 setLoading(true);
                 setRegisterError('');
@@ -369,7 +373,6 @@ export default function RegisterPage() {
                                 await createFamilyMember(loginResult.token, ownerData);
                                 console.log('created owner');
                                 // Add each additional family member
-                                console.log('familymembers', form.values.family_members);
                                 for (const member of form.values.family_members) {
                                     const memberData = {
                                         username: accountData.username,

@@ -12,8 +12,6 @@ import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import { provinceOptions, canadaStatusOptions } from "../constants/FormOptions";
 import { splitAddress } from "../utils/displayHelpers";
-import { emailExists } from "../../api/accounts";
-
 
 export default function AccountInformationTab({ clientUsername }) {
     const token = sessionStorage.getItem('token');
@@ -90,12 +88,9 @@ export default function AccountInformationTab({ clientUsername }) {
         const currentEmail = form.values.accountOwner.email.trim();
         if (currentEmail.length === 0) return;
 
-        console.log(form.values.accountOwner.id);
-
         const result = await emailExists(currentEmail, clientUsername, form.values.accountOwner.id);
-        console.log(currentEmail, result.exists);
 
-        if (result.exists.exists && result.exists.is_member_email === false) {
+        if (result.exists && result.is_family_member !== true) {
             form.setFieldError(
                 'accountOwner.email',
                 'Email already taken. Try a different email.'
@@ -105,6 +100,25 @@ export default function AccountInformationTab({ clientUsername }) {
 
         return false;
     };
+
+    // const checkOwnerEmail = async () => {
+    //     const currentEmail = form.values.accountOwner.email.trim();
+    //     if (!validator.isEmail(currentEmail)) {
+    //         return false;
+    //     }
+
+    //     const result = await emailExists(currentEmail, clientUsername, ownerId);
+    //     if (result.exists && result.is_family_member !== true) {
+    //         form.setFieldError(
+    //             'accountOwner.email',
+    //             'Email already taken. Try a different email.'
+    //         );
+    //         return false;
+    //     }
+
+    //     form.validateField('accountOwner.email');
+    //     return true;
+    // };
 
     const getAccountInformation = async () => {
         const result = await getAccount(token, clientUsername);
@@ -155,24 +169,7 @@ export default function AccountInformationTab({ clientUsername }) {
         };
     };
 
-    const checkOwnerEmail = async () => {
-        const currentEmail = form.values.accountOwner.email.trim();
-        if (!validator.isEmail(currentEmail)) {
-            return false;
-        }
-
-        const result = await emailExists(currentEmail, clientUsername, ownerId);
-        if (result.exists && result.is_family_member !== true) {
-            form.setFieldError(
-                'accountOwner.email',
-                'Email already taken. Try a different email.'
-            );
-            return false;
-        }
-
-        form.validateField('accountOwner.email');
-        return true;
-    };
+  
 
     const updateAccountInformation = async () => {
         const fieldsToValidate = [
@@ -196,12 +193,6 @@ export default function AccountInformationTab({ clientUsername }) {
                 hasErrors = true;
             }
         });
-
-        const ownerEmailIsValid = await checkOwnerEmail();
-
-        if (!ownerEmailIsValid) {
-            hasErrors = true;
-        }
 
         const hasDupEmail = await checkEmail();
         if (form.errors.accountOwner) return;

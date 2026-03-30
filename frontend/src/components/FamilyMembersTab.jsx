@@ -50,7 +50,7 @@ export default function FamilyMembersTab({ clientUsername }) {
       f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their first name.',
       l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
       dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
-      email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
+      email: (value) => form.values.relationship === 'owner' ? value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).' : null,
       phone: (value) => form.values.relationship === 'owner' && isMemberOwner() ?
         (value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).') : null,
       relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' && !isMemberOwner() ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
@@ -71,10 +71,9 @@ export default function FamilyMembersTab({ clientUsername }) {
       currentId = form.values.id;
     }
 
-    const result = await emailExists(currentEmail, currentUsername, currentId);
-    console.log(currentEmail, result.exists);
+    const result = await emailExists(currentEmail, currentId === null ? null : currentUsername, currentId);
 
-    if (result.exists.exists && result.exists.is_member_email === false) {
+    if (result.exists && result.is_family_member !== true) {
       form.setFieldError(
         'email',
         'Email already taken. Try a different email.'
@@ -84,6 +83,25 @@ export default function FamilyMembersTab({ clientUsername }) {
 
     return false;
   };
+
+  // const checkMemberEmail = async (memberId = null) => {
+  //   const currentEmail = form.values.email.trim();
+  //   if (!validator.isEmail(currentEmail)) {
+  //     return false;
+  //   }
+
+  //   const result = await emailExists(currentEmail, memberId === null ? null : clientUsername, memberId);
+  //   if (result.exists && result.is_family_member !== true) {
+  //     form.setFieldError(
+  //       'email',
+  //       'Email already taken. Try a different email.'
+  //     );
+  //     return false;
+  //   }
+
+  //   form.validateField('email');
+  //   return true;
+  // };
 
   const isMemberOwner = () => {
     const currentMember = { f_name: form.values.f_name, relationship: form.values.relationship };
@@ -116,25 +134,6 @@ export default function FamilyMembersTab({ clientUsername }) {
     open();
   };
 
-  const checkMemberEmail = async (memberId = null) => {
-    const currentEmail = form.values.email.trim();
-    if (!validator.isEmail(currentEmail)) {
-      return false;
-    }
-
-    const result = await emailExists(currentEmail, memberId === null ? null : clientUsername, memberId);
-    if (result.exists && result.is_family_member !== true) {
-      form.setFieldError(
-        'email',
-        'Email already taken. Try a different email.'
-      );
-      return false;
-    }
-
-    form.validateField('email');
-    return true;
-  };
-
   const updateMember = async () => {
     const fieldsToValidate = [
       "f_name",
@@ -153,10 +152,10 @@ export default function FamilyMembersTab({ clientUsername }) {
       }
     });
 
-    const memberEmailIsValid = await checkMemberEmail(currentMember?.id ?? null);
-    if (!memberEmailIsValid) {
-      hasErrors = true;
-    }
+    // const memberEmailIsValid = await checkMemberEmail(currentMember?.id ?? null);
+    // if (!memberEmailIsValid) {
+    //   hasErrors = true;
+    // }
 
     const hasDupEmail = await checkEmail();
     if (form.errors.email) return;
@@ -198,7 +197,6 @@ export default function FamilyMembersTab({ clientUsername }) {
   };
 
   const addMember = async () => {
-    console.log(form.values)
     const fieldsToValidate = [
       "f_name",
       "l_name",
@@ -321,6 +319,10 @@ export default function FamilyMembersTab({ clientUsername }) {
     getFamilyMembersInformation();
   }, []);
 
+  useEffect(() => {
+    checkEmail();
+  }, [form.values.email]);
+
   const rows = familyMemberInfo.map((FM) => (
     <Table.Tr key={FM.id}>
       <Table.Td>{FM.f_name}</Table.Td>
@@ -411,7 +413,11 @@ export default function FamilyMembersTab({ clientUsername }) {
             key={form.key(`email`)}
             {...form.getInputProps(`email`)}
             w={'45%'}
-          // TODO: check if email exists in database
+            onBlur={async (event) => {
+              form.getInputProps('email').onBlur(event);
+              await checkEmail();
+            }}
+            withAsterisk={form.values.relationship === 'owner'}
           />
           <TextInput
             label="Phone"

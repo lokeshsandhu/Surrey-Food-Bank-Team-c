@@ -19,8 +19,6 @@ export default function AddFamilyMembers({ form }) {
             });
     };
 
-    // TODO: check if email exists in database
-
     return (
         <div className='registration-section'>
             <h2 className='login-title'>Add Family Members</h2>
