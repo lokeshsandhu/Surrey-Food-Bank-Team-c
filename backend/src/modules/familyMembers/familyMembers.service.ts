@@ -1,6 +1,23 @@
 import pool from "../../db/postgres";
 import { FamilyMemberDTO, UpdateFamilyMemberDTO } from "./familyMembers.dto";
 
+async function syncHouseholdSize(username: string) {
+    const countText = `
+        SELECT COUNT(*)::int AS household_size
+        FROM familymember
+        WHERE username = $1
+    `;
+    const countResult = await pool.query(countText, [username]);
+    const householdSize = countResult.rows[0]?.household_size ?? 0;
+
+    const updateText = `
+        UPDATE account
+        SET household_size = $1
+        WHERE username = $2
+    `;
+    await pool.query(updateText, [householdSize, username]);
+}
+
 function buildFamilyMemberLookupClause(identifier: number | string, startIndex = 1) {
     if (typeof identifier === "number") {
         return {
@@ -55,6 +72,7 @@ export async function createFamilyMember(data: FamilyMemberDTO) {
         data.relationship,
     ];
     const { rows } = await pool.query(text, values);
+    await syncHouseholdSize(data.username);
     return rows[0];
 }
 
@@ -135,6 +153,9 @@ export async function deleteFamilyMember(username: string, identifier: number | 
         RETURNING *
     `;
     const { rows } = await pool.query(text, [username, ...lookup.values]);
+    if (rows[0]) {
+        await syncHouseholdSize(username);
+    }
     return rows[0] ?? null;
 }
 
