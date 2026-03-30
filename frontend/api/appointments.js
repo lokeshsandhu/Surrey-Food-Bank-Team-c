@@ -4,6 +4,12 @@ import { apiUrl } from "./baseUrl";
 
 const API_BASE = apiUrl("/api/appointments");
 
+export const BOOKING_STATUS = Object.freeze({
+  UPCOMING: "upcoming",
+  ARRIVED: "arrived",
+  DID_NOT_SHOW: "did_not_show"
+});
+
 
 /**
  * Get appointments in a date range.
@@ -118,9 +124,10 @@ export function getAllAppointments(token) {
 /**
  * Update an appointment slot or set/clear a booking (admin only).
  * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), updateData (object with fields to update)
- * updateData can include: end_time, appt_notes, capacity, username
+ * updateData can include: end_time, appt_notes, capacity, username, booking_status
  * - username: "someuser" adds a booking on that slot (if capacity allows)
  * - username: null clears all bookings for that slot
+ * - booking_status: one of BOOKING_STATUS.UPCOMING | BOOKING_STATUS.ARRIVED | BOOKING_STATUS.DID_NOT_SHOW
  * Example:
  *   updateAppointment(token, "2024-06-01", "10:00", { capacity: 3 });
  */
@@ -130,6 +137,32 @@ export function updateAppointment(token, appt_date, start_time, updateData) {
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ appt_date, start_time, updateData })
   }).then(res => res.json());
+}
+
+/**
+ * Update booking status for a specific user in a specific slot (admin only).
+ * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), username, bookingStatus
+ * bookingStatus must be one of BOOKING_STATUS values.
+ */
+export function updateBookingStatus(token, appt_date, start_time, username, bookingStatus) {
+  return updateAppointment(token, appt_date, start_time, {
+    username,
+    booking_status: bookingStatus
+  });
+}
+
+/**
+ * Mark a booking as arrived.
+ */
+export function markBookingArrived(token, appt_date, start_time, username) {
+  return updateBookingStatus(token, appt_date, start_time, username, BOOKING_STATUS.ARRIVED);
+}
+
+/**
+ * Mark a booking as did not show.
+ */
+export function markBookingDidNotShow(token, appt_date, start_time, username) {
+  return updateBookingStatus(token, appt_date, start_time, username, BOOKING_STATUS.DID_NOT_SHOW);
 }
 
 
@@ -239,6 +272,7 @@ export function cancelAppointment(token, appt_date, start_time) {
 
 /**
  * Get all appointments booked by the current user (client only).
+ * Response rows include booking_status.
  * Example:
  *   getMyAppointments(token);
  */
