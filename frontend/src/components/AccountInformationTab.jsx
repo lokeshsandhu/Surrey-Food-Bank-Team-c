@@ -11,6 +11,7 @@ import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import { provinceOptions, canadaStatusOptions } from "../constants/FormOptions";
+import { splitAddress } from "../utils/displayHelpers";
 
 
 export default function AccountInformationTab({ clientUsername }) {
@@ -75,17 +76,20 @@ export default function AccountInformationTab({ clientUsername }) {
                 f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your first name.',
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your last name.',
                 dob: (value) => value && value.trim().length > 0 ? null : 'Please enter your date of birth.',
-                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. johndoe@gmail.com).',
+                email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
                 phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             }
         }
     });
+
+    // TODO: check if email exists in database
 
     const getAccountInformation = async () => {
         const result = await getAccount(token, clientUsername);
         const familyMembers = await getFamilyMembers(token, clientUsername);
         const ownerTemp = familyMembers.filter(member => member.relationship === 'owner');
         const owner = ownerTemp[0];
+        console.log(familyMembers)
         const address = splitAddress(result.addr);
         // TODO: Rewrite (better practices)
         if (result && owner) {
@@ -117,18 +121,6 @@ export default function AccountInformationTab({ clientUsername }) {
         }
     };
 
-    const splitAddress = (address) => {
-        const addrParts = address.split(', ').map(p => p.trim());
-
-        return {
-            line1: addrParts[0] ?? '',
-            line2: addrParts[1] ?? '',
-            city: addrParts[2] ?? '',
-            province: addrParts[3] ?? '',
-            postal_code: addrParts[4] ?? '',
-        };
-    };
-
     const updateAccountInformation = async () => {
         const fieldsToValidate = [
             "accountOwner.f_name",
@@ -151,6 +143,8 @@ export default function AccountInformationTab({ clientUsername }) {
                 hasErrors = true;
             }
         });
+
+        // TODO: check if email exists in database
 
         if (!hasErrors) {
             const accountInfo = form.values.accountInformation;
@@ -197,7 +191,7 @@ export default function AccountInformationTab({ clientUsername }) {
     };
 
     useEffect(() => {
-        getAccountInformation();
+        getAccountInformation()
     }, [location.pathname]);
 
     return (
@@ -247,6 +241,7 @@ export default function AccountInformationTab({ clientUsername }) {
                         {...form.getInputProps('accountOwner.email')}
                         withAsterisk
                         w={'45%'}
+                    // TODO: check if email exists in database
                     />
                     <TextInput
                         label="Phone"
