@@ -14,7 +14,7 @@ import { BookingForm } from '../components/bookingForm';
 import { TimeslotForm } from '../components/timeslotForm.jsx';
 
 export default function TimeslotPage() {
-    const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
+    const [date, setDate] = useState(dayjs().format('YYYY-MM-DD HH:mm:ss'));
     const [events, setEvents] = useState([]); // Placeholder for fetched timeslots
     const [loadingTimeslots, setLoadingTimeslots] = useState(false);
     const [removingBookingUsername, setRemovingBookingUsername] = useState(null);
@@ -107,6 +107,7 @@ export default function TimeslotPage() {
 
     useEffect(() => {
         fetchTimeslots();
+        console.log(date);
     }, [token, date]);
 
     async function fetchTimeslots() {
@@ -291,7 +292,7 @@ export default function TimeslotPage() {
                 <LoadingOverlay visible={loadingTimeslots}/>
                 <WeekView
                 date={date}
-                onDateChange={setDate}
+                onDateChange={(newDate) => { if (dayjs(newDate).day() === 1 && dayjs(newDate).isSame(dayjs(date), 'day') === false) setDate(newDate); }}
                 events={events}
                 onEventClick={handleEventClick}
                 onTimeSlotClick={handleTimeslotClick}
