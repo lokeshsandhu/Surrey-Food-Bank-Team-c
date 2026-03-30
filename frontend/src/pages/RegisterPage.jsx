@@ -160,7 +160,7 @@ export default function RegisterPage() {
                     }
                     return null;
                 },
-                    // value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
+                // value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
                 phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
             family_members: {
@@ -213,21 +213,22 @@ export default function RegisterPage() {
         }
     };
 
-    const checkEmail = async () => {
-        const currentEmail = form.values.main_family_member.email.trim();
-        if (!validator.isEmail(currentEmail)) return;
+    const checkEmail = async (email, field_name) => {
+        const currentEmail = email.trim();
+        if (currentEmail.length === 0) return;
 
-        const result = await emailExists(currentEmail);
+        const result = await emailExists(currentEmail, null, null);
+        console.log(currentEmail, result.exists);
 
-        if (result.exists) {
+        if (result.exists.exists) {
             form.setFieldError(
-                'main_family_member.email',
+                field_name,
                 'Email already taken. Try a different email.'
             );
-            return;
+            return true;
         }
 
-        form.validateField('main_family_member.email');
+        return false;
     };
 
     useEffect(() => {
@@ -235,7 +236,7 @@ export default function RegisterPage() {
     }, [form.values.username]);
 
     useEffect(() => {
-        checkEmail();
+        checkEmail(form.values.main_family_member.email, 'main_family_member.email');
     }, [form.values.main_family_member.email]);
 
     const prevSection = () => {
@@ -299,8 +300,8 @@ export default function RegisterPage() {
             ];
 
             await checkUsername();
-            await checkEmail();
-            if (form.errors.username || form.errors.main_family_member?.email || form.errors.family_members) return;
+            await checkEmail(form.values.main_family_member.email, 'main_family_member.email');
+            if (form.errors.username || form.errors.main_family_member) return;
         }
 
         if (activeSection === 2) {
@@ -311,8 +312,6 @@ export default function RegisterPage() {
                 `family_members.${index}.email`,
                 `family_members.${index}.relationship`,
             ]);
-
-            // TODO: check if any email exists in database
         }
 
         let hasErrors = false;
@@ -322,6 +321,16 @@ export default function RegisterPage() {
                 hasErrors = true;
             }
         });
+
+        // check that family members do not have existing emails in the client base
+        const fm_emails_check = await Promise.all(
+            form.values.family_members.map((member, i) =>
+                checkEmail(member.email, `family_members.${i}.email`)
+            )
+        );
+
+        const hasDuplicate = fm_emails_check.some(d => d === true);
+        if (hasDuplicate) return; // do not let user advance
 
         if (!hasErrors) {
             if (activeSection === 3) {
@@ -361,7 +370,7 @@ export default function RegisterPage() {
                                 await createFamilyMember(loginResult.token, ownerData);
                                 console.log('created owner');
                                 // Add each additional family member
-                                console.log('familymembers', form.values.family_members)
+                                console.log('familymembers', form.values.family_members);
                                 for (const member of form.values.family_members) {
                                     const memberData = {
                                         username: accountData.username,

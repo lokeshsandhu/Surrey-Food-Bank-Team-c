@@ -60,21 +60,26 @@ export async function usernameExists(username: string): Promise<boolean> {
 }
 
 // Select from owner family member email with given email, return boolean
-export async function emailExists(email: string): Promise<boolean> {
+// Created with the assistance of ChatGPT
+export async function emailExists(email: string, username: string | null, id: string | null): Promise<{ exists: boolean; is_member_email: boolean | null; }> {
     const normalizedEmail = email.trim();
     if (normalizedEmail.length === 0) {
-        return false;
+        return { exists: false, is_member_email: null };
     }
 
     const text = `
-        SELECT 1
+        SELECT
+        COUNT(*) > 0 AS exists,
+        ${username !== null && id !== null
+            ? `BOOL_OR(LOWER(TRIM(username)) = LOWER(TRIM($2))) AND BOOL_OR(id = $3)`
+            : `NULL`
+        } AS is_member_email
         FROM familymember
         WHERE email IS NOT NULL
-          AND LOWER(TRIM(email)) = LOWER(TRIM($1))
-        LIMIT 1
+            AND LOWER(TRIM(email)) = LOWER(TRIM($1))
     `;
-    const { rows } = await pool.query(text, [normalizedEmail]);
-    return rows.length > 0;
+    const { rows } = await pool.query(text, [normalizedEmail, username ?? null, id ?? null]);
+    return { exists: rows[0].exists, is_member_email: rows[0].is_member_email };
 }
 
 // Select from account table with given username, return username and password
