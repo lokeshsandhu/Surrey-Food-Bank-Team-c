@@ -56,26 +56,21 @@ export async function updateMyAccount(req: Request, res: Response) {
     }
 }
 
-// Delete account with given username
-export async function deleteAccount(req: Request, res: Response) {
-    try {
-        const username = req.params.username;
-        const deleted = await service.deleteAccount(username);
-        if (!deleted) {
-            res.status(404).json({ error: "Account not found" });
-            return;
-        }
-        res.status(200).json({ message: "Account deleted", username: deleted.username });
-    } catch (err: any) {
-        res.status(500).json({ error: err.message });
-    }
-}
-
 // Check if account with given username already exists
 export async function checkUsernameExists(req: Request, res: Response) {
     try {
         const username = req.params.username;
         const exists = await service.usernameExists(username);
+        res.status(200).json({ exists });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+export async function checkEmailExists(req: Request, res: Response) {
+    try {
+        const { email } = req.params;
+        const exists = await service.emailExists(email);
         res.status(200).json({ exists });
     } catch (err: any) {
         res.status(500).json({ error: err.message });

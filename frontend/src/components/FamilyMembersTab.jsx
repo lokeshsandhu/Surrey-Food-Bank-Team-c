@@ -11,7 +11,7 @@ import { notifications } from '@mantine/notifications';
 import { IconUserPlus } from '@tabler/icons-react';
 import { FMRelationshipOptions } from '../constants/FormOptions';
 import { useNavigate } from "react-router";
-import { getAccount, updateAccount } from "../../api/accounts";
+import { updateAccount } from "../../api/accounts";
 
 // enum for the modal mode
 const modeEnum = { updateMember: 1, addMember: 2 };

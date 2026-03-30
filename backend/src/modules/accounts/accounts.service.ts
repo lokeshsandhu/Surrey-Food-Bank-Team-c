@@ -59,6 +59,24 @@ export async function usernameExists(username: string): Promise<boolean> {
     return rows.length > 0;
 }
 
+// Select from owner family member email with given email, return boolean
+export async function emailExists(email: string): Promise<boolean> {
+    const normalizedEmail = email.trim();
+    if (normalizedEmail.length === 0) {
+        return false;
+    }
+
+    const text = `
+        SELECT 1
+        FROM familymember
+        WHERE email IS NOT NULL
+          AND LOWER(TRIM(email)) = LOWER(TRIM($1))
+        LIMIT 1
+    `;
+    const { rows } = await pool.query(text, [normalizedEmail]);
+    return rows.length > 0;
+}
+
 // Select from account table with given username, return username and password
 export async function getAccountWithPassword(username: string) {
     const text = `
@@ -132,16 +150,5 @@ export async function updateAccount(username: string, data: UpdateAccountDTO) {
     `;
 
     const { rows } = await pool.query(text, values);
-    return rows[0] ?? null;
-}
-
-// Delete row in account table with given username, return row
-export async function deleteAccount(username: string) {
-    const text = `
-        DELETE FROM account
-        WHERE username = $1
-        RETURNING username
-    `;
-    const { rows } = await pool.query(text, [username]);
     return rows[0] ?? null;
 }

@@ -6,6 +6,8 @@ const { hashPassword } = require('../../src/shared/crypto/password');
 const TEST_USER = 'acct_testuser';
 const TEST_PASS = 'password123';
 const ADMIN_USER = 'admin';
+const EMAIL_TEST_USER = 'acct_email_user';
+const EMAIL_OTHER_USER = 'acct_email_other';
 
 let clientToken;
 let adminToken;
@@ -125,6 +127,74 @@ describe('GET /api/accounts/exists/:username', () => {
     });
 });
 
+describe('GET /api/accounts/email-exists/:email', () => {
+    beforeAll(async () => {
+        await pool.query('DELETE FROM familymember WHERE username IN ($1, $2)', [EMAIL_TEST_USER, EMAIL_OTHER_USER]);
+        await pool.query('DELETE FROM account WHERE username IN ($1, $2)', [EMAIL_TEST_USER, EMAIL_OTHER_USER]);
+
+        await pool.query(
+            `INSERT INTO account (username, user_password, canada_status, household_size, addr, baby_or_pregnant, language_spoken, account_notes)
+             VALUES ($1, 'password', 'citizen', 1, '123 Main St', false, 'English', 'test')`,
+            [EMAIL_TEST_USER]
+        );
+        await pool.query(
+            `INSERT INTO account (username, user_password, canada_status, household_size, addr, baby_or_pregnant, language_spoken, account_notes)
+             VALUES ($1, 'password', 'citizen', 1, '456 Main St', false, 'English', 'test')`,
+            [EMAIL_OTHER_USER]
+        );
+
+        await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
+             VALUES ($1, 'owner', 'user', 'owner@example.com', 'owner')
+             RETURNING id`,
+            [EMAIL_TEST_USER]
+        );
+
+        await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
+             VALUES ($1, 'other', 'user', 'other@example.com', 'owner')
+             RETURNING id`,
+            [EMAIL_OTHER_USER]
+        );
+    });
+
+    afterAll(async () => {
+        await pool.query('DELETE FROM familymember WHERE username IN ($1, $2)', [EMAIL_TEST_USER, EMAIL_OTHER_USER]);
+        await pool.query('DELETE FROM account WHERE username IN ($1, $2)', [EMAIL_TEST_USER, EMAIL_OTHER_USER]);
+    });
+
+    it('should allow public access', async () => {
+        const res = await request(app)
+            .get(`/api/accounts/email-exists/${encodeURIComponent('owner@example.com')}`);
+
+        expect(res.status).toBe(200);
+    });
+
+    it('should return exists true for an existing email', async () => {
+        const res = await request(app)
+            .get(`/api/accounts/email-exists/${encodeURIComponent('owner@example.com')}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({ exists: true });
+    });
+
+    it('should return exists true for a case-insensitive trimmed match', async () => {
+        const res = await request(app)
+            .get(`/api/accounts/email-exists/${encodeURIComponent('  OWNER@example.com  ')}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({ exists: true });
+    });
+
+    it('should return exists false for a non-existing email', async () => {
+        const res = await request(app)
+            .get(`/api/accounts/email-exists/${encodeURIComponent('missing@example.com')}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({ exists: false });
+    });
+});
+
 describe('GET /api/accounts/:username', () => {
     beforeAll(async () => {
         await pool.query('DELETE FROM account WHERE username = $1', [TEST_USER]);
@@ -161,6 +231,58 @@ describe('GET /api/accounts/:username', () => {
         expect(res.status).toBe(200);
         expect(res.body.username).toBe(TEST_USER);
         expect(res.body.household_size).toBe(2);
+    });
+
+    it('should return 404 for non-existent account', async () => {
+        const res = await request(app)
+            .get('/api/accounts/nonexistent_user_xyz')
+            .set('Authorization', `Bearer ${clientToken}`);
+
+        expect(res.status).toBe(404);
+    });
+});
+
+describe('GET /api/accounts/email/:username', () => {
+    beforeAll(async () => {
+        await pool.query('DELETE FROM account WHERE username = $1', [TEST_USER]);
+        const hashed = await hashPassword(TEST_PASS);
+        await pool.query(
+            `INSERT INTO account (username, user_password, canada_status, household_size, addr, baby_or_pregnant, language_spoken, account_notes)
+             VALUES ($1, $2, 'citizen', 2, '123 Main St', false, 'English', 'test')`,
+            [TEST_USER, hashed]
+        );
+
+        await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, dob, phone, email, relationship)
+             VALUES ($1, 'first', 'last', '2000/01/01', '(111)-111-111', 'testuser@email.com', 'owner')`,
+            [TEST_USER]
+        );
+
+        // Get client token
+        const loginRes = await request(app)
+            .post('/api/auth/login')
+            .send({ username: TEST_USER, password: TEST_PASS });
+        clientToken = loginRes.body.token;
+    });
+
+    afterAll(async () => {
+        await pool.query('DELETE FROM account WHERE username = $1', [TEST_USER]);
+    });
+
+    it('should return 401 without authentication', async () => {
+        const res = await request(app)
+            .get(`/api/accounts/email/${TEST_USER}`);
+
+        expect(res.status).toBe(401);
+    });
+
+    it('should return account owner email with valid token', async () => {
+        const res = await request(app)
+            .get(`/api/accounts/email/${TEST_USER}`)
+            .set('Authorization', `Bearer ${clientToken}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.email).toBe('testuser@email.com');
     });
 
     it('should return 404 for non-existent account', async () => {
@@ -215,59 +337,6 @@ describe('PATCH /api/accounts/:username', () => {
             .patch('/api/accounts/nonexistent_user_xyz')
             .set('Authorization', `Bearer ${clientToken}`)
             .send({ household_size: 5 });
-
-        expect(res.status).toBe(404);
-    });
-});
-
-describe('DELETE /api/accounts/:username', () => {
-    beforeEach(async () => {
-        await pool.query('DELETE FROM account WHERE username = $1', [TEST_USER]);
-        const hashed = await hashPassword(TEST_PASS);
-        await pool.query(
-            `INSERT INTO account (username, user_password, canada_status, household_size, addr, baby_or_pregnant, language_spoken, account_notes)
-             VALUES ($1, $2, 'citizen', 1, '123 Main St', false, 'English', 'test')`,
-            [TEST_USER, hashed]
-        );
-        const loginRes = await request(app)
-            .post('/api/auth/login')
-            .send({ username: TEST_USER, password: TEST_PASS });
-        clientToken = loginRes.body.token;
-    });
-
-    afterEach(async () => {
-        await pool.query('DELETE FROM account WHERE username = $1', [TEST_USER]);
-    });
-
-    it('should return 401 without authentication', async () => {
-        const res = await request(app)
-            .delete(`/api/accounts/${TEST_USER}`);
-
-        expect(res.status).toBe(401);
-    });
-
-    it('should return 403 for non-admin users', async () => {
-        const res = await request(app)
-            .delete(`/api/accounts/${TEST_USER}`)
-            .set('Authorization', `Bearer ${clientToken}`);
-
-        expect(res.status).toBe(403);
-    });
-
-    it('should delete account when admin', async () => {
-        const res = await request(app)
-            .delete(`/api/accounts/${TEST_USER}`)
-            .set('Authorization', `Bearer ${adminToken}`);
-
-        expect(res.status).toBe(200);
-        expect(res.body.message).toBe('Account deleted');
-        expect(res.body.username).toBe(TEST_USER);
-    });
-
-    it('should return 404 when deleting non-existent account', async () => {
-        const res = await request(app)
-            .delete('/api/accounts/nonexistent_user_xyz')
-            .set('Authorization', `Bearer ${adminToken}`);
 
         expect(res.status).toBe(404);
     });

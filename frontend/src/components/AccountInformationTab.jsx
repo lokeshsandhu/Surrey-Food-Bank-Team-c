@@ -1,8 +1,8 @@
 import { Title, Text, Stack, TextInput, Radio, Group, Fieldset, Select, Button } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import React, { useEffect, useState } from "react";
-import { getAccount, updateAccount, usernameExists } from "../../api/accounts";
-import { getFamilyMembers, updateFamilyMember, familyMemberExists } from "../../api/familyMembers";
+import { getAccount, updateAccount } from "../../api/accounts";
+import { getFamilyMembers, updateFamilyMember } from "../../api/familyMembers";
 import { useForm, isNotEmpty } from "@mantine/form";
 import validator from 'validator';
 import dayjs from 'dayjs';

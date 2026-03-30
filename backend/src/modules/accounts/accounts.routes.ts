@@ -16,10 +16,10 @@ router.get("/:username", authenticate, controller.getMyAccount);
 // PATCH /api/accounts/:username — update a specific detail
 router.patch("/:username", authenticate, controller.updateMyAccount);
 
-// DELETE /api/accounts/:username — delete account (admin only)
-router.delete("/:username", authenticate, requireAdmin, controller.deleteAccount);
-
 // GET /api/accounts/exists/:username — check if username exists
 router.get("/exists/:username", controller.checkUsernameExists);
+
+// GET /api/accounts/email-exists/:email — check if a registration email exists
+router.get("/email-exists/:email", controller.checkEmailExists);
 
 export default router;

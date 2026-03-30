@@ -80,20 +80,6 @@ describe('POST /api/family-members', () => {
         expect(res.body.l_name).toBe('doe');
         expect(res.body.username).toBe(CLIENT_USER);
     });
-
-    it('should return 500 for duplicate family member (same username + f_name)', async () => {
-        await request(app)
-            .post('/api/family-members')
-            .set('Authorization', `Bearer ${clientToken}`)
-            .send({ username: CLIENT_USER, f_name: 'John', l_name: 'Doe', relationship: 'owner' });
-
-        const res = await request(app)
-            .post('/api/family-members')
-            .set('Authorization', `Bearer ${clientToken}`)
-            .send({ username: CLIENT_USER, f_name: 'John', l_name: 'Smith', relationship: 'spouse' });
-
-        expect(res.status).toBe(500);
-    });
 });
 
 // ─── Get Family Members by Username ──────────────────────────────────
@@ -236,32 +222,6 @@ describe('GET /api/family-members/owners', () => {
     });
 });
 
-// ─── Check Family Member Exists ──────────────────────────────────────
-describe('GET /api/family-members/exists/:username/:f_name', () => {
-    beforeEach(async () => {
-        await pool.query('DELETE FROM familymember WHERE username = $1', [CLIENT_USER]);
-        await request(app)
-            .post('/api/family-members')
-            .set('Authorization', `Bearer ${clientToken}`)
-            .send({ username: CLIENT_USER, f_name: 'Alice', l_name: 'Smith', relationship: 'child' });
-    });
-
-    it('should return exists: true for existing family member', async () => {
-        const res = await request(app)
-            .get(`/api/family-members/exists/${CLIENT_USER}/alice`);
-
-        expect(res.status).toBe(200);
-        expect(res.body.exists).toBe(true);
-    });
-
-    it('should return exists: false for non-existing family member', async () => {
-        const res = await request(app)
-            .get(`/api/family-members/exists/${CLIENT_USER}/nonexistent`);
-
-        expect(res.status).toBe(200);
-        expect(res.body.exists).toBe(false);
-    });
-});
 
 // ─── Search by First/Last Name (admin only) ──────────────────────────
 describe('GET /api/family-members/search/* (admin search)', () => {

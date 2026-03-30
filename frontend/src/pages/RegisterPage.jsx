@@ -16,7 +16,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { useNavigate } from 'react-router';
 
 import validator from 'validator';
-import { createAccount, usernameExists } from '../../api/accounts.js';
+import { createAccount, usernameExists, emailExists } from '../../api/accounts.js';
 import { login, me } from '../../api/auth.js';
 import { createFamilyMember } from '../../api/familyMembers.js';
 
@@ -213,9 +213,30 @@ export default function RegisterPage() {
         }
     };
 
+    const checkEmail = async () => {
+        const currentEmail = form.values.main_family_member.email.trim();
+        if (!validator.isEmail(currentEmail)) return;
+
+        const result = await emailExists(currentEmail);
+
+        if (result.exists) {
+            form.setFieldError(
+                'main_family_member.email',
+                'Email already taken. Try a different email.'
+            );
+            return;
+        }
+
+        form.validateField('main_family_member.email');
+    };
+
     useEffect(() => {
         checkUsername();
     }, [form.values.username]);
+
+    useEffect(() => {
+        checkEmail();
+    }, [form.values.main_family_member.email]);
 
     const prevSection = () => {
         if (activeSection === 0) {
@@ -278,9 +299,8 @@ export default function RegisterPage() {
             ];
 
             await checkUsername();
-            // TODO: check if email exists in database
-            if (form.errors.username || form.errors.email || form.errors.family_members) return;
-
+            await checkEmail();
+            if (form.errors.username || form.errors.main_family_member?.email || form.errors.family_members) return;
         }
 
         if (activeSection === 2) {

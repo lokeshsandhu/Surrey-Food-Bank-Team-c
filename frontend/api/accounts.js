@@ -68,17 +68,19 @@ export function updateAccount(token, username, data) {
 
 
 /**
- * Delete an account by username.
+ * Check if username exists in database
  * Example:
- *   deleteAccount("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "johndoe");
+ *   usernameExists("johndoe");
  */
-export function deleteAccount(token, username) {
-  return fetch(`${API_BASE}/${username}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` }
-  }).then(res => res.json());
-}
-
 export function usernameExists(username) {
   return fetch(`${API_BASE}/exists/${username}`).then(res => res.json());
+}
+
+/**
+ * Check if email exists in database
+ * Example:
+ *   usernameExists("email@email.com");
+ */
+export function emailExists(email) {
+  return fetch(`${API_BASE}/email-exists/${encodeURIComponent(email)}`).then(res => res.json());
 }
