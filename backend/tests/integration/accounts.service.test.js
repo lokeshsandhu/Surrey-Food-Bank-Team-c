@@ -82,8 +82,8 @@ describe('accounts.service', () => {
             ['testuser']
         );
 
-        const exists = await emailExists('email@email.com');
-        expect(exists).toBe(true);
+        const result = await emailExists('email@email.com');
+        expect(result).toEqual({ exists: true, is_family_member: null });
     });
 
     it('emailExists should return true for a case-insensitive trimmed match', async () => {
@@ -104,13 +104,58 @@ describe('accounts.service', () => {
             ['testuser']
         );
 
-        const exists = await emailExists('  email@email.com  ');
-        expect(exists).toBe(true);
+        const result = await emailExists('  email@email.com  ');
+        expect(result).toEqual({ exists: true, is_family_member: null });
     });
 
     it('emailExists should return false for a non-existing registration email', async () => {
-        const exists = await emailExists('missing@email.com');
-        expect(exists).toBe(false);
+        const result = await emailExists('missing@email.com');
+        expect(result).toEqual({ exists: false, is_family_member: null });
+    });
+
+    it('emailExists should identify the same family member when username and id match', async () => {
+        const accountData = {
+            username: 'testuser',
+            user_password: 'password123',
+            canada_status: 'citizen',
+            household_size: 1,
+            addr: '123 Main St',
+            baby_or_pregnant: false,
+            language_spoken: 'English',
+            account_notes: 'none'
+        };
+        await createAccount(accountData);
+        const insertResult = await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
+             VALUES ($1, 'owner', 'user', 'email@email.com', 'owner')
+             RETURNING id`,
+            ['testuser']
+        );
+
+        const result = await emailExists('email@email.com', 'testuser', insertResult.rows[0].id);
+        expect(result).toEqual({ exists: true, is_family_member: true });
+    });
+
+    it('emailExists should identify a different family member when username and id do not match', async () => {
+        const accountData = {
+            username: 'testuser',
+            user_password: 'password123',
+            canada_status: 'citizen',
+            household_size: 1,
+            addr: '123 Main St',
+            baby_or_pregnant: false,
+            language_spoken: 'English',
+            account_notes: 'none'
+        };
+        await createAccount(accountData);
+        await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
+             VALUES ($1, 'owner', 'user', 'email@email.com', 'owner')`,
+            ['testuser']
+        );
+
+        const result = await emailExists('email@email.com', 'otheruser', 999);
+        expect(result).toEqual({ exists: true, is_family_member: false });
     });
 
     it('getAccountWithPassword should return username and password', async () => {

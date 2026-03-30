@@ -11,7 +11,7 @@ import { notifications } from '@mantine/notifications';
 import { IconUserPlus } from '@tabler/icons-react';
 import { FMRelationshipOptions } from '../constants/FormOptions';
 import { useNavigate } from "react-router";
-import { updateAccount } from "../../api/accounts";
+import { emailExists, updateAccount } from "../../api/accounts";
 
 // enum for the modal mode
 const modeEnum = { updateMember: 1, addMember: 2 };
@@ -87,6 +87,25 @@ export default function FamilyMembersTab({ clientUsername }) {
     open();
   };
 
+  const checkMemberEmail = async (memberId = null) => {
+    const currentEmail = form.values.email.trim();
+    if (!validator.isEmail(currentEmail)) {
+      return false;
+    }
+
+    const result = await emailExists(currentEmail, memberId === null ? null : clientUsername, memberId);
+    if (result.exists && result.is_family_member !== true) {
+      form.setFieldError(
+        'email',
+        'Email already taken. Try a different email.'
+      );
+      return false;
+    }
+
+    form.validateField('email');
+    return true;
+  };
+
   const updateMember = async () => {
     const fieldsToValidate = [
       "f_name",
@@ -104,6 +123,11 @@ export default function FamilyMembersTab({ clientUsername }) {
         hasErrors = true;
       }
     });
+
+    const memberEmailIsValid = await checkMemberEmail(currentMember?.id ?? null);
+    if (!memberEmailIsValid) {
+      hasErrors = true;
+    }
 
     if (!hasErrors) {
       const member = form.values;
@@ -152,6 +176,11 @@ export default function FamilyMembersTab({ clientUsername }) {
         hasErrors = true;
       }
     });
+
+    const memberEmailIsValid = await checkMemberEmail();
+    if (!memberEmailIsValid) {
+      hasErrors = true;
+    }
 
     if (!hasErrors) {
       const member = form.values;

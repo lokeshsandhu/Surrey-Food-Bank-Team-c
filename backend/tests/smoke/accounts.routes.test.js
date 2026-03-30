@@ -128,6 +128,8 @@ describe('GET /api/accounts/exists/:username', () => {
 });
 
 describe('GET /api/accounts/email-exists/:email', () => {
+    let emailOwnerId;
+
     beforeAll(async () => {
         await pool.query('DELETE FROM familymember WHERE username IN ($1, $2)', [EMAIL_TEST_USER, EMAIL_OTHER_USER]);
         await pool.query('DELETE FROM account WHERE username IN ($1, $2)', [EMAIL_TEST_USER, EMAIL_OTHER_USER]);
@@ -143,12 +145,13 @@ describe('GET /api/accounts/email-exists/:email', () => {
             [EMAIL_OTHER_USER]
         );
 
-        await pool.query(
+        const ownerInsert = await pool.query(
             `INSERT INTO familymember (username, f_name, l_name, email, relationship)
              VALUES ($1, 'owner', 'user', 'owner@example.com', 'owner')
              RETURNING id`,
             [EMAIL_TEST_USER]
         );
+        emailOwnerId = ownerInsert.rows[0].id;
 
         await pool.query(
             `INSERT INTO familymember (username, f_name, l_name, email, relationship)
@@ -175,7 +178,7 @@ describe('GET /api/accounts/email-exists/:email', () => {
             .get(`/api/accounts/email-exists/${encodeURIComponent('owner@example.com')}`);
 
         expect(res.status).toBe(200);
-        expect(res.body).toEqual({ exists: true });
+        expect(res.body).toEqual({ exists: true, is_family_member: null });
     });
 
     it('should return exists true for a case-insensitive trimmed match', async () => {
@@ -183,7 +186,7 @@ describe('GET /api/accounts/email-exists/:email', () => {
             .get(`/api/accounts/email-exists/${encodeURIComponent('  OWNER@example.com  ')}`);
 
         expect(res.status).toBe(200);
-        expect(res.body).toEqual({ exists: true });
+        expect(res.body).toEqual({ exists: true, is_family_member: null });
     });
 
     it('should return exists false for a non-existing email', async () => {
@@ -191,7 +194,25 @@ describe('GET /api/accounts/email-exists/:email', () => {
             .get(`/api/accounts/email-exists/${encodeURIComponent('missing@example.com')}`);
 
         expect(res.status).toBe(200);
-        expect(res.body).toEqual({ exists: false });
+        expect(res.body).toEqual({ exists: false, is_family_member: null });
+    });
+
+    it('should return is_family_member true when the email belongs to the requested family member', async () => {
+        const res = await request(app)
+            .get(`/api/accounts/email-exists/${encodeURIComponent('owner@example.com')}`)
+            .query({ username: EMAIL_TEST_USER, family_member_id: emailOwnerId });
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({ exists: true, is_family_member: true });
+    });
+
+    it('should return is_family_member false when the email belongs to a different family member', async () => {
+        const res = await request(app)
+            .get(`/api/accounts/email-exists/${encodeURIComponent('owner@example.com')}`)
+            .query({ username: EMAIL_OTHER_USER, family_member_id: 999999 });
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({ exists: true, is_family_member: false });
     });
 });
 
