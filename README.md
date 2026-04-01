@@ -1,10 +1,9 @@
-# Surrey-Food-Bank-Team-C
 CPSC 319, Winter Term 2 2026
 
 ## About
 A scheduling application that allows clients to create accounts, add family members, and book appointments at the Surrey Food Bank. Admin are able to view all client information, view all bookings, and add new available time slots for booking.
 
-This application has been created using React, [Mantine](https://mantine.dev/), Node.js, and PostgreSQL.
+This application has been created using [React](https://react.dev/), [Mantine](https://mantine.dev/), [Node.js](https://nodejs.org/en), and [PostgreSQL](https://www.postgresql.org/), with additional email functionality provided through [Mailgun](https://www.mailgun.com/).
 
 ## Deploying on Render
 This repository now includes a Render Blueprint at [render.yaml](/Users/lokeshsandhu/Documents/Study/CPSC%20319/Surrey-Food-Bank-Team-c/render.yaml) for deploying:
@@ -24,8 +23,8 @@ Important notes:
 - The deploy-time schema script uses `backend/db/deploySchema.sql`, which creates tables without dropping existing data.
 - Render's free Postgres plan expires 30 days after creation, so it is fine for demos and testing but not for longer-lived production data.
 
-# Basic Setup Instructions
-The following instructions will go over initial setup for first time users.
+# Local Setup Instructions
+The following instructions will go over initial setup for first time users on their local machine.
 
 Please ensure you have the following software installed:
 - [Node.js](https://nodejs.org/en) 
@@ -42,8 +41,16 @@ Example images below were taken in this environment:
 
 We recommend using the latest versions and cannot guarantee functionality on older versions.
 
+## Brief Overview
+1. Install **Postgres**, set up an account with the Postgres credentials, and create a blank database titled `sfb_db`.
+2. Use **npm** to install all dependencies
+3. Run the resetDB.js and sampleDB.ts scripts with **Node.js** to initialize the database and add sample data for testing
+4. (Optional) For email functionality, replace the MAILGUN_KEY placeholder in the `dev.env` file with your Mailgun account's API key 
+5. Start the backend and frontend server simultaneously in 2 terminals with **npm**
+6. Click on the frontend server’s local host link to access the interface
 
-## Setup PostgreSQL Database
+
+## Set Up PostgreSQL Database
 1. Install **Postgres** on your local machine following [these instructions](https://www.w3schools.com/postgresql/postgresql_install.php)
     - The default superuser username is `postgres`. Do not change this.
     - Set the password to `cpsc319`.
@@ -77,11 +84,11 @@ We recommend using the latest versions and cannot guarantee functionality on old
 ## Initialize Database Schema
 1. In your **IDE** of choice, [clone this repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
 
-2. Open a new terminal and cd into the backend: `cd backend`.
+2. Open a new terminal and enter into the backend folder: `cd backend`.
 
 3. Install all needed dependencies by running: `npm install`.
 
-4. Once the dependencies have been installed, cd into the db folder: `cd db`.
+4. Once the dependencies have been installed, enter into the db folder: `cd db`.
 
 5. Run the setup script: `node resetDB.js`.
 
@@ -118,7 +125,7 @@ The following instructions will go over how to run the application.
     
     Ex. if using **pgAdmin**, ensure the application is open and responding to queries.
 
-2. In your **IDE**, open a new terminal and cd into the backend folder: `cd backend`
+2. In your **IDE**, open a new terminal and enter into the backend folder: `cd backend`
 
     If this is your first time running the application, install all needed dependencies by running: `npm install`.
 
@@ -130,7 +137,7 @@ The following instructions will go over how to run the application.
 
     ![Backend server example](/setup-images/vscode2.png)
 
-4. Open a new terminal and cd into the frontend folder: `cd frontend`.
+4. Open a new terminal and enter into the frontend folder: `cd frontend`.
     
     If this is your first time running the application, install all needed dependencies by running: `npm install`.
 
@@ -143,6 +150,32 @@ The following instructions will go over how to run the application.
     ![Frontend example](/setup-images/vscode3.png)
 
 6. Click on the localhost link to access the frontend interface.
+
+## (Optional) Enable Email Functionality
+To enable email functionalities, you will need a Mailgun account and API key.
+
+1. Create a free [Mailgun account](https://www.mailgun.com/pricing/) and follow along with their set up instructions.
+2. Create an API key and copy it
+> Example From the tutorial when creating a new account:
+> ![Mailgun tutorial API key](/setup-images/example_mailgun1.png)
+
+4. In the `dev.env` file in the backend/db folder, replace the placeholder for MAILGUN_KEY with your copied API key
+5. Under Send > Templates, create the following [templates](https://help.mailgun.com/hc/en-us/articles/360021380793-Email-Templates) with these exact names for the email APIs to use when sending emails:
+- `booking confirmation`: Sends an email upon a client's successful booking
+    - Parameters: {{bookingdate}}, {{bookingtime}}, {{username}}
+- `account recovery`: Sends an email with a link to reset an account's password
+    - Parameters: {{useremail}}, {{recoverylink}}
+- `cancellation confirmation`: Sends an email upon a client's successful cancellation of a booking (CURRENTLY DISABLED)
+    - Parameters: {{bookingdate}}, {{bookingtime}}, {{username}}
+- `edit confirmation`: Sends an email upon a client's successful editing of a booking (CURRENTLY DISABLED)
+    - Parameters: {{originalbookingdate}}, {{originalbookingtime}}, {{bookingdate}}, {{bookingtime}}, {{username}}
+ 
+> Example From a test account:
+> ![Templates](/setup-images/example_mailgun2.png)
+> ![Booking Confirmation template](/setup-images/example_mailgun3.png)
+> ![Booking Confirmation sent email using template](/setup-images/example_mailgun4.png)
+
+Note that if you do not have a [domain set up](https://help.mailgun.com/hc/en-us/articles/203637190-How-can-I-add-or-delete-a-domain), Mailgun's provided sandbox email can only send to up to 5 verified emails. Please refer to Mailgun's documentation for further details on what is provided within their service.
 
 
 # Testing Instructions
@@ -191,28 +224,26 @@ Admin Account
 - Username: admin
 - Password: adminPassword#123
 
-Client Account with 4 Family Members
+Client Account with 5 Family Members
 - Username: jane123
 - Password: Password1!
-- Family Member Names: Jane Doe (account owner), Jim Doe, Jill Doe, Jess Doe
+- Family Member Names: Jane Doe (account owner), Jim Doe, John Doe, Jill Doe, Jess Doe, 
 - Appointment: Feb 25, 2026 from 10:00 to 10:30
 
 Client Account with 1 Family Member
 - Username: big_jeff
 - Password: big_J3ff
 - Family Member Names: Jeff Smith (account owner)
-- Appointment: Feb 28, 2026 from 08:00 to 08:20
 
-Available Appointment Time Slots
+Appointment Time Slots
 - Feb 25 from 08:00 to 16:00 in 15 minute time slots
-- March 1 to 31 from 08:00 to 16:00 in 15 minute time slots
+- March 1 to 31 from 08:00 to 16:00 in 15 minute time slots (not including weekends)
+- April 1 to 30 from 08:00 to 16:00 in 15 minute time slots (not including weekends)
 
 # Common Issues
 ### Postgres Database & Sample Data
-
-If the resetDB.js script is unable to run:
-- Ensure all dependencies are installed (`npm install`).
-- Ensure your **Postgres** credentials are correct and the database is running and responsive to queries.
+If you have an existing **Postgres** account you want to use:
+- Update the `dev.env` file to use your personal credentials
 
 If the sampleDB.ts script is unable to run:
 - Ensure all dependencies are installed (`npm install`).
