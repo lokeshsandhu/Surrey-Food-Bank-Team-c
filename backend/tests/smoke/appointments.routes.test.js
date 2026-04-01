@@ -285,6 +285,9 @@ describe('POST /api/appointments/book (client)', () => {
 
 // ─── Client: Get My Appointments ─────────────────────────────────────
 describe('GET /api/appointments/mine (client)', () => {
+    beforeEach(async () => {
+        await pool.query('DELETE FROM appointment_slot WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
+    });
     it('should return booked appointments for authenticated user', async () => {
         // Create and book a slot
         await request(app)
@@ -292,7 +295,7 @@ describe('GET /api/appointments/mine (client)', () => {
             .set('Authorization', `Bearer ${adminToken}`)
             .send({ appt_date: APPT_DATE, start_time: '10:00', end_time: '10:15' });
 
-        await request(app)
+        const req = await request(app)
             .post('/api/appointments/book')
             .set('Authorization', `Bearer ${clientToken}`)
             .send({ appt_date: APPT_DATE, start_time: '10:00' });
@@ -353,12 +356,12 @@ describe('Booking for account with baby or pregnant mother', () => {
         await request(app)
             .post('/api/appointments/appointments-in-range')
             .set('Authorization', `Bearer ${adminToken}`)
-            .send({ appt_date: "2026-03-09", start_time: '09:00', end_time: '09:15' });
+            .send({ appt_date: APPT_DATE_NON_WED, start_time: '09:00', end_time: '09:15' });
 
         const res = await request(app)
             .post('/api/appointments/book')
             .set('Authorization', `Bearer ${babyToken}`)
-            .send({ appt_date: "2026-03-09", start_time: '09:00' });
+            .send({ appt_date: APPT_DATE_NON_WED, start_time: '09:00' });
 
         expect(res.status).toBe(400);
         expect(res.body.success).toBe(false);

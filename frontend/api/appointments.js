@@ -140,7 +140,7 @@ export function deleteAppointmentFromUsername(token, username) {
  *   getUsernameAppointments(token);
  */
 export function getUsernameAppointments(token, username) {
-  return fetch(`${API_BASE}/${username}`, {
+  return fetch(`${API_BASE}/get/${username}`, {
     headers: { Authorization: `Bearer ${token}` }
   }).then(res => res.json());
 }

@@ -117,7 +117,7 @@ export default function FamilyMembersTab({ clientUsername }) {
       setFamilyMemberInfo(familyMembers);
       return familyMembers.length;
     } catch (err) {
-      console.log("Big error ", err);
+      console.log("Error getting family member information ", err);
     }
   };
 
