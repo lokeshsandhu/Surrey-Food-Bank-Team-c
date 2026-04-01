@@ -33,56 +33,29 @@ export default function RegisterPage() {
     const navigate = useNavigate();
 
     const form = useForm({
-        // initialValues: {
-        //     username: '',
-        //     user_password: '',
-        //     confirm_password: '',
-        //     canada_status: '',
-        //     household_size: 0,
-        //     baby_or_pregnant: '',
-        //     language_spoken: '',
-        //     account_notes: '',
-        //     addr: {
-        //         line1: '',
-        //         line2: '',
-        //         city: '',
-        //         province: '',
-        //         postal_code: ''
-        //     },
-        //     main_family_member:
-        //     {
-        //         f_name: '',
-        //         l_name: '',
-        //         dob: null,
-        //         phone: '',
-        //         email: '',
-        //         relationship: 'owner'
-        //     },
-        //     family_members: []
-        // },
         initialValues: {
-            username: 'allison1',
-            user_password: 'Abc1234$',
-            confirm_password: 'Abc1234$',
-            canada_status: 'Canadian Citizen',
+            username: '',
+            user_password: '',
+            confirm_password: '',
+            canada_status: '',
             household_size: 0,
-            baby_or_pregnant: 'true',
-            language_spoken: 'English',
+            baby_or_pregnant: '',
+            language_spoken: '',
             account_notes: '',
             addr: {
-                line1: 'W 4',
+                line1: '',
                 line2: '',
-                city: 'surrey',
-                province: 'BC',
-                postal_code: 'V6T 1Z1'
+                city: '',
+                province: '',
+                postal_code: ''
             },
             main_family_member:
             {
-                f_name: 'Allison',
-                l_name: 'K',
-                dob: '2003-02-18',
-                phone: '(111) 111-111',
-                email: 'a@gmail.com',
+                f_name: '',
+                l_name: '',
+                dob: null,
+                phone: '',
+                email: '',
                 relationship: 'owner'
             },
             family_members: []
