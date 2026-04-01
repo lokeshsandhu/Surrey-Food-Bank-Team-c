@@ -1,9 +1,11 @@
 CPSC 319, Winter Term 2 2026
 
 ## About
-A scheduling application that allows clients to create accounts, add family members, and book appointments at the Surrey Food Bank. Admin are able to view all client information, view all bookings, and add new available time slots for booking.
+A scheduling application that allows clients to register for services provided by the Surrey Food Bank.
 
-This application has been created using [React](https://react.dev/), [Mantine](https://mantine.dev/), [Node.js](https://nodejs.org/en), and [PostgreSQL](https://www.postgresql.org/), with additional email functionality provided through [Mailgun](https://www.mailgun.com/).
+Clients are able to create accounts, add family members and personal information, and book/edit/cancel appointments. Admin are able to view/edit all client information, view/edit all bookings, add/edit available time slots for booking, and export client and booking information to CSV.
+
+This application has been created using Javascript, Typescript, [React](https://react.dev/), [Mantine](https://mantine.dev/), [Node.js](https://nodejs.org/en), and [PostgreSQL](https://www.postgresql.org/), with additional email functionality provided through [Mailgun](https://www.mailgun.com/).
 
 ## Deploying on Render
 This repository now includes a Render Blueprint at [render.yaml](/Users/lokeshsandhu/Documents/Study/CPSC%20319/Surrey-Food-Bank-Team-c/render.yaml) for deploying:
@@ -43,11 +45,11 @@ We recommend using the latest versions and cannot guarantee functionality on old
 
 ## Brief Overview
 1. Install **Postgres**, set up an account with the Postgres credentials, and create a blank database titled `sfb_db`.
-2. Use **npm** to install all dependencies
-3. Run the resetDB.js and sampleDB.ts scripts with **Node.js** to initialize the database and add sample data for testing
-4. (Optional) For email functionality, replace the MAILGUN_KEY placeholder in the `dev.env` file with your Mailgun account's API key 
-5. Start the backend and frontend server simultaneously in 2 terminals with **npm**
-6. Click on the frontend server’s local host link to access the interface
+2. Use **npm** to install all dependencies.
+3. Run the resetDB.js and sampleDB.ts scripts with **Node.js** to initialize the database and add sample data for testing.
+4. (Optional) For email functionality, replace the MAILGUN_KEY placeholder in the `dev.env` file with your Mailgun account's API key (appropriate templates must be set up).
+5. Start the backend and frontend server simultaneously in 2 terminals with **npm**.
+6. Click on the frontend server’s local host link to access the interface.
 
 
 ## Set Up PostgreSQL Database
@@ -102,7 +104,8 @@ We recommend using the latest versions and cannot guarantee functionality on old
     ```
     SELECT * FROM account;
     SELECT * FROM familymember;
-    SELECT * FROM appointment;
+    SELECT * FROM appointment_booking;
+    SELECT * FROM appointment_slot;
     ```
 
     If using **pgAdmin**, open the [QueryTool](https://www.w3schools.com/postgresql/postgresql_pgadmin4.php) to run the above queries. 
@@ -161,6 +164,7 @@ To enable email functionalities, you will need a Mailgun account and API key.
 
 4. In the `dev.env` file in the backend/db folder, replace the placeholder for MAILGUN_KEY with your copied API key
 5. Under Send > Templates, create the following [templates](https://help.mailgun.com/hc/en-us/articles/360021380793-Email-Templates) with these exact names for the email APIs to use when sending emails:
+
 - `booking confirmation`: Sends an email upon a client's successful booking
     - Parameters: {{bookingdate}}, {{bookingtime}}, {{username}}
 - `account recovery`: Sends an email with a link to reset an account's password
@@ -179,12 +183,12 @@ Note that if you do not have a [domain set up](https://help.mailgun.com/hc/en-us
 
 
 # Testing Instructions
-The following instructions go over reseting the database, initializing sample data, and accessing sample data accounts for testing purposes. 
+The following instructions go over reseting the database, initializing sample data, accessing sample data accounts, and running the test suite for testing purposes.
 
 ## Reset the Database to Blank
 To remove all data in the database and reset it to a blank slate:
 
-1. In a terminal, cd into the db folder: `cd backend\db`.
+1. In a terminal, enter into the db folder: `cd backend\db`.
 
 2. Run the reset script: `node resetDB.js`.
 
@@ -194,16 +198,17 @@ To remove all data in the database and reset it to a blank slate:
     ```
     SELECT * FROM account;
     SELECT * FROM familymember;
-    SELECT * FROM appointment;
+    SELECT * FROM appointment_booking;
+    SELECT * FROM appointment_slot;
     ```
     The returned output should show only the table's column name with no rows.
 
 ## Initialize Sample Data
 To add sample data for testing:
 
-1. Ensure you have reset the database to blank to avoid any issues with duplicate data.
+1. Ensure you have reset the database to blank to avoid any issues with duplicate data/incorrect table setup.
 
-2. In a terminal, cd into the db folder: `cd backend\db`.
+2. In a terminal, enter into the db folder: `cd backend\db`.
 
 3. Run the sample data script: `ts-node sampleDB.ts`.
 
@@ -213,7 +218,8 @@ To add sample data for testing:
     ```
     SELECT * FROM account;
     SELECT * FROM familymember;
-    SELECT * FROM appointment ORDER BY appt_date, start_time;
+    SELECT * FROM appointment_booking ORDER BY appt_date, start_time;
+    SELECT * FROM appointment_slot ORDER BY appt_date, start_time;
     ```
     The returned output should show the newly added sample data.
 
@@ -236,9 +242,18 @@ Client Account with 1 Family Member
 - Family Member Names: Jeff Smith (account owner)
 
 Appointment Time Slots
-- Feb 25 from 08:00 to 16:00 in 15 minute time slots
-- March 1 to 31 from 08:00 to 16:00 in 15 minute time slots (not including weekends)
-- April 1 to 30 from 08:00 to 16:00 in 15 minute time slots (not including weekends)
+- February 25 2026 from 08:00 to 16:00 in 15 minute time slots
+- March 1 to 31 2026 from 08:00 to 16:00 in 15 minute time slots (not including weekends)
+- April 1 to 30 2026 from 08:00 to 16:00 in 15 minute time slots (not including weekends)
+
+## Test Suite
+Our application's test suite is automated with [Jest](https://jestjs.io/).
+
+1. Ensure you have reset the database to blank to avoid any issues with duplicate data/incorrect table setup.
+
+2. In a terminal, enter into the backend folder: `cd backend`.
+
+3. Run the test suite: `npm test`.
 
 # Common Issues
 ### Postgres Database & Sample Data
