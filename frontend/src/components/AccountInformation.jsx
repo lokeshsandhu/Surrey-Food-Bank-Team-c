@@ -116,7 +116,7 @@ export default function AccountInformation({ form }) {
                     />
                     <TextInput
                         label="5. Phone"
-                        placeholder="e.g. (123) 456-789"
+                        placeholder="e.g. (123) 456-7890"
                         key={form.key('main_family_member.phone')}
                         {...form.getInputProps('main_family_member.phone')}
                         component={IMaskInput}
