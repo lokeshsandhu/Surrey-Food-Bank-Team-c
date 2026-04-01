@@ -1,11 +1,7 @@
 import { Stack, TextInput, Group, Table, Button, Modal, Select, Title } from "@mantine/core";
 import React, { useEffect, useState } from "react";
-import { createFamilyMember, deleteFamilyMember, getFamilyMembers, updateFamilyMember } from "../../api/familyMembers";
 import '../styles/clientList.css';
-import { DateInput } from "@mantine/dates";
-import { IconUserPlus } from '@tabler/icons-react';
-import { FMRelationshipOptions } from '../constants/FormOptions';
-import { getMyAppointments } from "../../api/appointments";
+import { getMyAppointments, getUsernameAppointments } from "../../api/appointments";
 import { useNavigate } from "react-router";
 
 export default function AppointmentsTab({ clientUsername }) {
@@ -21,7 +17,13 @@ export default function AppointmentsTab({ clientUsername }) {
 
     const getAppointmentHistory = async () => {
         try {
-            const appts = await getMyAppointments(token);
+            let appts = []; 
+            if (role === 'admin') {
+                appts = await getUsernameAppointments(token, clientUsername)
+                console.log('appts', appts)
+            } else {
+                appts = await getMyAppointments(token);
+            }
             setAppointments(appts);
         } catch (err) {
             console.log("Error loading appointments ", err);
@@ -50,13 +52,13 @@ export default function AppointmentsTab({ clientUsername }) {
                     <Button
                         onClick={() => { 
                             if (role === 'admin') {
-                                navigate('/adminDashboard'); 
+                                navigate('/adminDashboard/timeSlots'); 
                             } else {
                                 navigate('/clientDashboard'); 
                             }
                         }}
                     >
-                        Book Appointment in Dashboard
+                        Book Appointment in {role === 'admin' ? 'Timeslots Page' : 'Dashboard'}
                     </Button>
                 </div>
             </Group>
