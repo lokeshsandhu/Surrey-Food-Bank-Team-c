@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS public.appointment_booking
     start_time time without time zone NOT NULL,
     username varchar NOT NULL,
     booking_status varchar NOT NULL DEFAULT 'upcoming',
+    booking_notes varchar,
     created_at timestamp with time zone NOT NULL DEFAULT now(),
     CONSTRAINT appointment_booking_pkey PRIMARY KEY (appt_date, start_time, username),
     CONSTRAINT appointment_booking_status_check CHECK (booking_status IN ('upcoming', 'arrived', 'did_not_show')),
