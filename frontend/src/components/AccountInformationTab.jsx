@@ -101,25 +101,6 @@ export default function AccountInformationTab({ clientUsername }) {
         return false;
     };
 
-    // const checkOwnerEmail = async () => {
-    //     const currentEmail = form.values.accountOwner.email.trim();
-    //     if (!validator.isEmail(currentEmail)) {
-    //         return false;
-    //     }
-
-    //     const result = await emailExists(currentEmail, clientUsername, ownerId);
-    //     if (result.exists && result.is_family_member !== true) {
-    //         form.setFieldError(
-    //             'accountOwner.email',
-    //             'Email already taken. Try a different email.'
-    //         );
-    //         return false;
-    //     }
-
-    //     form.validateField('accountOwner.email');
-    //     return true;
-    // };
-
     const getAccountInformation = async () => {
         const result = await getAccount(token, clientUsername);
         const familyMembers = await getFamilyMembers(token, clientUsername);
@@ -209,14 +190,14 @@ export default function AccountInformationTab({ clientUsername }) {
             const accountData = {
                 username: accountInfo.username,
                 canada_status: accountInfo.canada_status,
-                addr: accountInfo.addr.line1 + ', ' + accountInfo.addr.line2 + ', ' + accountInfo.addr.city + ', ' + accountInfo.addr.province + ', ' + accountInfo.addr.postal_code,
+                addr: accountInfo.addr.line1.trim() + ', ' + accountInfo.addr.line2.trim() + ', ' + accountInfo.addr.city.trim() + ', ' + accountInfo.addr.province + ', ' + accountInfo.addr.postal_code,
                 baby_or_pregnant: accountInfo.baby_or_pregnant === 'true',
-                language_spoken: accountInfo.language_spoken,
-                account_notes: accountInfo.account_notes
+                language_spoken: accountInfo.language_spoken.trim(),
+                account_notes: accountInfo.account_notes.trim()
             };
             const ownerData = {
-                f_name: ownerInfo.f_name,
-                l_name: ownerInfo.l_name,
+                f_name: ownerInfo.f_name.trim(),
+                l_name: ownerInfo.l_name.trim(),
                 dob: ownerInfo.dob,
                 phone: ownerInfo.phone,
                 email: ownerInfo.email,

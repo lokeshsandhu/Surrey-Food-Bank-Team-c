@@ -56,7 +56,7 @@ export default function RegisterPage() {
         //         dob: null,
         //         phone: '',
         //         email: '',
-        //         relationship: 'Owner'
+        //         relationship: 'owner'
         //     },
         //     family_members: []
         // },
@@ -83,7 +83,7 @@ export default function RegisterPage() {
                 dob: '2003-02-18',
                 phone: '(111) 111-111',
                 email: 'a@gmail.com',
-                relationship: 'Owner'
+                relationship: 'owner'
             },
             family_members: []
         },
@@ -175,7 +175,6 @@ export default function RegisterPage() {
                         return 'Email is already taken. Please enter another email.';
                     }
                 },
-                // value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
                 phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
             family_members: {
@@ -385,7 +384,7 @@ export default function RegisterPage() {
                                 dob: form.values.main_family_member.dob,
                                 phone: form.values.main_family_member.phone,
                                 email: form.values.main_family_member.email.trim(),
-                                relationship: 'Owner',
+                                relationship: 'owner',
                             };
                             try {
                                 await createFamilyMember(loginResult.token, ownerData);
