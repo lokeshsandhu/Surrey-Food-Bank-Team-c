@@ -23,7 +23,7 @@ router.patch("/update", authenticate, requireAdmin, controller.updateAppointment
 // Delete appointments by username (admin)
  router.delete("/delete/username", authenticate, controller.deleteAppointmentFromUsername);
  // Get appointments by username (admin)
- router.get("/:username", authenticate, controller.getUsernameAppointments);
+ router.get("/get/:username", authenticate, controller.getUsernameAppointments);
 
 // Client routes
 // Book an appointment
