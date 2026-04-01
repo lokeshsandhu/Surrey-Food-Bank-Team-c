@@ -91,7 +91,6 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
     try {
       const clients = await getOwnerFamilyMembers(token);
       setClients(clients);
-      console.log(clients);
     } catch (error) {
       console.error('Error fetching clients:', error);
     }
@@ -273,10 +272,10 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
       </Modal>
       <Modal {...stack.register('User Info')} 
         onClose={() => stack.close('User Info')}
-        title="User Information" 
-        size="70%" 
+        title="User Information"
+        size="70%"
         closeButtonProps={{
-          icon: <img src={back_icon} alt="Close" />,
+          icon: <img src={back_icon} alt="Back" />,
         }}
       >
 
