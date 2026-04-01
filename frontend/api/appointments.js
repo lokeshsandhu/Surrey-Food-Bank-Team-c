@@ -133,6 +133,17 @@ export function deleteAppointmentFromUsername(token, username) {
   }).then(res => res.json());
 }
 
+/**
+ * Get all appointments booked by a user (admin only).
+ * Response rows include booking_status.
+ * Example:
+ *   getUsernameAppointments(token);
+ */
+export function getUsernameAppointments(token, username) {
+  return fetch(`${API_BASE}/get/${username}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(res => res.json());
+}
 
 /**
  * Book an appointment (client only).

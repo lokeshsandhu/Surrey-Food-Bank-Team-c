@@ -59,7 +59,7 @@ export function ClientAccount() {
                     value="appointments"
                     pl={20}
                 >
-                    <AppointmentsTab />
+                    <AppointmentsTab clientUsername={client_username} />
                 </Tabs.Panel>
             </Tabs>
         </>
