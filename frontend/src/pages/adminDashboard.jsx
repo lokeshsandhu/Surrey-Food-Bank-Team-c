@@ -179,7 +179,6 @@ export default function AdminDashboard() {
 
     // Get appointments within a time range to export to csv
     const handleApptRangeExport = async () => {
-        console.log('pressed');
         try {
             setExportLoading(true);
 
@@ -215,7 +214,6 @@ export default function AdminDashboard() {
             }
 
         } catch (err) {
-            console.log(err);
             notifications.show({
                 title: 'Error Exporting CSV',
                 message: 'There was an error exporting the bookings to CSV. Please try again.',
