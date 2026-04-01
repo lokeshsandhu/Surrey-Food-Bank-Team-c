@@ -38,6 +38,7 @@ export default function ClientDashboard() {
 
     const username = sessionStorage.getItem('username');
     const token = sessionStorage.getItem('token');
+    const role = sessionStorage.getItem('role');
     const navigate = useNavigate();
 
     dayjs.extend(customParseFormat);
@@ -55,6 +56,10 @@ export default function ClientDashboard() {
     if (!token) {
         navigate('/');
         return null;
+    }
+
+    if (role === 'admin') {
+        navigate('/adminDashboard')
     }
 
     const normalizeApptDate = (apptDate) => {

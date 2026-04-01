@@ -10,6 +10,7 @@ import { useNavigate } from "react-router";
 
 export default function AppointmentsTab({ clientUsername }) {
     const token = sessionStorage.getItem('token');
+    const role = sessionStorage.getItem('role')
     const navigate = useNavigate();
     const [appointments, setAppointments] = useState([]);
 
@@ -47,7 +48,13 @@ export default function AppointmentsTab({ clientUsername }) {
                 <Title order={2}>Appointment History</Title>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                     <Button
-                        onClick={() => { navigate('/clientDashboard'); }}
+                        onClick={() => { 
+                            if (role === 'admin') {
+                                navigate('/adminDashboard'); 
+                            } else {
+                                navigate('/clientDashboard'); 
+                            }
+                        }}
                     >
                         Book Appointment in Dashboard
                     </Button>
