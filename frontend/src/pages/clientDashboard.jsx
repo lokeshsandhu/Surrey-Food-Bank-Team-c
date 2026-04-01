@@ -340,7 +340,7 @@ export default function ClientDashboard() {
                 <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
                     
                     <Button justify='center' size='lg' mt={20} onClick={(event) => openSuccessModal()}>
-                        Check required documents for your appointment
+                        Check required documents
                     </Button>
 
                 </div>
