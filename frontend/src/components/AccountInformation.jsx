@@ -30,8 +30,6 @@ export default function AccountInformation({ form }) {
         }
     };
 
-    // TODO: check if email exists in database
-
     return (
         <div>
             <div style={{ width: '100%' }}>
@@ -115,11 +113,10 @@ export default function AccountInformation({ form }) {
                         {...form.getInputProps('main_family_member.email')}
                         withAsterisk
                         w={'45%'}
-                        // TODO: check if email exists in database onBlur
                     />
                     <TextInput
                         label="5. Phone"
-                        placeholder="e.g. (123) 456-7890"
+                        placeholder="e.g. (123) 456-789"
                         key={form.key('main_family_member.phone')}
                         {...form.getInputProps('main_family_member.phone')}
                         component={IMaskInput}

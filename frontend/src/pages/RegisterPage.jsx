@@ -63,8 +63,24 @@ export default function RegisterPage() {
         validateInputOnBlur: true,
         validateInputOnChange: true,
         validate: {
-            username: (value) => value.trim().length < 5 ? 'Username must be at least 5 characters' : null,
-            user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
+            username: (value) => {
+                if (/\s/.test(value)) {
+                    return 'Username cannot contain spaces.';
+                }
+
+                if (value.trim().length < 5) {
+                    return 'Username must be at least 5 characters.';
+                }
+            },
+            user_password: (value) => {
+                if (/\s/.test(value)) {
+                    return 'Password cannot contain spaces.';
+                }
+
+                if (!validator.isStrongPassword(value)) {
+                    return 'Password must contain 8+ characters (incl. uppercase, lowercase, number, and symbol).';
+                }
+            },
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
             canada_status: (value) => {
                 if (value.trim().length === 0) {
