@@ -1,12 +1,26 @@
 import pool from "../../db/postgres";
 import { CreateSlotDTO, BookAppointmentDTO, CreateAppointmentsInRangeDTO, BookingStatus } from "./appointments.dto";
 
+function normalizeOptionalText(value: string | null | undefined) {
+    if (value === undefined) {
+        return undefined;
+    }
+
+    if (value === null) {
+        return null;
+    }
+
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+}
+
 export async function updateAppointment(
     appt_date: string,
     start_time: string,
-    updateData: Partial<{ end_time: string; appt_notes: string; capacity: number; username: string | null; booking_status: BookingStatus }>
+    updateData: Partial<{ end_time: string; appt_notes: string; capacity: number; username: string | null; booking_status: BookingStatus; booking_notes: string | null }>
 ) {
-    const { username, booking_status, ...slotFields } = updateData;
+    const { username, booking_status, booking_notes, ...slotFields } = updateData;
+    const normalizedBookingNotes = normalizeOptionalText(booking_notes);
 
     if (Object.keys(slotFields).length > 0) {
         const fields: string[] = [];
@@ -42,15 +56,25 @@ export async function updateAppointment(
             );
         } else {
             if (booking_status !== undefined) {
+                const bookingUpdateFields = ["booking_status = $4"];
+                const bookingValues: unknown[] = [appt_date, start_time, username, booking_status];
+                let bookingValueIndex = 5;
+
+                if (normalizedBookingNotes !== undefined) {
+                    bookingUpdateFields.push(`booking_notes = $${bookingValueIndex}`);
+                    bookingValues.push(normalizedBookingNotes);
+                    bookingValueIndex += 1;
+                }
+
                 const statusResult = await pool.query(
                     `
                     UPDATE appointment_booking
-                    SET booking_status = $4
+                    SET ${bookingUpdateFields.join(", ")}
                     WHERE appt_date = $1
                       AND start_time = $2::time
                       AND username = $3
                 `,
-                    [appt_date, start_time, username, booking_status]
+                    bookingValues
                 );
 
                 // If booking already exists, treat this as a status update only.
@@ -131,23 +155,29 @@ export async function updateAppointment(
                 }
 
                 try {
+                    const bookingColumns = ["appt_date", "start_time", "username"];
+                    const bookingPlaceholders = ["$1", "$2::time", "$3"];
+                    const bookingValues: unknown[] = [appt_date, start_time, username];
+
                     if (booking_status !== undefined) {
-                        await client.query(
-                            `
-                            INSERT INTO appointment_booking (appt_date, start_time, username, booking_status)
-                            VALUES ($1, $2::time, $3, $4)
-                        `,
-                            [appt_date, start_time, username, booking_status]
-                        );
-                    } else {
-                        await client.query(
-                            `
-                            INSERT INTO appointment_booking (appt_date, start_time, username)
-                            VALUES ($1, $2::time, $3)
-                        `,
-                            [appt_date, start_time, username]
-                        );
+                        bookingColumns.push("booking_status");
+                        bookingPlaceholders.push(`$${bookingValues.length + 1}`);
+                        bookingValues.push(booking_status);
                     }
+
+                    if (normalizedBookingNotes !== undefined) {
+                        bookingColumns.push("booking_notes");
+                        bookingPlaceholders.push(`$${bookingValues.length + 1}`);
+                        bookingValues.push(normalizedBookingNotes);
+                    }
+
+                    await client.query(
+                        `
+                        INSERT INTO appointment_booking (${bookingColumns.join(", ")})
+                        VALUES (${bookingPlaceholders.join(", ")})
+                    `,
+                        bookingValues
+                    );
                 } catch (err: any) {
                     if (err?.code === "23505") {
                         throw new Error("User already has a booking for this slot");
@@ -489,6 +519,7 @@ export async function bookAppointment(data: BookAppointmentDTO, username: string
     const { rows: householdRows } = await pool.query(householdText, [username]);
     const householdSize = householdRows[0]?.household_size ?? 1;
     const slotsNeeded = householdSize >= 5 ? 2 : 1;
+    const normalizedBookingNotes = normalizeOptionalText(data.booking_notes);
 
     const [startHourRaw, startMinRaw] = String(data.start_time).split(":");
     const normalizedStart = `${String(Number(startHourRaw)).padStart(2, "0")}:${String(Number(startMinRaw)).padStart(2, "0")}`;
@@ -578,12 +609,22 @@ export async function bookAppointment(data: BookAppointmentDTO, username: string
             }
 
             try {
+                const bookingColumns = ["appt_date", "start_time", "username"];
+                const bookingPlaceholders = ["$1", "$2::time", "$3"];
+                const bookingValues: unknown[] = [data.appt_date, slot.start_time, username];
+
+                if (normalizedBookingNotes !== undefined) {
+                    bookingColumns.push("booking_notes");
+                    bookingPlaceholders.push(`$${bookingValues.length + 1}`);
+                    bookingValues.push(normalizedBookingNotes);
+                }
+
                 await client.query(
                     `
-                    INSERT INTO appointment_booking (appt_date, start_time, username)
-                    VALUES ($1, $2::time, $3)
+                    INSERT INTO appointment_booking (${bookingColumns.join(", ")})
+                    VALUES (${bookingPlaceholders.join(", ")})
                 `,
-                    [data.appt_date, slot.start_time, username]
+                    bookingValues
                 );
             } catch (err: any) {
                 if (err?.code === "23505") {
@@ -664,7 +705,8 @@ export async function getMyAppointments(username: string) {
             s.appt_notes,
             s.capacity,
             b.username,
-            b.booking_status
+            b.booking_status,
+            b.booking_notes
         FROM appointment_booking b
         JOIN appointment_slot s
           ON s.appt_date = b.appt_date

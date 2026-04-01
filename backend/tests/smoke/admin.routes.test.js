@@ -51,8 +51,8 @@ beforeAll(async () => {
         [APPT_DATE]
     );
     await pool.query(
-        `INSERT INTO appointment_booking (appt_date, start_time, username)
-         VALUES ($1, '10:00', $2)`,
+        `INSERT INTO appointment_booking (appt_date, start_time, username, booking_notes)
+         VALUES ($1, '10:00', $2, 'client booking note')`,
         [APPT_DATE, CLIENT_USER]
     );
 
@@ -127,6 +127,7 @@ describe('GET /api/admin/clients/:username', () => {
         expect(res.body.family_members.length).toBe(2);
         expect(Array.isArray(res.body.appointments)).toBe(true);
         expect(res.body.appointments.length).toBeGreaterThanOrEqual(1);
+        expect(res.body.appointments[0].booking_notes).toBe('client booking note');
     });
 
     it('should return 404 for non-existent client', async () => {

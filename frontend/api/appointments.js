@@ -124,7 +124,7 @@ export function getAllAppointments(token) {
 /**
  * Update an appointment slot or set/clear a booking (admin only).
  * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), updateData (object with fields to update)
- * updateData can include: end_time, appt_notes, capacity, username, booking_status
+ * updateData can include: end_time, appt_notes, capacity, username, booking_status, booking_notes
  * - username: "someuser" adds a booking on that slot (if capacity allows)
  * - username: null clears all bookings for that slot
  * - booking_status: one of BOOKING_STATUS.UPCOMING | BOOKING_STATUS.ARRIVED | BOOKING_STATUS.DID_NOT_SHOW
@@ -240,10 +240,12 @@ export function getAvailableAppointments(token) {
 /**
  * Book an appointment (client only).
  * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm)
+ * Optional: booking_notes
  * Example:
  *   bookAppointment(token, {
  *     appt_date: "2024-06-01",
- *     start_time: "10:00"
+ *     start_time: "10:00",
+ *     booking_notes: "Please call on arrival"
  *   });
  */
 export function bookAppointment(token, data) {
@@ -272,7 +274,7 @@ export function cancelAppointment(token, appt_date, start_time) {
 
 /**
  * Get all appointments booked by the current user (client only).
- * Response rows include booking_status.
+ * Response rows include booking_status, booking_notes, and slot notes.
  * Example:
  *   getMyAppointments(token);
  */

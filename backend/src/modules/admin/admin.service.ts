@@ -39,7 +39,8 @@ export async function getClientByUsername(username: string) {
             s.end_time,
             s.appt_notes,
             s.capacity,
-            b.username
+            b.username,
+            b.booking_notes
         FROM appointment_booking b
         JOIN appointment_slot s
           ON s.appt_date = b.appt_date

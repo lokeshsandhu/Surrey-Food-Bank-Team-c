@@ -28,5 +28,6 @@ export interface AppointmentSummaryDTO {
     start_time: string;
     end_time: string;
     appt_notes?: string;
+    booking_notes?: string;
     username?: string;
 }

@@ -375,7 +375,7 @@ describe('POST /api/appointments/book (client)', () => {
         const res = await request(app)
             .post('/api/appointments/book')
             .set('Authorization', `Bearer ${clientToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '08:00' });
+            .send({ appt_date: APPT_DATE, start_time: '08:00', booking_notes: 'Need a quiet room' });
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
@@ -420,7 +420,7 @@ describe('GET /api/appointments/mine (client)', () => {
         await request(app)
             .post('/api/appointments/book')
             .set('Authorization', `Bearer ${clientToken}`)
-            .send({ appt_date: APPT_DATE, start_time: '10:00' });
+            .send({ appt_date: APPT_DATE, start_time: '10:00', booking_notes: 'Need a quiet room' });
 
         const res = await request(app)
             .get('/api/appointments/mine')
@@ -430,6 +430,7 @@ describe('GET /api/appointments/mine (client)', () => {
         expect(Array.isArray(res.body)).toBe(true);
         expect(res.body.length).toBeGreaterThanOrEqual(1);
         expect(res.body[0].username).toBe(CLIENT_USER);
+        expect(res.body[0].booking_notes).toBe('Need a quiet room');
     });
 });
 
