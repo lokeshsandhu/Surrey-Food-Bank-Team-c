@@ -83,6 +83,17 @@ export async function deleteAppointment(req: Request, res: Response) {
     }
 }
 
+// Admin: get a user's booked appointments
+export async function getUsernameAppointments(req: Request, res: Response) {
+    try {
+        const username = req.params.username;
+        const appointments = await service.getMyAppointments(username);
+        res.status(200).json(appointments);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 // Client: book an available slot, also checks if they have a baby or pregnant member and enforces Wednesday bookings.
 export async function bookAppointment(req: Request, res: Response) {
     try {
