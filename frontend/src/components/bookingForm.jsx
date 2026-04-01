@@ -1,7 +1,7 @@
 // Heavily inspired/referenced from mantine ui's demo from https://alpha.mantine.dev/schedule/schedule/#create-and-update-events
 
 import { useEffect, useState } from 'react';
-import { Modal, TextInput, Text, Button, Stack, Group, NativeSelect, Box, Paper, NumberInput, useModalsStack } from '@mantine/core';
+import { Modal, TextInput, Text, Button, Stack, Group, NativeSelect, Box, Paper, NumberInput, useModalsStack, Tabs, LoadingOverlay } from '@mantine/core';
 import React from 'react';
 import { DateTimePicker } from '@mantine/dates';
 import { isNotEmpty, useForm } from '@mantine/form';
@@ -10,6 +10,8 @@ import { getOwnerFamilyMembers } from '../../api/familyMembers.js';
 import AccountInformationTab from "../components/AccountInformationTab";
 import back_icon from '../assets/arrow-left.svg';
 import '../styles/styles.css'
+import { getUsernameAppointments, BOOKING_STATUS, updateBookingStatus } from '../../api/appointments.js';
+import customParseFormat from "dayjs/plugin/customParseFormat";
 
 export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDeleteTimeslot, values, bookedUsers = [], onRemoveBookedUser, removingBookingUsername, ...others }) {
   const form = useForm({
@@ -44,6 +46,41 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
   const token = sessionStorage.getItem('token');
   const stack = useModalsStack(['Manage Booking', 'User Info']);
   const [selectedClient, setSelectedClient] = useState(null);
+  const [clientNotes, setClientNotes] = useState("");
+  const [loadingNotes, setLoadingNotes] = useState(false);
+  const [bookingStatuses, setBookingStatuses] = useState({});
+
+  dayjs.extend(customParseFormat);
+
+  const fetchBooking = async (clientUsername) => {
+    const res = await getUsernameAppointments(token, clientUsername);
+    const booking = res.filter(appt => dayjs(form.values.start).isSame(dayjs(appt.appt_date), 'day') && dayjs(appt.start_time, "HH:mm").format('HH:mm') === dayjs(form.values.start).format('HH:mm'));
+    return booking;
+  }
+
+  const fetchNotesForClient = async (clientUsername) => {
+    setLoadingNotes(true);
+    try {
+      const booking = await fetchBooking(clientUsername);
+      const notes = booking.length > 0 ? booking[0].booking_notes : "No additional notes for this appointment.";
+      setClientNotes(notes);
+    } catch (error) {
+      console.error('Error fetching notes for client:', error);
+    } finally {
+      setLoadingNotes(false);
+    }
+  };
+
+  const fetchBookingStatus = async (clientUsername) => {
+    try {      
+      const booking = await fetchBooking(clientUsername);
+      const status = booking.length > 0 ? booking[0].booking_status : BOOKING_STATUS.DID_NOT_SHOW;
+      return status;
+    }
+    catch (error) {
+      console.error('Error fetching booking status for client:', error);
+    }
+  };
 
   const handleCloseAll = () => {
     stack.closeAll();
@@ -77,6 +114,23 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
   useEffect(() => {
     handleFetchClients();
   }, []);
+
+  useEffect(() => {
+    const loadBookingStatuses = async () => {
+      if (!bookedUsers.length) {
+        setBookingStatuses({});
+        return;
+      }
+
+      const statuses = await Promise.all(
+        bookedUsers.map(async (user) => [user, await fetchBookingStatus(user)])
+      );
+
+      setBookingStatuses(Object.fromEntries(statuses));
+    };
+
+    loadBookingStatuses();
+  }, [bookedUsers, values?.start]);
 
   useEffect(() => {
     if (opened) {
@@ -175,9 +229,29 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
               <Stack gap={6}>
                 {bookedUsers.map((user) => (
                   <Group key={user} justify="space-between" gap="xs" wrap="nowrap">
-                    <Button size="sm" onClick={() => { stack.open('User Info'); setSelectedClient(user); }}>
+                    <Button size="xs" onClick={() => { stack.open('User Info'); setSelectedClient(user); }}>
                       {user}
                     </Button>
+                    <NativeSelect
+                      data={[
+                        { value: BOOKING_STATUS.UPCOMING, label: 'Upcoming' },
+                        { value: BOOKING_STATUS.ARRIVED, label: 'Arrived' },
+                        { value: BOOKING_STATUS.DID_NOT_SHOW, label: 'Did Not Show' },
+                      ]}
+                      value={bookingStatuses[user] || BOOKING_STATUS.DID_NOT_SHOW}
+                      onChange={async (event) => {
+                        const nextStatus = event.currentTarget.value;
+                        setBookingStatuses((current) => ({ ...current, [user]: nextStatus }));
+                        await updateBookingStatus(
+                          token,
+                          dayjs(form.values.start).format('YYYY-MM-DD'),
+                          dayjs(form.values.start).format('HH:mm'),
+                          user,
+                          nextStatus
+                        );
+                      }}
+                      
+                    />
                     <Button
                       type="button"
                       size="compact-xs"
@@ -205,7 +279,28 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
           icon: <img src={back_icon} alt="Close" />,
         }}
       >
-        <AccountInformationTab clientUsername={selectedClient}/>
+
+        <Tabs defaultValue="client-info" onChange={(value) => {
+          if (value === 'appt-notes') {
+            fetchNotesForClient(selectedClient);
+          }}}>
+          <Tabs.List>
+            <Tabs.Tab value="client-info">
+              Client Information
+            </Tabs.Tab>
+            <Tabs.Tab value="appt-notes">
+              Appointment Notes
+            </Tabs.Tab>
+          </Tabs.List>
+          <Tabs.Panel value="client-info" pt="xs">
+            <AccountInformationTab clientUsername={selectedClient}/>
+          </Tabs.Panel>
+          <Tabs.Panel value="appt-notes" pt="xs">
+            <LoadingOverlay visible={loadingNotes} />
+            <Text>{clientNotes || "No additional notes for this appointment."}</Text>
+          </Tabs.Panel>
+        </Tabs>
+
       </Modal>
     </Modal.Stack>
   );
