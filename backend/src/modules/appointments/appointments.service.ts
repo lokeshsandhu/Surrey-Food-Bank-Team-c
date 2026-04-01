@@ -1,18 +1,6 @@
 import pool from "../../db/postgres";
 import { BookAppointmentDTO, CreateAppointmentsInRangeDTO, BookingStatus } from "./appointments.dto";
 
-function normalizeOptionalText(value: string | null | undefined) {
-    if (value === undefined) {
-        return undefined;
-    }
-
-    if (value === null) {
-        return null;
-    }
-
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : null;
-}
 
 function normalizeOptionalText(value: string | null | undefined) {
     if (value === undefined) {
@@ -176,25 +164,13 @@ export async function updateAppointment(
                         bookingColumns.push("booking_status");
                         bookingPlaceholders.push(`$${bookingValues.length + 1}`);
                         bookingValues.push(booking_status);
-<<<<<<< HEAD
                     }
-
                     if (normalizedBookingNotes !== undefined) {
                         bookingColumns.push("booking_notes");
                         bookingPlaceholders.push(`$${bookingValues.length + 1}`);
                         bookingValues.push(normalizedBookingNotes);
                     }
 
-=======
-                    }
-
-                    if (normalizedBookingNotes !== undefined) {
-                        bookingColumns.push("booking_notes");
-                        bookingPlaceholders.push(`$${bookingValues.length + 1}`);
-                        bookingValues.push(normalizedBookingNotes);
-                    }
-
->>>>>>> 9e692440faea9b48184b5b4fb60ed7a43a134d61
                     await client.query(
                         `
                         INSERT INTO appointment_booking (${bookingColumns.join(", ")})
