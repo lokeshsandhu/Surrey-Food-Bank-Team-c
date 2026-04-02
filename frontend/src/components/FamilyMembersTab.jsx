@@ -220,8 +220,8 @@ export default function FamilyMembersTab({ clientUsername }) {
       const member = form.values;
       const memberData = {
         username: clientUsername,
-        f_name: member.f_name,
-        l_name: member.l_name,
+        f_name: member.f_name.trim(),
+        l_name: member.l_name.trim(),
         dob: member.dob,
         email: member.email.trim().length > 0 ? member.email : null,
         phone: member.phone,
