@@ -107,7 +107,7 @@ export default function AccountInformation({ form }) {
                         w={'30%'}
                         maxDate={dayjs()}
                         defaultDate={dayjs()}
-                        minDate={dayjs().subtract(100, 'year').toDate()}
+                        minDate={dayjs().subtract(120, 'year').toDate()}
                     />
                     {!isMinAge(form.values.main_family_member.dob) && <AgeAlert />}
                     <Textarea

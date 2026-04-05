@@ -70,6 +70,7 @@ export default function AddFamilyMembers({ form }) {
                                 key={form.key(`family_members.${index}.dob`)}
                                 {...form.getInputProps(`family_members.${index}.dob`)}
                                 withAsterisk
+                                minDate={dayjs().subtract(120, 'year').toDate()}
                                 w={'30%'}
                             />
                             <Textarea

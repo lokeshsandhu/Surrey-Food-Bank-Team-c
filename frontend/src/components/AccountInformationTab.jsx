@@ -271,13 +271,13 @@ export default function AccountInformationTab({ clientUsername }) {
                     />
                     <DateInput
                         label="Date of Birth"
-                        placeholder="YYYY MM DD"
-                        valueFormat='YYYY MM DD'
+                        placeholder="YYYY-MM-DD"
+                        valueFormat='YYYY-MM-DD'
                         {...form.getInputProps('accountOwner.dob')}
                         withAsterisk
                         maxDate={dayjs()}
                         defaultDate={dayjs()}
-                        minDate={dayjs().subtract(100, 'year').toDate()}
+                        minDate={dayjs().subtract(120, 'year').toDate()}
                         w={'45%'}
                     />
                     <Textarea

@@ -4,6 +4,7 @@ import { createFamilyMember, deleteFamilyMember, getFamilyMembers, updateFamilyM
 import { useDisclosure } from "@mantine/hooks";
 import '../styles/clientList.css';
 import { useForm } from "@mantine/form";
+import dayjs from 'dayjs';
 import { DateInput } from "@mantine/dates";
 import { IMaskInput } from 'react-imask';
 import validator from 'validator';
@@ -387,9 +388,10 @@ export default function FamilyMembersTab({ clientUsername }) {
           </Group>
           <DateInput
             label="Date of Birth"
-            placeholder="YYYY MM DD"
-            valueFormat='YYYY MM DD'
+            placeholder="YYYY-MM-DD"
+            valueFormat='YYYY-MM-DD'
             maxDate={new Date()}
+            minDate={dayjs().subtract(120, 'year').toDate()}
             key={form.key(`dob`)}
             {...form.getInputProps(`dob`)}
             withAsterisk
