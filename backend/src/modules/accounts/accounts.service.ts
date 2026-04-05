@@ -98,14 +98,24 @@ export async function emailExists(
     return { exists: true, is_family_member: isFamilyMember };
 }
 
-// Select from account table with given username, return username and password
-export async function getAccountWithPassword(username: string) {
+// Select from account table with a username or email identifier, return username and password
+export async function getAccountWithPassword(identifier: string) {
     const text = `
         SELECT username, user_password
-        FROM account
-        WHERE username = $1
+        FROM account a
+        WHERE a.username = $1
+           OR EXISTS (
+                SELECT 1
+                FROM familymember fm
+                WHERE fm.username = a.username
+                  AND fm.email IS NOT NULL
+                  AND TRIM(fm.email) <> ''
+                  AND LOWER(TRIM(fm.email)) = LOWER(TRIM($1))
+            )
+        ORDER BY CASE WHEN a.username = $1 THEN 0 ELSE 1 END
+        LIMIT 1
     `;
-    const { rows } = await pool.query(text, [username]);
+    const { rows } = await pool.query(text, [identifier]);
     return rows[0] ?? null;
 }
 

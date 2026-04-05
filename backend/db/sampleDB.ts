@@ -19,6 +19,18 @@ async function sampleAdminData(){
     }
 
     await account.createAccount(adminAccount);
+
+    const adminFM = {
+        username: 'admin',
+        f_name: 'Admin',
+        l_name: 'Account',
+        dob: '1990/01/01',
+        phone: '(000) 000-0000',
+        email: 'admin@surreyfoodbank.com',
+        relationship: 'owner',
+    }
+
+    await familymember.createFamilyMember(adminFM);
 }
 
 // sample account and family members for Jane Doe user persona

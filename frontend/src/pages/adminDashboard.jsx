@@ -8,7 +8,7 @@ import { AdminNavBar } from '../components/navBar.jsx';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { getAppointmentsInDateRange, createAppointmentsInTimeRange, updateAppointment, getAppointmentsInDateTimeRange } from '../../api/appointments.js';
+import { getAppointmentsInDateRange, createAppointmentsInTimeRange, updateAppointment, getAppointmentsInDateTimeRange, cleanupPastAppointments } from '../../api/appointments.js';
 import { mkConfig, generateCsv, download } from "export-to-csv";
 
 import { useNavigate } from 'react-router';
@@ -194,7 +194,24 @@ export default function AdminDashboard() {
     };
 
     useEffect(() => {
-        findBookingsForDate(value);
+        const initializeDashboard = async () => {
+            try {
+                const cleanupResult = await cleanupPastAppointments(token);
+                if (cleanupResult?.success === false) {
+                    notifications.show({
+                        title: 'Error',
+                        message: cleanupResult?.error || 'Failed to archive past appointments',
+                        color: 'red'
+                    });
+                }
+            } catch (error) {
+                console.error('Error archiving past appointments:', error);
+            }
+
+            await findBookingsForDate(value);
+        };
+
+        initializeDashboard();
     }, []);
 
     return (

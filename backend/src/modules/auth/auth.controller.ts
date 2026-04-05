@@ -4,14 +4,15 @@ import * as service from "./auth.service";
 // Verify login credentials and level of access
 export async function login(req: Request, res: Response) {
     try {
-        const { username, password } = req.body;
+        const { identifier, username, password } = req.body;
+        const loginIdentifier = identifier ?? username;
 
-        if (!username || !password) {
-            res.status(400).json({ success: false, error: "Username and password required" });
+        if (!loginIdentifier || !password) {
+            res.status(400).json({ success: false, error: "Username or email and password required" });
             return;
         }
 
-        const result = await service.login({ username, password });
+        const result = await service.login({ identifier: loginIdentifier, password });
         if (!result) {
             res.status(401).json({ success: false, error: "Invalid username or password" });
             return;

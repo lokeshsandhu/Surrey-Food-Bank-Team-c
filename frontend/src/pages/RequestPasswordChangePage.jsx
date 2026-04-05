@@ -63,10 +63,10 @@ export default function RequestPasswordChangePage() {
                 />
                 <Group style={{ gap: 2 }} mb={10}>
                     <Title order={3} fw={500} mb={2} style={{ justifyContent: 'center' }}>Forgot Your Password?</Title>
-                    <Text size='sm' color='gray'>Enter your username and we will send password reset instructions to the owner email on file.</Text>
+                    <Text size='sm' color='gray'>Enter your username or email and we will send password reset instructions to the owner email on file.</Text>
                 </Group>
                 <TextInput
-                    placeholder='Username'
+                    placeholder='Username or email'
                     value={identifier}
                     onChange={e => setIdentifier(e.target.value)}
                 />
