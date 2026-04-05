@@ -83,6 +83,9 @@ export default function AccountInformation({ form }) {
                             w={'45%'}
                             maxLength={CHARLIMITS.name}
                             autosize
+                            styles={{
+                                error: { minHeight: 18 } // reserve space
+                            }}
                         />
                         <Textarea
                             label="2. Last Name"
@@ -106,7 +109,6 @@ export default function AccountInformation({ form }) {
                         defaultDate={dayjs()}
                         minDate={dayjs().subtract(100, 'year').toDate()}
                     />
-
                     {!isMinAge(form.values.main_family_member.dob) && <AgeAlert />}
                     <Textarea
                         label="4. Email"
@@ -116,6 +118,7 @@ export default function AccountInformation({ form }) {
                         withAsterisk
                         maxLength={CHARLIMITS.email}
                         autosize
+                        
                     />
                     <TextInput
                         label="5. Phone"

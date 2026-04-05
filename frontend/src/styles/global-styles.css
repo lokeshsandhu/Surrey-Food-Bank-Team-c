@@ -42,3 +42,11 @@ html, body {
 .mantine-Radio-body, .mantine-Radio-inner *, .mantine-Radio-label {
     cursor: pointer;
 }
+
+.mantine-InputWrapper-root {
+    min-height: 80px;
+}
+
+.matnine-Stack-root {
+    gap: 0px;
+}

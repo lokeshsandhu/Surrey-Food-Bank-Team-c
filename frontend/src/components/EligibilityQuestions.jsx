@@ -86,7 +86,7 @@ export default function ElegibilityQuestions({ form }) {
                 <Group className='address' my={10}>
                     <TextInput
                         label="Address Line 1"
-                        placeholder="e.g. 13478 78th Ave"
+                        placeholder="e.g. 1234 78th Ave"
                         withAsterisk
                         key={form.key('addr.line1')}
                         {...form.getInputProps('addr.line1')}

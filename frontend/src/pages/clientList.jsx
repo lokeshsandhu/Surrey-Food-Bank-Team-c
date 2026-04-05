@@ -15,6 +15,7 @@ import { notifications } from '@mantine/notifications';
 import dayjs from 'dayjs';
 
 import { mkConfig, generateCsv, download } from "export-to-csv";
+import { CHARLIMITS } from '../constants/Validation';
 
 export default function ClientList() {
 
@@ -225,6 +226,7 @@ export default function ClientList() {
                         }
                     }}
                     rightSection={<CloseButton onClick={() => resetSearch()} />}
+                    maxLength={CHARLIMITS.openTextField}
                 />
                 <div
                     style={{
