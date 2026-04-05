@@ -6,7 +6,7 @@ import { useNavigate } from "react-router";
 
 export default function AppointmentsTab({ clientUsername }) {
     const token = sessionStorage.getItem('token');
-    const role = sessionStorage.getItem('role')
+    const role = sessionStorage.getItem('role');
     const navigate = useNavigate();
     const [appointments, setAppointments] = useState([]);
 
@@ -55,15 +55,15 @@ export default function AppointmentsTab({ clientUsername }) {
 
     const getAppointmentHistory = async () => {
         try {
-            let appts = []; 
+            let appts = [];
             if (role === 'admin') {
-                appts = await getUsernameAppointments(token, clientUsername)
+                appts = await getUsernameAppointments(token, clientUsername);
             } else {
                 appts = await getMyAppointments(token);
             }
-            console.log('appts', appts)
-            const mergedApts = mergeAppointments(appts)
-            console.log(mergedApts)
+            console.log('appts', appts);
+            const mergedApts = mergeAppointments(appts);
+            console.log(mergedApts);
             setAppointments(mergedApts);
         } catch (err) {
             console.log("Error loading appointments ", err);
@@ -91,11 +91,11 @@ export default function AppointmentsTab({ clientUsername }) {
                 <Title order={2}>Appointment History</Title>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                     <Button
-                        onClick={() => { 
+                        onClick={() => {
                             if (role === 'admin') {
-                                navigate('/adminDashboard/timeSlots'); 
+                                navigate('/adminDashboard/timeSlots');
                             } else {
-                                navigate('/clientDashboard'); 
+                                navigate('/clientDashboard');
                             }
                         }}
                     >
@@ -103,29 +103,41 @@ export default function AppointmentsTab({ clientUsername }) {
                     </Button>
                 </div>
             </Group>
-            <Table.ScrollContainer maxHeight={'80%'}>
-                <Table
-                    miw={500}
-                    verticalSpacing="sm"
-                    stickyHeader
-                    withTableBorder
-                    highlightOnHover
-                    bgcolor='white'
-                    w={'100%'}
-                >
-                    <Table.Thead>
-                        <Table.Tr>
-                            <Table.Th>#</Table.Th>
-                            <Table.Th>Date</Table.Th>
-                            <Table.Th>Start Time</Table.Th>
-                            <Table.Th>End Time</Table.Th>
-                            <Table.Th>Booking Status</Table.Th>
-                            <Table.Th>Booking Notes</Table.Th>
-                        </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>{rows}</Table.Tbody>
-                </Table>
-            </Table.ScrollContainer>
+            <div
+                style={{
+                    height: '100%',
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}>
+                <Table.ScrollContainer
+                    style={{
+                        flex: 1,
+                        overflowY: 'auto',
+                    }}>
+                    <Table
+                        miw={500}
+                        verticalSpacing="sm"
+                        stickyHeader
+                        withTableBorder
+                        highlightOnHover
+                        bgcolor='white'
+                        w={'100%'}
+                    >
+                        <Table.Thead>
+                            <Table.Tr>
+                                <Table.Th>#</Table.Th>
+                                <Table.Th>Date</Table.Th>
+                                <Table.Th>Start Time</Table.Th>
+                                <Table.Th>End Time</Table.Th>
+                                <Table.Th>Booking Status</Table.Th>
+                                <Table.Th>Booking Notes</Table.Th>
+                            </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>{rows}</Table.Tbody>
+                    </Table>
+                </Table.ScrollContainer>
+            </div>
         </div>
     );
 };

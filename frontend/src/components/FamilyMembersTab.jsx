@@ -310,23 +310,36 @@ export default function FamilyMembersTab({ clientUsername }) {
 
   const rows = familyMemberInfo.map((FM) => (
     <Table.Tr key={FM.id}>
-      <Table.Td>{FM.f_name}</Table.Td>
+      <Table.Td
+        style={{ wordBreak: 'break-word' }}
+      >{FM.f_name}</Table.Td>
       <Table.Td>{FM.l_name}</Table.Td>
       <Table.Td>{FM.dob.slice(0, 10)}</Table.Td>
       <Table.Td><a href={`mailto:${FM.email}`}>{FM.email}</a></Table.Td>
       <Table.Td>{FM.phone}</Table.Td>
       <Table.Td>{FM.relationship}</Table.Td>
       <Table.Td>
-        <Button size='xs'
+        <Button size='compact-sm'
           onClick={() => openUpdateModal(FM)}>Edit</Button>
       </Table.Td>
     </Table.Tr>
   ));
 
   return (
-    <div>
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
       <Title order={2} mb={10}>Family Members</Title>
-      <Table.ScrollContainer maxHeight={'80%'}>
+      <Table.ScrollContainer
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+        }}
+      >
         <Table
           miw={500}
           verticalSpacing="sm"
@@ -346,6 +359,7 @@ export default function FamilyMembersTab({ clientUsername }) {
               <Table.Th>Relationship</Table.Th>
               <Table.Th>
                 <Button
+                  size='sm'
                   color='green'
                   leftSection={<IconUserPlus />}
                   onClick={openAddModal}

@@ -197,7 +197,7 @@ export default function ClientList() {
     return (
         <div className="page">
             <AdminNavBar />
-            <div className="box" style={{ height: '85vh' }}>
+            <div className="box" style={{ height: '85vh', display: 'flex', flexDirection: 'column' }}>
                 <ActionIcon mb={10} onClick={() => navigate('/adminDashboard')}>
                     <IconArrowLeft />
                 </ActionIcon>
@@ -244,26 +244,40 @@ export default function ClientList() {
                         Export All Clients to CSV
                     </Button>
                 </div>
-                <Table.ScrollContainer height={'80%'} style={{ overflowY: 'auto' }}>
-                    <Table mt={15} stickyHeader withTableBorder highlightOnHover bgcolor='white' w={'100%'} style={{ tableLayout: 'fixed', width: '100%' }}>
-                        <Table.Thead>
-                            <Table.Tr>
-                                <Table.Th>Last Name</Table.Th>
-                                <Table.Th>First Name</Table.Th>
-                                <Table.Th>Username</Table.Th>
-                                <Table.Th>Email</Table.Th>
-                                <Table.Th>Phone</Table.Th>
-                                <Table.Th>Address</Table.Th>
-                                <Table.Th>City</Table.Th>
-                                <Table.Th>Postal Code</Table.Th>
-                                <Table.Th>Family Members</Table.Th>
-                                <Table.Th>Account Notes</Table.Th>
-                                <Table.Th></Table.Th>
-                            </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>{clientRows}</Table.Tbody>
-                    </Table>
-                </Table.ScrollContainer>
+                <div
+                    style={{
+                        flex: 1,
+                        height: '100%',
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                    }}>
+
+                    <Table.ScrollContainer
+                        style={{
+                            flex: 1,
+                            overflowY: 'auto',
+                        }}>
+                        <Table mt={15} stickyHeader withTableBorder highlightOnHover bgcolor='white' w={'100%'} style={{ tableLayout: 'fixed', width: '100%' }}>
+                            <Table.Thead>
+                                <Table.Tr>
+                                    <Table.Th>Last Name</Table.Th>
+                                    <Table.Th>First Name</Table.Th>
+                                    <Table.Th>Username</Table.Th>
+                                    <Table.Th>Email</Table.Th>
+                                    <Table.Th>Phone</Table.Th>
+                                    <Table.Th>Address</Table.Th>
+                                    <Table.Th>City</Table.Th>
+                                    <Table.Th>Postal Code</Table.Th>
+                                    <Table.Th>Family Members</Table.Th>
+                                    <Table.Th>Account Notes</Table.Th>
+                                    <Table.Th></Table.Th>
+                                </Table.Tr>
+                            </Table.Thead>
+                            <Table.Tbody>{clientRows}</Table.Tbody>
+                        </Table>
+                    </Table.ScrollContainer>
+                </div>
             </div>
         </div>
     );
