@@ -33,29 +33,56 @@ export default function RegisterPage() {
     const navigate = useNavigate();
 
     const form = useForm({
+        // initialValues: {
+        //     username: '',
+        //     user_password: '',
+        //     confirm_password: '',
+        //     canada_status: '',
+        //     household_size: 0,
+        //     baby_or_pregnant: '',
+        //     language_spoken: '',
+        //     account_notes: '',
+        //     addr: {
+        //         line1: '',
+        //         line2: '',
+        //         city: '',
+        //         province: '',
+        //         postal_code: ''
+        //     },
+        //     main_family_member:
+        //     {
+        //         f_name: '',
+        //         l_name: '',
+        //         dob: null,
+        //         phone: '',
+        //         email: '',
+        //         relationship: 'owner'
+        //     },
+        //     family_members: []
+        // },
         initialValues: {
-            username: '',
-            user_password: '',
-            confirm_password: '',
-            canada_status: '',
+            username: 'allison1',
+            user_password: 'Abc1234$',
+            confirm_password: 'Abc1234$',
+            canada_status: 'Canadian Citizen',
             household_size: 0,
-            baby_or_pregnant: '',
-            language_spoken: '',
+            baby_or_pregnant: 'true',
+            language_spoken: 'English',
             account_notes: '',
             addr: {
-                line1: '',
+                line1: 'W 4',
                 line2: '',
-                city: '',
-                province: '',
-                postal_code: ''
+                city: 'Surrey',
+                province: 'BC',
+                postal_code: 'V6T 1Z1'
             },
             main_family_member:
             {
-                f_name: '',
-                l_name: '',
-                dob: null,
-                phone: '',
-                email: '',
+                f_name: 'Allison',
+                l_name: 'Kim',
+                dob: '2003-02-18',
+                phone: '(111) 111-111',
+                email: 'a@gmail.com',
                 relationship: 'owner'
             },
             family_members: []

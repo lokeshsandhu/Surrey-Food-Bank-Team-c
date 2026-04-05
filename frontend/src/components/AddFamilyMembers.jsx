@@ -1,10 +1,11 @@
-import { TextInput, Text, Group, Button, Stack, Select } from '@mantine/core';
+import { TextInput, Text, Group, Button, Stack, Select, Textarea } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { IMaskInput } from 'react-imask';
 import React from 'react';
 import '../styles/global-styles.css';
 import '../styles/Register.css';
 import { FMRelationshipOptions } from '../constants/FormOptions';
+import { CHARLIMITS } from '../constants/Validation';
 
 export default function AddFamilyMembers({ form }) {
     const addFamilyMember = () => {
@@ -40,39 +41,44 @@ export default function AddFamilyMembers({ form }) {
                         </Group>
                         <Stack w='100%'>
                             <Group>
-                                <TextInput
+                                <Textarea
                                     label="1. First Name"
                                     placeholder="e.g. Alex"
                                     key={form.key(`family_members.${index}.f_name`)}
                                     {...form.getInputProps(`family_members.${index}.f_name`)}
                                     withAsterisk
                                     w={'45%'}
+                                    maxLength={CHARLIMITS.name}
+                                    autosize
                                 />
-                                <TextInput
+                                <Textarea
                                     label="2. Last Name"
                                     placeholder="e.g. Doe"
                                     key={form.key(`family_members.${index}.l_name`)}
                                     {...form.getInputProps(`family_members.${index}.l_name`)}
                                     withAsterisk
                                     w={'45%'}
+                                    maxLength={CHARLIMITS.name}
+                                    autosize
                                 />
                             </Group>
                             <DateInput
                                 label="3. Date of Birth"
-                                placeholder="YYYY MM DD"
-                                valueFormat='YYYY MM DD'
+                                placeholder="YYYY-MM-DD"
+                                valueFormat='YYYY-MM-DD'
                                 maxDate={new Date()}
                                 key={form.key(`family_members.${index}.dob`)}
                                 {...form.getInputProps(`family_members.${index}.dob`)}
                                 withAsterisk
                                 w={'30%'}
                             />
-                            <TextInput
+                            <Textarea
                                 label="4. Email (Optional)"
                                 placeholder="e.g. alexdoe@gmail.com"
                                 key={form.key(`family_members.${index}.email`)}
                                 {...form.getInputProps(`family_members.${index}.email`)}
-                                w={'45%'}
+                                maxLength={CHARLIMITS.email}
+                                autosize
                             />
                             <TextInput
                                 label="5. Phone (Optional)"
@@ -92,7 +98,7 @@ export default function AddFamilyMembers({ form }) {
                                 key={form.key(`family_members.${index}.relationship`)}
                                 {...form.getInputProps(`family_members.${index}.relationship`)}
                                 withAsterisk
-                                w={'45%'}
+                                w={'60%'}
                             />
                         </Stack>
                     </Group>

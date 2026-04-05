@@ -8,6 +8,7 @@ import { provinceOptions, canadaStatusOptions } from '../constants/FormOptions';
 import CanadaStatusAlert from './alerts/CanadaStatusAlert';
 import CityAlert from './alerts/CityAlert';
 import ProvinceAlert from './alerts/ProvinceAlert';
+import { CHARLIMITS } from '../constants/Validation';
 
 export default function ElegibilityQuestions({ form }) {
     const [isCityEligible, setIsCityEligible] = useState(true);
@@ -89,12 +90,14 @@ export default function ElegibilityQuestions({ form }) {
                         withAsterisk
                         key={form.key('addr.line1')}
                         {...form.getInputProps('addr.line1')}
+                        maxLength={CHARLIMITS.addr}
                     />
                     <TextInput
                         label="Address Line 2 (optional)"
                         placeholder="e.g. Apt. 101"
                         key={form.key('addr.line2')}
-                        {...form.getInputProps('addr.line2')}
+                        {...form.getInputProps('addr.line2')} 
+                        maxLength={CHARLIMITS.addr}
                     />
                 </Group>
                 <Group>
@@ -112,6 +115,7 @@ export default function ElegibilityQuestions({ form }) {
                             form.getInputProps('addr.city').onChange(e);
                             setIsCityEligible(true);
                         }}
+                        maxLength={CHARLIMITS.city}
                     />
                     <Select
                         label='Province'
