@@ -38,3 +38,7 @@ html, body {
 .mantine-Alert-body {
     gap: 2px;
 }
+
+.mantine-Radio-body, .mantine-Radio-inner *, .mantine-Radio-label {
+    cursor: pointer;
+}
