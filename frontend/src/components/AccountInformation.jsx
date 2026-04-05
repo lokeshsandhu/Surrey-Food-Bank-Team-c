@@ -116,6 +116,7 @@ export default function AccountInformation({ form }) {
                         key={form.key('main_family_member.email')}
                         {...form.getInputProps('main_family_member.email')}
                         withAsterisk
+                        w={'45%'}
                         maxLength={CHARLIMITS.email}
                         autosize
                         

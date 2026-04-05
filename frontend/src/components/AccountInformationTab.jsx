@@ -288,6 +288,7 @@ export default function AccountInformationTab({ clientUsername }) {
                             form.getInputProps('accountOwner.email').onBlur(event);
                             await checkEmail();
                         }}
+                        w={'45%'}
                         autosize
                         maxLength={CHARLIMITS.email}
                     />
