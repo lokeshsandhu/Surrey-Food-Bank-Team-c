@@ -69,6 +69,7 @@ export default function RequestPasswordChangePage() {
                     placeholder='Username'
                     value={identifier}
                     onChange={e => setIdentifier(e.target.value)}
+                    className='account-recovery'
                 />
                 {error && <Text c="red" mt={10}>{error}</Text>}
                 <Button onClick={handleResetEmail} loading={submitting}>Send Reset Link</Button>

@@ -70,11 +70,16 @@ export default function LoginPage() {
     <div className="top-container linear-gradient">
       <Card className="login-card card" padding={20}>
         <Image src={logo} h={150} w="auto" m={10} p={2} />
-        <TextInput placeholder='Username' value={username} onChange={e => setUsername(e.target.value)} />
+        <TextInput 
+        placeholder='Username' 
+        value={username} onChange={e => setUsername(e.target.value)} 
+        className='login username'
+        />
         <PasswordInput
           placeholder='Password'
           value={password}
           onChange={e => setPassword(e.target.value)}
+          className='login password'
         />
         <Button onClick={handleLogin}>Login</Button>
         {error && <Text c="red" mt={10}>{error}</Text>}
