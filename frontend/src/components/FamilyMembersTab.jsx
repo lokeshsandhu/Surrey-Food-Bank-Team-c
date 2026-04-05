@@ -1,4 +1,4 @@
-import { Stack, TextInput, Group, Table, Button, Modal, Select, Title } from "@mantine/core";
+import { Stack, TextInput, Group, Table, Button, Modal, Select, Title, Textarea } from "@mantine/core";
 import React, { useEffect, useState } from "react";
 import { createFamilyMember, deleteFamilyMember, getFamilyMembers, updateFamilyMember } from "../../api/familyMembers";
 import { useDisclosure } from "@mantine/hooks";
@@ -12,6 +12,7 @@ import { IconUserPlus } from '@tabler/icons-react';
 import { FMRelationshipOptions } from '../constants/FormOptions';
 import { useNavigate } from "react-router";
 import { emailExists, updateAccount } from "../../api/accounts";
+import { CHARLIMITS } from "../constants/Validation";
 
 // enum for the modal mode
 const modeEnum = { updateMember: 1, addMember: 2 };
@@ -63,17 +64,17 @@ export default function FamilyMembersTab({ clientUsername }) {
           }
         }
       },
-      phone: (value) => form.values.relationship === 'owner' && isMemberOwner() ?
+      phone: (value) => form.values.relationship === 'owner' ?
         (value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).') : null,
-      relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' && !isMemberOwner() ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
+      relationship: (value) => value.trim().length > 0 ? null : "Please select your relationship to this family member."
     }
   });
 
   // check if email exists in database
   // duplicate error if exists: true AND is_member_email: false
   const checkEmail = async () => {
+    if (form.values.email === null || form.values.email.trim().length === 0) return;
     const currentEmail = form.values.email.trim();
-    if (currentEmail.length === 0) return;
 
     let currentUsername = null;
     let currentId = null;
@@ -96,12 +97,6 @@ export default function FamilyMembersTab({ clientUsername }) {
     return false;
   };
 
-  const isMemberOwner = () => {
-    const currentMember = { f_name: form.values.f_name, relationship: form.values.relationship };
-    const relationships = familyMemberInfo.map(m => { return { f_name: m.f_name, relationship: m.relationship }; });
-    return relationships.some(m => m.f_name === currentMember.f_name && m.relationship === currentMember.relationship);
-  };
-
   // Gets family members under this account
   // Returns the number of family members
   const getFamilyMembersInformation = async () => {
@@ -121,8 +116,13 @@ export default function FamilyMembersTab({ clientUsername }) {
   };
 
   const openUpdateModal = (member) => {
-    setCurrentMember(member);
-    form.setValues(member);
+    const curMember = {
+      ...member,
+      email: member.email === null ? '' : member.email,
+      phone: member.phone === null ? '' : member.phone
+    };
+    setCurrentMember(curMember);
+    form.setValues(curMember);
     setMode(modeEnum.updateMember);
     open();
   };
@@ -164,6 +164,7 @@ export default function FamilyMembersTab({ clientUsername }) {
         email: member.email.trim().length > 0 ? member.email.trim() : null,
         relationship: member.relationship
       };
+      console.log(memberData);
       try {
         const result = await updateFamilyMember(token, clientUsername, currentMember.id, memberData);
         await getFamilyMembersInformation();
@@ -201,11 +202,6 @@ export default function FamilyMembersTab({ clientUsername }) {
         hasErrors = true;
       }
     });
-
-    // const memberEmailIsValid = await checkMemberEmail();
-    // if (!memberEmailIsValid) {
-    //   hasErrors = true;
-    // }
 
     const hasDupEmail = await checkEmail();
     if (form.errors.email) return;
@@ -368,21 +364,25 @@ export default function FamilyMembersTab({ clientUsername }) {
         centered>
         <Stack w='100%'>
           <Group>
-            <TextInput
+            <Textarea
               label="First Name"
               placeholder="e.g. Alex"
               key={form.key(`f_name`)}
               {...form.getInputProps(`f_name`)}
               withAsterisk
               w={'45%'}
+              autosize
+              maxLength={CHARLIMITS.name}
             />
-            <TextInput
+            <Textarea
               label="Last Name"
               placeholder="e.g. Doe"
               key={form.key(`l_name`)}
               {...form.getInputProps(`l_name`)}
               withAsterisk
               w={'45%'}
+              autosize
+              maxLength={CHARLIMITS.name}
             />
           </Group>
           <DateInput
@@ -395,17 +395,18 @@ export default function FamilyMembersTab({ clientUsername }) {
             withAsterisk
             w={'45%'}
           />
-          <TextInput
+          <Textarea
             label={`Email ${form.values.relationship !== 'owner' ? '(Optional)' : ''}`}
             placeholder="e.g. alexdoe@gmail.com"
             key={form.key(`email`)}
             {...form.getInputProps(`email`)}
-            w={'45%'}
             onBlur={async (event) => {
               form.getInputProps('email').onBlur(event);
               await checkEmail();
             }}
             withAsterisk={form.values.relationship === 'owner'}
+            autosize
+            maxLength={CHARLIMITS.email}
           />
           <TextInput
             label={`Phone ${form.values.relationship !== 'owner' ? '(Optional)' : ''}`}
@@ -415,7 +416,7 @@ export default function FamilyMembersTab({ clientUsername }) {
             component={IMaskInput}
             mask='(000) 000-0000'
             w={'45%'}
-            withAsterisk={form.values.relationship === 'owner' && isMemberOwner()}
+            withAsterisk={form.values.relationship === 'owner'}
           />
 
           {form.values.relationship !== 'owner' &&
@@ -445,7 +446,7 @@ export default function FamilyMembersTab({ clientUsername }) {
           {mode === modeEnum.updateMember &&
             <Button
               color='red'
-              disabled={form.values.relationship === 'owner' && isMemberOwner()}
+              disabled={form.values.relationship === 'owner'}
               onClick={removeMember} >
               Remove
             </Button>

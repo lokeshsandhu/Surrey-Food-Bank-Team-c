@@ -1,4 +1,4 @@
-import { Title, Text, Stack, TextInput, Radio, Group, Fieldset, Select, Button } from "@mantine/core";
+import { Title, Text, Stack, TextInput, Radio, Group, Fieldset, Select, Button, Textarea } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import React, { useEffect, useState } from "react";
 import { emailExists, getAccount, updateAccount } from "../../api/accounts";
@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import { provinceOptions, canadaStatusOptions } from "../constants/FormOptions";
 import { splitAddress } from "../utils/displayHelpers";
+import { CHARLIMITS } from "../constants/Validation";
 
 export default function AccountInformationTab({ clientUsername }) {
     const token = sessionStorage.getItem('token');
@@ -150,7 +151,7 @@ export default function AccountInformationTab({ clientUsername }) {
         };
     };
 
-  
+
 
     const updateAccountInformation = async () => {
         const fieldsToValidate = [
@@ -240,30 +241,31 @@ export default function AccountInformationTab({ clientUsername }) {
         <div>
             <Title order={2}>Account Information</Title>
             {form.values.accountInformation.username === null !== null &&
-                (<Stack mt={15} gap={10}>
+                (<Stack mt={15} gap={10} mr={10}>
                     <TextInput
                         variant='unstyled'
                         label="Username"
                         placeholder="e.g. john123"
                         value={form.values.accountInformation.username}
-                        w={'45%'}
                         readOnly
                     />
-                    <TextInput
+                    <Textarea
                         label="First Name"
                         placeholder="e.g. Alex"
                         key={form.key('accountOwner.f_name')}
                         {...form.getInputProps('accountOwner.f_name')}
                         withAsterisk
-                        w={'45%'}
+                        autosize
+                        maxLength={CHARLIMITS.name}
                     />
-                    <TextInput
+                    <Textarea
                         label="Last Name"
                         placeholder="e.g. Doe"
                         key={form.key('accountOwner.l_name')}
                         {...form.getInputProps('accountOwner.l_name')}
                         withAsterisk
-                        w={'45%'}
+                        maxLength={CHARLIMITS.name}
+                        autosize
                     />
                     <DateInput
                         label="Date of Birth"
@@ -271,23 +273,23 @@ export default function AccountInformationTab({ clientUsername }) {
                         valueFormat='YYYY MM DD'
                         {...form.getInputProps('accountOwner.dob')}
                         withAsterisk
-                        w={'45%'}
                         maxDate={dayjs()}
                         defaultDate={dayjs()}
                         minDate={dayjs().subtract(100, 'year').toDate()}
+                        w={'45%'}
                     />
-                    <TextInput
+                    <Textarea
                         label="Email"
                         placeholder="e.g. alexdoe@gmail.com"
                         key={form.key('accountOwner.email')}
                         {...form.getInputProps('accountOwner.email')}
                         withAsterisk
-                        w={'45%'}
                         onBlur={async (event) => {
                             form.getInputProps('accountOwner.email').onBlur(event);
-
                             await checkEmail();
                         }}
+                        autosize
+                        maxLength={CHARLIMITS.email}
                     />
                     <TextInput
                         label="Phone"
@@ -307,12 +309,16 @@ export default function AccountInformationTab({ clientUsername }) {
                                 withAsterisk
                                 key={form.key('accountInformation.addr.line1')}
                                 {...form.getInputProps('accountInformation.addr.line1')}
+                                w={'100%'}
+                                maxLength={CHARLIMITS.addr}
                             />
                             <TextInput
                                 label="Address Line 2 (optional)"
                                 placeholder="e.g. Apt. 101"
                                 key={form.key('accountInformation.addr.line2')}
                                 {...form.getInputProps('accountInformation.addr.line2')}
+                                w={'100%'}
+                                maxLength={CHARLIMITS.addr}
                             />
                         </Group>
                         <Group>
@@ -322,6 +328,7 @@ export default function AccountInformationTab({ clientUsername }) {
                                 withAsterisk
                                 key={form.key('accountInformation.addr.city')}
                                 {...form.getInputProps('accountInformation.addr.city')}
+                                maxLength={CHARLIMITS.city}
                             />
                             <Select
                                 label='Province'
@@ -393,21 +400,24 @@ export default function AccountInformationTab({ clientUsername }) {
                             <Radio value='false' label="No" />
                         </Group>
                     </Radio.Group>
-                    <TextInput
+                    <Textarea
                         label="Language Spoken"
                         placeholder="e.g. English, French, Mandarin, etc."
                         key={form.key('accountInformation.language_spoken')}
                         {...form.getInputProps('accountInformation.language_spoken')}
                         withAsterisk
-                        w={'45%'}
                         mb={10}
+                        autosize
+                        maxLength={CHARLIMITS.openTextField}
                     />
-                    <TextInput
+                    <Textarea
                         label="Additional Notes (optional)"
                         placeholder="Enter any additional information"
                         key={form.key('accountInformation.account_notes')}
                         {...form.getInputProps('accountInformation.account_notes')}
                         mb={10}
+                        autosize
+                        maxLength={CHARLIMITS.openTextField}
                     />
                 </Stack>)}
             {form.values.accountInformation.username === null && <Text>Error loading account Information...</Text>}
