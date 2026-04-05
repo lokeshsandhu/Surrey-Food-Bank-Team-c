@@ -15,7 +15,7 @@ import { TimeslotForm } from '../components/timeslotForm.jsx';
 
 export default function TimeslotPage() {
     const [date, setDate] = useState(dayjs().format('YYYY-MM-DD HH:mm:ss'));
-    const [events, setEvents] = useState([]); // Placeholder for fetched timeslots
+    const [events, setEvents] = useState([]);
     const [loadingTimeslots, setLoadingTimeslots] = useState(false);
     const [removingBookingUsername, setRemovingBookingUsername] = useState(null);
     const [bookingModalOpened, bookingModalHandlers] = useDisclosure(false);
@@ -45,8 +45,10 @@ export default function TimeslotPage() {
     }
 
     const handleTimeslotClick = (slotStart, slotEnd) => {
-        setSelectedTimeslotData({start: slotStart, end: slotEnd});
-        timeslotModalHandlers.open();
+        if (!events.find((event) => dayjs(event.start).isSame(dayjs(slotStart)))) {
+            setSelectedTimeslotData({start: slotStart, end: slotEnd});
+            timeslotModalHandlers.open();
+        }
     }
 
     const handleSlotDragEnd = (rangeStart, rangeEnd) => {
@@ -107,7 +109,6 @@ export default function TimeslotPage() {
 
     useEffect(() => {
         fetchTimeslots();
-        console.log(date);
     }, [token, date]);
 
     async function fetchTimeslots() {
@@ -118,7 +119,6 @@ export default function TimeslotPage() {
                 dayjs(startOfWeek(date)).format('YYYY-MM-DD'),
                 dayjs(endOfWeek(date)).format('YYYY-MM-DD')
             );
-            console.log('Fetched timeslots:', timeslots);
 
             // Sort by date then start time before merging
             const sortedSlots = [...timeslots].sort((a, b) => {
@@ -157,7 +157,6 @@ export default function TimeslotPage() {
             });
             });
 
-            console.log('Formatted timeslots:', formattedTimeslots);
             setEvents(formattedTimeslots);
             return formattedTimeslots;
         } finally {
@@ -174,14 +173,12 @@ export default function TimeslotPage() {
         const notes = values.appt_notes || '';
         const capacity = values.capacity || 1;
 
-        console.log('Creating booking with date:', bookingDate, 'start:', bookingTime, 'end:', dayjs(bookingTime, 'HH:mm').add(15, 'minutes').format('HH:mm'), 'username:', username, 'notes:', notes, 'capacity:', values.capacity);
         let res;
         if (username === '') {
             res = await updateAppointment(token, bookingDate, bookingTime, { appt_notes: notes, capacity: capacity });
         } else {
             res = await updateAppointment(token, bookingDate, bookingTime, { username: username, appt_notes: notes, capacity: capacity });
         }
-        console.log('Make booking response:', res);
 
         if (res.error == 'insert or update on table "appointment" violates foreign key constraint "appointment_fkey_user"') {
             notifications.show({
@@ -219,7 +216,6 @@ export default function TimeslotPage() {
                     capacity: values.capacity,
                 };
                 
-                console.log('Creating timeslot with data:', data);
                 const res = await createAppointmentsInTimeRange(token, data);
                 return { date, error: res?.error || null };
             })
@@ -299,7 +295,15 @@ export default function TimeslotPage() {
                 withDragSlotSelect
                 onSlotDragEnd={handleSlotDragEnd}
                 renderEventBody={(event) => (
-                    <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            width: '100%',
+                            height: '100%',
+                            justifyContent: 'space-between',
+                            pointerEvents: 'auto'
+                        }}
+                    >
                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.displayTitle || event.title}</span>
                         <span style={{ marginLeft: 'auto', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{event.capacityLabel}</span>
                     </div>

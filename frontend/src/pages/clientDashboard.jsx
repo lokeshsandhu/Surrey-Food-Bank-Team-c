@@ -52,6 +52,7 @@ export default function ClientDashboard() {
     const [modalBookedTimes, setModalBookedTimes] = useState([]);
     const [processingEdit, setProcessingEdit] = useState(false);
     const [modalLoadingEdit, setModalLoadingEdit] = useState(false);
+    const [modalBookingNote, setModalBookingNote] = useState('');
 
     if (!token) {
         navigate('/');
@@ -85,24 +86,11 @@ export default function ClientDashboard() {
         if (selectedDate && selectedTime) {
             setProcessingBooking(true);
 
-            const data = { appt_date: selectedDate, start_time: selectedTime };
+            const data = { appt_date: selectedDate, start_time: selectedTime, booking_notes: bookingNote };
             const res = await bookAppointment(token, data);
 
             if (res && res.success) {
                 const effectiveUsername = username || (await me(token))?.username || '';
-                notifications.show({
-                    title: 'Success',
-                    message: 'Appointment booked successfully',
-                    color: 'var(--mantine-color-green-6)',
-                    autoClose: 5000,
-                    withCloseButton: true,
-                    withBorder: true,
-                    style: {
-                        border: '3px solid',
-                        borderColor: 'var(--mantine-color-green-6)',
-                        borderRadius: '8px',
-                    }
-                });
 
                 const userEmail = await getAccountEmail(token, effectiveUsername);
                 if (!userEmail?.email) {
@@ -157,24 +145,11 @@ export default function ClientDashboard() {
         if (modalSelectedDate && modalSelectedTime) {
             setProcessingEdit(true);
 
-            const data = { appt_date: modalSelectedDate, start_time: modalSelectedTime };
+            const data = { appt_date: modalSelectedDate, start_time: modalSelectedTime, booking_notes: modalBookingNote };
             const res = await bookAppointment(token, data);
 
             if (res && res.success) {
                 const effectiveUsername = username || (await me(token))?.username || '';
-                notifications.show({
-                    title: 'Success',
-                    message: 'Appointment booked successfully',
-                    color: 'var(--mantine-color-green-6)',
-                    autoClose: 5000,
-                    withCloseButton: true,
-                    withBorder: true,
-                    style: {
-                        border: '3px solid',
-                        borderColor: 'var(--mantine-color-green-6)',
-                        borderRadius: '8px',
-                    }
-                });
 
                 const userEmail = await getAccountEmail(token, effectiveUsername);
                 if (!userEmail?.email) {
@@ -223,6 +198,7 @@ export default function ClientDashboard() {
     const handleAvailableTimes = async (date) => {
         setSelectedTime(null);
         setSelectedDate(date);
+        setBookingNote('');
         setLoadingTimeGrid(true);
 
         try {
@@ -243,6 +219,7 @@ export default function ClientDashboard() {
     const handleAvailableTimesModal = async (date) => {
         setModalSelectedTime(null);
         setModalSelectedDate(date);
+        setModalBookingNote('');
         setModalLoadingEdit(true);
         try {
             
@@ -261,21 +238,23 @@ export default function ClientDashboard() {
         setModalLoading(true);
         const res = await deleteAppointmentFromUsername(token, appointment?.username);
         const cancelSucceeded = Array.isArray(res?.deleted);
-
         if (cancelSucceeded) {
-            notifications.show({
-                title: 'Success',
-                message: 'Appointment cancelled successfully',
-                color: 'var(--mantine-color-green-6)',
-                autoClose: 5000,
-                withCloseButton: true,
-                withBorder: true,
-                style: {
-                    border: '3px solid',
-                    borderColor: 'var(--mantine-color-green-6)',
-                    borderRadius: '8px',
-                }
-            });
+            if (!stack.state['calendar-page']) {
+
+                notifications.show({
+                    title: 'Success',
+                    message: 'Appointment cancelled successfully',
+                    color: 'var(--mantine-color-green-6)',
+                    autoClose: 5000,
+                    withCloseButton: true,
+                    withBorder: true,
+                    style: {
+                        border: '3px solid',
+                        borderColor: 'var(--mantine-color-green-6)',
+                        borderRadius: '8px',
+                    }
+                });
+            }
         } else {
             notifications.show({
                 title: 'Error',
@@ -289,6 +268,7 @@ export default function ClientDashboard() {
             handleAvailableTimes(selectedDate); // Refresh available times after cancellation
         }
         fetchMyAppointment(); // Refresh user's appointment information after cancellation
+        setBookingNote(''); // Reset booking note after cancellation
     }
 
     const fetchMyAppointment = async () => {
@@ -361,8 +341,8 @@ export default function ClientDashboard() {
                 </div>
                 <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
                     
-                    <Button justify='center' size='lg' mt={20} onClick={() => navigate(`/clientDashboard/account/${username}`)}>
-                        View My Account
+                    <Button justify='center' size='lg' mt={20} onClick={(event) => openSuccessModal()}>
+                        Check required documents
                     </Button>
 
                 </div>
@@ -447,7 +427,7 @@ export default function ClientDashboard() {
                     <Popover opened={tutorialState === 2} position="left" withArrow>
                         <Popover.Target>
                             <div className="time-grid">
-                                <ScrollArea style={{ height: '100%'}}>
+                                <ScrollArea style={{ marginBottom: '60px', height: '100%' }}>
                                     <LoadingOverlay visible={loadingTimeGrid} overlayProps={{ radius: "sm", blur: 2 }} />
                                     
                                     <TimeGrid
@@ -466,25 +446,22 @@ export default function ClientDashboard() {
                                         value={selectedTime}
                                         onChange={setSelectedTime}
                                         disabled={selectedDate === null}
-                                        style={{marginBottom: '20px', padding: '15px'}}
+                                        style={{ padding: '15px' }}
                                     />
-
-                                    <div style={{ height: '50px' }} />
-
-                                    <TextInput
-                                        size="lg"
-                                        placeholder="Add booking note"
-                                        value={bookingNote}
-                                        onChange={(event) => setBookingNote(event.currentTarget.value)}
-                                        w={240}
-                                        style={{ position: 'absolute', bottom: '15px', left: '15px' }}
-                                    />
-                                    <div className="booking-button">
-                                        <Button size="lg" onClick={handleBooking} loading={processingBooking} disabled={!selectedDate || !selectedTime}>
-                                            Book Appointment
-                                        </Button>
-                                    </div>
                                 </ScrollArea>
+                                <TextInput
+                                    size="lg"
+                                    placeholder="Add booking note"
+                                    value={bookingNote}
+                                    onChange={(event) => setBookingNote(event.currentTarget.value)}
+                                    w="50%"
+                                    style={{ position: 'absolute', bottom: '30px', left: '30px' }}
+                                />
+                                <div className="booking-button">
+                                    <Button size="lg" w="100%" onClick={handleBooking} loading={processingBooking} disabled={!selectedDate || !selectedTime}>
+                                        Book Appointment
+                                    </Button>
+                                </div>
                             </div>
                         </Popover.Target>
                         <Popover.Dropdown>
@@ -502,7 +479,7 @@ export default function ClientDashboard() {
                     <div className="modal-content">
                         <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
                         <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
-                        <p><strong>Notes:</strong> {myAppointment && myAppointment.appt_notes ? myAppointment.appt_notes : 'N/A'}</p>
+                        <p><strong>Notes:</strong> {myAppointment && myAppointment.booking_notes ? myAppointment.booking_notes : 'N/A'}</p>
                         <div>
                             <Button mr={10} onClick={() => openStackPage("calendar-page")}>
                                 Edit Booking
@@ -517,7 +494,7 @@ export default function ClientDashboard() {
 
                 <Modal {...stack.register('calendar-page')} title="Choose date" size="70%" transitionProps={{ transition: 'slide-left' }} centered>
                     <LoadingOverlay visible={modalLoadingEdit} overlayProps={{ radius: "sm", blur: 2 }}/>
-                    <Group grow>
+                    <Group grow style={{ position: 'relative', paddingBottom: '80px'}}>
                         <DatePicker
                             size="xl"
                             value={modalSelectedDate}
@@ -561,6 +538,15 @@ export default function ClientDashboard() {
                             style={{marginBottom: '20px', padding: '15px'}}
                         />
                     </Group>
+                    <TextInput
+                        size="lg"
+                        placeholder="Add booking note"
+                        value={modalBookingNote}
+                        onChange={(event) => setModalBookingNote(event.currentTarget.value)}
+                        w={240}
+                        style={{ position: 'absolute', bottom: '30px', left: '30px' }}
+                    />
+
                     <div className="booking-button">
                         <Button size="lg" onClick={handleEdit} loading={processingEdit} disabled={!modalSelectedDate || !modalSelectedTime}>
                             Book Appointment

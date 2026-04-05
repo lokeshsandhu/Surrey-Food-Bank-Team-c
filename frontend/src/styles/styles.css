@@ -52,8 +52,8 @@
 
 .booking-button {
     position: absolute;
-    bottom: 15px;
-    right: 15px;
+    bottom: 30px;
+    right: 30px;
     display: flex;
     align-items: flex-end;
     gap: 10px;

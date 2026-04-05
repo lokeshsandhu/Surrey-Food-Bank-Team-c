@@ -50,7 +50,19 @@ export default function FamilyMembersTab({ clientUsername }) {
       f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their first name.',
       l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their last name.',
       dob: (value) => value && value.trim().length > 0 ? null : 'Please enter their date of birth.',
-      email: (value) => form.values.relationship === 'owner' ? value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).' : null,
+      email: (value) => {
+        if (form.values.relationship === 'owner') {
+          if (value.trim().length === 0 || !validator.isEmail(value)) {
+            return 'Please enter a valid email (e.g. alexdoe@gmail.com).';
+          }
+        } else {
+          if (value === null || value.trim().length === 0) {
+            return null;
+          } else if (!validator.isEmail(value.trim())) {
+            return 'Please enter a valid email (e.g. alexdoe@gmail.com).';
+          }
+        }
+      },
       phone: (value) => form.values.relationship === 'owner' && isMemberOwner() ?
         (value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).') : null,
       relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' && !isMemberOwner() ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
@@ -83,25 +95,6 @@ export default function FamilyMembersTab({ clientUsername }) {
 
     return false;
   };
-
-  // const checkMemberEmail = async (memberId = null) => {
-  //   const currentEmail = form.values.email.trim();
-  //   if (!validator.isEmail(currentEmail)) {
-  //     return false;
-  //   }
-
-  //   const result = await emailExists(currentEmail, memberId === null ? null : clientUsername, memberId);
-  //   if (result.exists && result.is_family_member !== true) {
-  //     form.setFieldError(
-  //       'email',
-  //       'Email already taken. Try a different email.'
-  //     );
-  //     return false;
-  //   }
-
-  //   form.validateField('email');
-  //   return true;
-  // };
 
   const isMemberOwner = () => {
     const currentMember = { f_name: form.values.f_name, relationship: form.values.relationship };
@@ -152,11 +145,6 @@ export default function FamilyMembersTab({ clientUsername }) {
       }
     });
 
-    // const memberEmailIsValid = await checkMemberEmail(currentMember?.id ?? null);
-    // if (!memberEmailIsValid) {
-    //   hasErrors = true;
-    // }
-
     const hasDupEmail = await checkEmail();
     if (form.errors.email) return;
 
@@ -173,7 +161,7 @@ export default function FamilyMembersTab({ clientUsername }) {
         l_name: member.l_name.trim(),
         dob: member.dob,
         phone: member.phone,
-        email: member.email.trim().length > 0 ? member.email : null,
+        email: member.email.trim().length > 0 ? member.email.trim() : null,
         relationship: member.relationship
       };
       try {
@@ -232,8 +220,8 @@ export default function FamilyMembersTab({ clientUsername }) {
       const member = form.values;
       const memberData = {
         username: clientUsername,
-        f_name: member.f_name,
-        l_name: member.l_name,
+        f_name: member.f_name.trim(),
+        l_name: member.l_name.trim(),
         dob: member.dob,
         email: member.email.trim().length > 0 ? member.email : null,
         phone: member.phone,
@@ -408,7 +396,7 @@ export default function FamilyMembersTab({ clientUsername }) {
             w={'45%'}
           />
           <TextInput
-            label="Email"
+            label={`Email ${form.values.relationship !== 'owner' ? '(Optional)' : ''}`}
             placeholder="e.g. alexdoe@gmail.com"
             key={form.key(`email`)}
             {...form.getInputProps(`email`)}
@@ -420,7 +408,7 @@ export default function FamilyMembersTab({ clientUsername }) {
             withAsterisk={form.values.relationship === 'owner'}
           />
           <TextInput
-            label="Phone"
+            label={`Phone ${form.values.relationship !== 'owner' ? '(Optional)' : ''}`}
             placeholder="e.g. (123) 456-7890"
             key={form.key(`phone`)}
             {...form.getInputProps(`phone`)}

@@ -68,15 +68,14 @@ export default function AddFamilyMembers({ form }) {
                                 w={'30%'}
                             />
                             <TextInput
-                                label="4. Email"
+                                label="4. Email (Optional)"
                                 placeholder="e.g. alexdoe@gmail.com"
                                 key={form.key(`family_members.${index}.email`)}
                                 {...form.getInputProps(`family_members.${index}.email`)}
                                 w={'45%'}
-                                // TODO: check if email exists in database onBlur
                             />
                             <TextInput
-                                label="5. Phone"
+                                label="5. Phone (Optional)"
                                 placeholder="e.g. (123) 456-7890"
                                 key={form.key(`family_members.${index}.phone`)}
                                 {...form.getInputProps(`family_members.${index}.phone`)}
