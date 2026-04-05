@@ -1,4 +1,4 @@
-import { Radio, Group, TextInput, Text, Fieldset, Select } from '@mantine/core';
+import { Radio, Group, TextInput, Text, Fieldset, Select, Textarea } from '@mantine/core';
 import React from 'react';
 import { useState, useEffect } from 'react';
 import '../styles/global-styles.css';
@@ -84,20 +84,22 @@ export default function ElegibilityQuestions({ form }) {
                 <Text size='sm' mb={3}>Please enter your residential address.</Text>
                 <Text size='sm' my={0} fs='italic'>Note: In order to be eligible for the program, clients must reside in British Columbia within Surrey, North Delta, or Cloverdale, north of 40th Avenue.</Text>
                 <Group className='address' my={10}>
-                    <TextInput
+                    <Textarea
                         label="Address Line 1"
                         placeholder="e.g. 1234 78th Ave"
                         withAsterisk
                         key={form.key('addr.line1')}
                         {...form.getInputProps('addr.line1')}
                         maxLength={CHARLIMITS.addr}
+                        autosize
                     />
-                    <TextInput
+                    <Textarea
                         label="Address Line 2 (optional)"
                         placeholder="e.g. Apt. 101"
                         key={form.key('addr.line2')}
                         {...form.getInputProps('addr.line2')} 
                         maxLength={CHARLIMITS.addr}
+                        autosize
                     />
                 </Group>
                 <Group>

@@ -256,6 +256,7 @@ export default function AccountInformationTab({ clientUsername }) {
                         {...form.getInputProps('accountOwner.f_name')}
                         withAsterisk
                         autosize
+                        w={'45%'}
                         maxLength={CHARLIMITS.name}
                     />
                     <Textarea
@@ -265,6 +266,7 @@ export default function AccountInformationTab({ clientUsername }) {
                         {...form.getInputProps('accountOwner.l_name')}
                         withAsterisk
                         maxLength={CHARLIMITS.name}
+                        w={'45%'}
                         autosize
                     />
                     <DateInput
@@ -304,7 +306,7 @@ export default function AccountInformationTab({ clientUsername }) {
                     />
                     <Fieldset variant='unstyled' my={10}>
                         <Group className='address' my={10}>
-                            <TextInput
+                            <Textarea
                                 label="Address Line 1"
                                 placeholder="e.g. 13478 78th Ave"
                                 withAsterisk
@@ -312,14 +314,16 @@ export default function AccountInformationTab({ clientUsername }) {
                                 {...form.getInputProps('accountInformation.addr.line1')}
                                 w={'100%'}
                                 maxLength={CHARLIMITS.addr}
+                                autosize
                             />
-                            <TextInput
+                            <Textarea
                                 label="Address Line 2 (optional)"
                                 placeholder="e.g. Apt. 101"
                                 key={form.key('accountInformation.addr.line2')}
                                 {...form.getInputProps('accountInformation.addr.line2')}
                                 w={'100%'}
                                 maxLength={CHARLIMITS.addr}
+                                autosize
                             />
                         </Group>
                         <Group>

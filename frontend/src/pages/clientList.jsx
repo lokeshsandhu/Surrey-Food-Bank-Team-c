@@ -203,6 +203,7 @@ export default function ClientList() {
                 </ActionIcon>
                 <Title order={1}>Client List</Title>
                 <TextInput
+                    className='search-bar'
                     size="md"
                     placeholder="Search Clients"
                     radius={30}

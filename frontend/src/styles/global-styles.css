@@ -43,7 +43,7 @@ html, body {
     cursor: pointer;
 }
 
-.mantine-InputWrapper-root {
+.mantine-InputWrapper-root:not(.search-bar) {
     min-height: 80px;
 }
 
