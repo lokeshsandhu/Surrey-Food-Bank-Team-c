@@ -14,6 +14,11 @@ import { provinceOptions, canadaStatusOptions } from "../constants/FormOptions";
 import { splitAddress } from "../utils/displayHelpers";
 import { CHARLIMITS } from "../constants/Validation";
 import { capitalize } from "../utils/displayHelpers";
+import CanadaStatusAlert from "./alerts/CanadaStatusAlert";
+import CityAlert from "./alerts/CityAlert";
+import ProvinceAlert from "./alerts/ProvinceAlert";
+import { isMinAge } from "../utils/registrationHelpers";
+import AgeAlert from "./alerts/AgeAlert";
 
 export default function AccountInformationTab({ clientUsername }) {
     const token = sessionStorage.getItem('token');
@@ -83,6 +88,19 @@ export default function AccountInformationTab({ clientUsername }) {
             }
         }
     });
+
+    const checkIsCityEligible = () => {
+        const city = form.values.accountInformation.addr.city.trim().toLowerCase();
+
+        return city.length === 0
+            || city === 'surrey'
+            || city === 'north delta';
+    };
+
+    const checkIsProvinceEligible = () => {
+        const province = form.values.accountInformation.addr.province.trim().toUpperCase();
+        return province.length === 0 || province === 'BC';
+    };
 
     // check if email exists in database
     // duplicate error if exists: true AND is_member_email: false
@@ -281,6 +299,7 @@ export default function AccountInformationTab({ clientUsername }) {
                         minDate={dayjs().subtract(120, 'year').toDate()}
                         w={'45%'}
                     />
+                    {!isMinAge(form.values.accountOwner.dob) && <AgeAlert />}
                     <Textarea
                         label="Email"
                         placeholder="e.g. alexdoe@gmail.com"
@@ -357,6 +376,8 @@ export default function AccountInformationTab({ clientUsername }) {
                                 key={form.key('accountInformation.addr.postal_code')}
                                 {...form.getInputProps('accountInformation.addr.postal_code')}
                             />
+                            {!checkIsCityEligible() && <CityAlert />}
+                            {!checkIsProvinceEligible() && <ProvinceAlert />}
                         </Group>
                     </Fieldset>
                     <Radio.Group
@@ -391,6 +412,14 @@ export default function AccountInformationTab({ clientUsername }) {
                             />
                         </Group>
                     </Radio.Group>
+                    {
+                        (
+                            form.values.accountInformation.canada_status === canadaStatusOptions.visitorIntlStudentLessThan6.value ||
+                            form.values.accountInformation.canada_status ===
+                            canadaStatusOptions.other.value
+                        ) &&
+                        <CanadaStatusAlert />
+                    }
                     <Radio.Group
                         name="baby_or_pregnant"
                         label="Does your family have any babies or pregnant mothers?"
