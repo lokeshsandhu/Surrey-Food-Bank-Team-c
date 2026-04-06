@@ -16,6 +16,8 @@ import { getAccount, getAccountEmail } from '../../api/accounts.js';
 import { sendConfirmationEmail } from '../../api/email.js';
 
 import arabic_img from '../assets/arabic.png';
+import help_icon from '../assets/help-circle.svg';
+import x_icon from '../assets/x.svg';
 
 const excludedDays = [5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
 
@@ -34,7 +36,7 @@ export default function ClientDashboard() {
     const [tinyBundles, setTinyBundles] = useState(false);
     const bookingNoteRef = useRef(null);
     const [currLanguage, setCurrLanguage] = useState("English");
-    const [tutorialState, setTutorialState] = useState(sessionStorage.getItem('firstTime') ? 1 : 1);
+    const [tutorialState, setTutorialState] = useState(sessionStorage.getItem('firstTime') ? 1 : 0);
 
     const username = sessionStorage.getItem('username');
     const token = sessionStorage.getItem('token');
@@ -306,6 +308,11 @@ export default function ClientDashboard() {
         stack.open(page);
     };
 
+    const handleCloseTutorial = () => {
+        setTutorialState(3);
+        sessionStorage.removeItem('firstTime');
+    };
+
     useEffect(() => {
         
         fetchMyAppointment();
@@ -342,7 +349,7 @@ export default function ClientDashboard() {
     return (
         <div className="page">
             <ClientNavBar />
-            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{marginLeft: '20px', marginRight: '20px', marginTop: '20px'}}>
+            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{marginLeft: '20px', marginRight: '20px', marginTop: '20px'}} visibleFrom='md'>
                 <div className="box">
                     <h3 style={{marginBottom: '10px', marginTop: '0px'}}>Booking Information</h3>
                     {myAppointment && myAppointment.appt_date ? `You have a booking on ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} from ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')} to ${dayjs(myAppointment.end_time, 'HH:mm:ss').format('h:mm A')}, ` : `Welcome back ${username}! You do not have any upcoming bookings.`}
@@ -462,6 +469,11 @@ export default function ClientDashboard() {
                             </div>
                         </Popover.Target>
                         <Popover.Dropdown style={{ width: '400px', whiteSpace: 'normal' }}>
+                            <Group justify="flex-end" style={{ marginBottom: '0px' }}>
+                                <Button size="compact-xs" onClick={handleCloseTutorial} variant='transparent'>
+                                    <img src={x_icon} alt="Close tutorial" height={20} width={20}/>
+                                </Button>
+                            </Group>
                             <p>Welcome to the Surrey Food Bank booking system {username}!</p>
                             <p>Here is a quick tutorial on how to use the system.</p>
                             <p>To start, please select an available date from the calendar on the left here.</p>
@@ -531,6 +543,11 @@ export default function ClientDashboard() {
                             </div>
                         </Popover.Target>
                         <Popover.Dropdown style={{ width: '400px', whiteSpace: 'normal' }}>
+                            <Group justify="flex-end" style={{ marginBottom: '0px' }}>
+                                <Button size="compact-xs" onClick={handleCloseTutorial} variant='transparent'>
+                                    <img src={x_icon} alt="Close tutorial" height={20} width={20}/>
+                                </Button>
+                            </Group>
                             <p>Great! Now please select an available time slot on the right to book your appointment.</p>
                             <p>You can also add any notes regarding your booking in the text box below the time slots.</p>
                             <p>Once you have selected a time and added any notes, click the "Book Appointment" button to confirm your booking.</p>
@@ -749,6 +766,9 @@ export default function ClientDashboard() {
                     <Button onClick={closeSuccessModal}>Close</Button>
                 </div>
             </Modal>
+            <Button onClick={() => setTutorialState(1)} style={{ position: 'fixed', bottom: '20px', right: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <img src={help_icon} alt="Help Icon" style={{filter: "invert(100%)"}}/>
+            </Button>
         </div>
     );
 

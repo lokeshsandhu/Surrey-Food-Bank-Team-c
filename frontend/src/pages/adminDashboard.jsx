@@ -258,20 +258,18 @@ export default function AdminDashboard() {
                 <div className="box">
                     <Text>Use the Navigation bar above to access the following:</Text>
                     <hr></hr>
-                    <Text><strong>Timeslots Page</strong>
-                        <ul>
-                            <li>Create or edit available timeslots</li>
-                            <li>View booked appointments</li>
-                            <li>Create bookings for clients</li>
-                        </ul>
-                    </Text>
-                    <Text><strong>Client List</strong>
-                        <ul>
-                            <li>View all clients</li>
-                            <li>View or edit a client's account information</li>
-                            <li>View a client's past appointment history</li>
-                        </ul>
-                    </Text>
+                    <Text><strong>Timeslots Page</strong></Text>
+                    <ul>
+                        <li>Create or edit available timeslots</li>
+                        <li>View booked appointments</li>
+                        <li>Create bookings for clients</li>
+                    </ul>
+                    <Text><strong>Client List</strong></Text>
+                    <ul>
+                        <li>View all clients</li>
+                        <li>View or edit a client's account information</li>
+                        <li>View a client's past appointment history</li>
+                    </ul>
                     {/* <DatePickerInput
                         label="Pick date to make booking for client"
                         value={createBookingDate ? createBookingDate : dayjs()}
