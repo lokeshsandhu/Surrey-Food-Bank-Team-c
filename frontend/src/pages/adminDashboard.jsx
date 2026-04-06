@@ -43,10 +43,9 @@ export default function AdminDashboard() {
     // For export csv
     const [csvStartDate, setCsvStartDate] = useState(dayjs().format('YYYY-MM-DD'));
     const [csvEndDate, setCsvEndDate] = useState(dayjs().format('YYYY-MM-DD'));
+    const [exportLoading, setExportLoading] = useState(false);
 
     const navigate = useNavigate();
-    // setting export to csv configurations
-    const csvConfig = mkConfig({ useKeysAsHeaders: true });
 
     if (!token) {
         navigate('/');
@@ -180,17 +179,50 @@ export default function AdminDashboard() {
 
     // Get appointments within a time range to export to csv
     const handleApptRangeExport = async () => {
-        const appointments = await getAppointmentsInDateRange(token, dayjs(csvStartDate).format('YYYY-MM-DD'), dayjs(csvEndDate).format('YYYY-MM-DD'));
-        let bookedAppointments = appointments.filter(d => d.booked_count > 0);
-        bookedAppointments = bookedAppointments.map(d => {
-            let clients = d.usernames.join(',');
-            return {
-                ...d,
-                usernames: clients
-            };
-        });
-        const csv = generateCsv(csvConfig)(bookedAppointments);
-        download(csvConfig)(csv);
+        try {
+            setExportLoading(true);
+
+            const appointments = await getAppointmentsInDateRange(token, dayjs(csvStartDate).format('YYYY-MM-DD'), dayjs(csvEndDate).format('YYYY-MM-DD'));
+
+            let bookedAppointments = appointments.filter(d => d.booked_count > 0);
+
+            bookedAppointments = bookedAppointments.map(d => {
+                let clients = d.usernames.join(',');
+                return {
+                    ...d,
+                    usernames: clients
+                };
+            });
+
+            if (bookedAppointments.length > 0) {
+                // setting export to csv configurations
+                const csvConfig = mkConfig(
+                    {
+                        useKeysAsHeaders: true,
+                        filename: `bookings_${csvStartDate}_to_${csvEndDate}`
+                    });
+
+                // Generate and download csv
+                const csv = generateCsv(csvConfig)(bookedAppointments);
+                download(csvConfig)(csv);
+            } else {
+                notifications.show({
+                    title: 'No bookings in this date range',
+                    message: 'Please try a different date range.',
+                    color: 'red',
+                });
+            }
+
+        } catch (err) {
+            notifications.show({
+                title: 'Error Exporting CSV',
+                message: 'There was an error exporting the bookings to CSV. Please try again.',
+                color: 'red',
+            });
+        } finally {
+            setExportLoading(false);
+        }
+
     };
 
     useEffect(() => {
@@ -227,14 +259,14 @@ export default function AdminDashboard() {
                     <Text>Use the Navigation bar above to access the following:</Text>
                     <hr></hr>
                     <Text><strong>Timeslots Page</strong>
-                        <ul> 
+                        <ul>
                             <li>Create or edit available timeslots</li>
                             <li>View booked appointments</li>
                             <li>Create bookings for clients</li>
                         </ul>
                     </Text>
                     <Text><strong>Client List</strong>
-                        <ul> 
+                        <ul>
                             <li>View all clients</li>
                             <li>View or edit a client's account information</li>
                             <li>View a client's past appointment history</li>
@@ -258,18 +290,27 @@ export default function AdminDashboard() {
                                 label='Start Date'
                                 placeholder='Pick a start date'
                                 value={csvStartDate}
-                                onChange={setCsvStartDate}
+                                onChange={(date) => {
+                                    setCsvStartDate(date);
+                                    if (csvEndDate < date) {
+                                        setCsvEndDate(date);
+                                    }
+                                }}
                             />
                             <DatePickerInput
                                 label='End Date'
                                 placeholder='Pick a end date'
                                 value={csvEndDate}
                                 onChange={setCsvEndDate}
+                                minDate={csvStartDate}
                             />
                         </div>
                         <Button
                             onClick={handleApptRangeExport}
-                        >Export Bookings to CSV</Button>
+                            loading={exportLoading}
+                        >
+                            Export Bookings to CSV
+                        </Button>
                     </div>
 
                     {/* <DatePickerInput

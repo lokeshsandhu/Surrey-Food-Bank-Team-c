@@ -175,23 +175,21 @@ export default function RegisterPage() {
                     }
                 },
                 email: (value) => {
-                    // checks if this is a duplicate email within this registration form
-                    if (value.trim().length === 0) {
+                    if (value.trim().length === 0 || !validator.isEmail(value.trim())) {
                         return 'Please enter a valid email (e.g. alexdoe@gmail.com).';
                     }
-
+                    
                     const currentEmail = value.trim().toLowerCase();
                     const familyEmails = form.values.family_members.map(m => m.email.trim().toLowerCase());
-
-
+                    
+                    
+                    // checks if this is a duplicate email within this registration form
                     const duplicates = familyEmails.filter((email, i) => email === currentEmail).length > 0;
 
                     if (duplicates) {
                         return 'Email is already taken. Please enter another email.';
                     }
-                    return null;
                 },
-                // value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
                 phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
             },
             family_members: {
@@ -201,6 +199,8 @@ export default function RegisterPage() {
                 email: (value, values, path) => {
                     if (value.trim().length === 0) {
                         return null;
+                    } else if (!validator.isEmail(value.trim())) {
+                        return 'Please enter a valid email (e.g. alexdoe@gmail.com).'
                     }
 
                     const ownerEmail = form.values.main_family_member.email.trim().toLowerCase();
@@ -377,10 +377,10 @@ export default function RegisterPage() {
                     user_password: form.values.user_password,
                     canada_status: form.values.canada_status,
                     household_size: householdSize,
-                    addr: form.values.addr.line1 + ', ' + form.values.addr.line2 + ', ' + form.values.addr.city + ', ' + form.values.addr.province + ', ' + form.values.addr.postal_code,
+                    addr: form.values.addr.line1.trim() + ', ' + form.values.addr.line2.trim() + ', ' + form.values.addr.city.trim() + ', ' + form.values.addr.province + ', ' + form.values.addr.postal_code,
                     baby_or_pregnant: form.values.baby_or_pregnant === 'true',
-                    language_spoken: form.values.language_spoken,
-                    account_notes: form.values.account_notes
+                    language_spoken: form.values.language_spoken.trim(),
+                    account_notes: form.values.account_notes.trim()
                 };
                 try {
                     const result = await createAccount(accountData);
@@ -398,7 +398,7 @@ export default function RegisterPage() {
                                 l_name: form.values.main_family_member.l_name.trim(),
                                 dob: form.values.main_family_member.dob,
                                 phone: form.values.main_family_member.phone,
-                                email: form.values.main_family_member.email,
+                                email: form.values.main_family_member.email.trim(),
                                 relationship: 'owner',
                             };
                             try {
@@ -412,7 +412,7 @@ export default function RegisterPage() {
                                         l_name: member.l_name.trim(),
                                         dob: member.dob,
                                         phone: member.phone,
-                                        email: member.email.trim().length > 0 ? member.email : null,
+                                        email: member.email.trim().length > 0 ? member.email.trim() : null,
                                         relationship: member.relationship,
                                     };
                                     await createFamilyMember(loginResult.token, memberData);

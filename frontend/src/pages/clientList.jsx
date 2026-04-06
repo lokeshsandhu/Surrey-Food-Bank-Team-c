@@ -8,9 +8,11 @@ import '../styles/clientList.css';
 
 import { ActionIcon, CloseButton, TextInput, Title, Table, Button } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
-import { getFamilyMembersByFName, getFamilyMembersByLName, getOwnerFamilyMembers } from '../../api/familyMembers';
+import { getOwnerFamilyMembers } from '../../api/familyMembers';
 import { getAccount } from '../../api/accounts';
 import { splitAddress } from '../utils/displayHelpers';
+import { notifications } from '@mantine/notifications';
+import dayjs from 'dayjs';
 
 import { mkConfig, generateCsv, download } from "export-to-csv";
 
@@ -24,12 +26,12 @@ export default function ClientList() {
         return null;
     }
 
-    // setting export to csv configurations
-    const csvConfig = mkConfig({ useKeysAsHeaders: true });
-
     // state
     const [searchText, setSearchText] = useState('');
     const [accountOwners, setAccountOwners] = useState([]);
+
+    // export to csv
+    const [exportLoading, setExportLoading] = useState(false);
 
     const getAccountDetails = async (resultOwners) => {
         let accountOwnerDetails = [];
@@ -64,7 +66,6 @@ export default function ClientList() {
     const getAllAccountOwners = async () => {
         // get account owners
         const resultOwners = await getOwnerFamilyMembers(token);
-
         await getAccountDetails(resultOwners);
     };
 
@@ -95,9 +96,39 @@ export default function ClientList() {
 
     // Handle export clients to csv
     const handleExportData = async () => {
-        getAllAccountOwners();
-        const csv = generateCsv(csvConfig)(accountOwners);
-        download(csvConfig)(csv);
+        setSearchText('');
+        try {
+            setExportLoading(true);
+            await getAllAccountOwners();
+
+            if (accountOwners.length > 0) {
+                // setting export to csv configurations
+                const csvConfig = mkConfig(
+                    {
+                        useKeysAsHeaders: true,
+                        filename: `client_list_Export${dayjs().format('YYYY-MM-DD')}`
+                    });
+
+                // Generate and download csv
+                const csv = generateCsv(csvConfig)(accountOwners);
+                download(csvConfig)(csv);
+            } else {
+                notifications.show({
+                    title: 'There are no client accounts',
+                    message: 'Please try again when there is at least one client account.',
+                    color: 'red',
+                });
+            }
+
+        } catch (err) {
+            notifications.show({
+                title: `Error Exporting CSV`,
+                message: 'There was an error exporting the clients to CSV. Please try again.',
+                color: 'red',
+            });
+        } finally {
+            setExportLoading(false);
+        }
     };
 
     const colStyles = {
@@ -110,7 +141,7 @@ export default function ClientList() {
         postal: { width: '8%' },
         household: { width: '3%' },
         notes: { width: '5%' },
-        action: { width: '3%'}
+        action: { width: '3%' }
     };
     const cellBase = {
         whiteSpace: 'normal',
@@ -205,12 +236,13 @@ export default function ClientList() {
                     <Button
                         variant='outline'
                         onClick={handleExportData}
+                        loading={exportLoading}
                     >
                         Export All Clients to CSV
                     </Button>
                 </div>
                 <Table.ScrollContainer height={'80%'} style={{ overflowY: 'auto' }}>
-                    <Table mt={15} stickyHeader withTableBorder highlightOnHover bgcolor='white' w={'100%'} style={{tableLayout: 'fixed', width: '100%'}}>
+                    <Table mt={15} stickyHeader withTableBorder highlightOnHover bgcolor='white' w={'100%'} style={{ tableLayout: 'fixed', width: '100%' }}>
                         <Table.Thead>
                             <Table.Tr>
                                 <Table.Th>Last Name</Table.Th>
