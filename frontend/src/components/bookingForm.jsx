@@ -176,14 +176,19 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
         <Box style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 220px', gap: '16px', alignItems: 'start' }}>
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap="md">
-              <NativeSelect
+              <Select
                 label="Select Client to add to this timeslot"
                 placeholder="Client username"
                 radius="md"
                 data-autofocus
+                searchable
+                maxDropdownHeight={120}
                 value={currClient}
-                onChange={(event) => setCurrClient(event.currentTarget.value)}
-                data={[...clients.map(client => ({ value: client.username, label: client.username })), { value: 'admin', label: 'Admin' }, { value: "", label: '', disabled: true, hidden: true }]}
+                onChange={(value) => setCurrClient(value)} 
+                data={[
+                  ...clients.map(client => ({ value: client.username, label: client.username })),
+                  { value: 'admin', label: 'Admin' }
+                ]}
               />
 
               <DateTimePicker
