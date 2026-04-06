@@ -351,6 +351,8 @@ export default function ClientDashboard() {
                             click here to edit/cancel your booking.
                         </button>
                     )}
+                    <p>If you have a pregnant mother or a baby in your family, only Wednesday bookings will be available to you</p>
+                    <p>If you have 5 or more members in your family, bookings will be 30 minutes long, otherwise it'll be 15 minutes</p>
                 </div>
                 <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
                     
