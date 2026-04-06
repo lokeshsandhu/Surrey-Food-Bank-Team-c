@@ -42,7 +42,7 @@ export default function ClientList() {
             accountOwnerDetails = await Promise.all(
                 resultOwners.map(async (owner) => {
                     const details = await getAccount(token, owner.username);
-                    const address = splitAddress(details.addr);
+                    const address = splitAddress(details.addr ?? '');
 
                     return {
                         username: owner.username,
@@ -60,6 +60,8 @@ export default function ClientList() {
                     };
                 })
             );
+
+            accountOwnerDetails = accountOwnerDetails.filter(d => d.username !== 'admin') // Filtering out the admin account... could break if username isn't admin
         }
         setAccountOwners(accountOwnerDetails);
     };

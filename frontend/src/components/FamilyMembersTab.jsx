@@ -311,7 +311,7 @@ export default function FamilyMembersTab({ clientUsername }) {
 
   const cellStyle = {
     wordBreak: 'break-word'
-  }
+  };
 
   const rows = familyMemberInfo.map((FM) => (
     <Table.Tr key={FM.id}>
@@ -349,7 +349,7 @@ export default function FamilyMembersTab({ clientUsername }) {
           withTableBorder
           highlightOnHover
           bgcolor='white'
-          style={{tableLayout: 'fixed'}}
+          style={{ tableLayout: 'fixed' }}
           w={'100%'}
         >
           <Table.Thead>

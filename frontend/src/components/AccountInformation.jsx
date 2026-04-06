@@ -119,7 +119,6 @@ export default function AccountInformation({ form }) {
                         w={'45%'}
                         maxLength={CHARLIMITS.email}
                         autosize
-                        
                     />
                     <TextInput
                         label="5. Phone"

@@ -1,7 +1,7 @@
 // Heavily inspired/referenced from mantine ui's demo from https://alpha.mantine.dev/schedule/schedule/#create-and-update-events
 
 import { useEffect, useState } from 'react';
-import { Modal, TextInput, Button, Stack, Group, Checkbox, NumberInput, Textarea } from '@mantine/core';
+import { Modal, TextInput, Button, Stack, Group, Checkbox, NumberInput, Textarea, Select } from '@mantine/core';
 import React from 'react';
 import { DatePickerInput, TimePicker, getTimeRange } from '@mantine/dates';
 import { isNotEmpty, useForm } from '@mantine/form';

@@ -187,7 +187,6 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
                 onChange={(value) => setCurrClient(value)} 
                 data={[
                   ...clients.map(client => ({ value: client.username, label: client.username })),
-                  { value: 'admin', label: 'Admin' }
                 ]}
               />
 

@@ -30,7 +30,7 @@ function getUsernameValidationError(value) {
     const normalized = String(value ?? '').trim();
 
     if (normalized.length < 5) {
-        return 'Username must be at least 5 characters';
+        return 'Username must be at least 5 characters.';
     }
 
     if (!USERNAME_PATTERN.test(normalized)) {
