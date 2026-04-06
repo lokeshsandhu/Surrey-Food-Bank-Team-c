@@ -443,7 +443,7 @@ export default function FamilyMembersTab({ clientUsername }) {
             <Select
               label='Relationship to Account Owner'
               placeholder='Select Relationship'
-              description='e.g. if this family member is your mother, select the "Parent" option.'
+              description='i.e. If this family member is your mother, select the "Parent" option.'
               data={FMRelationshipOptions}
               key={form.key(`relationship`)}
               {...form.getInputProps(`relationship`)}
