@@ -1,6 +1,6 @@
 import { Button, SimpleGrid, LoadingOverlay, Grid, ScrollArea, Modal, Group, TextInput, Select, useModalsStack, Popover } from '@mantine/core';
 import { getTimeRange, DatePicker, TimeGrid, Calendar } from '@mantine/dates';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import '../styles/styles.css';
 
 import { ClientNavBar } from '../components/navBar.jsx';
@@ -32,9 +32,9 @@ export default function ClientDashboard() {
     const [successModalState, {open: openSuccessModal, close: closeSuccessModal}] = useDisclosure(false);
     const [modalLoading, setModalLoading] = useState(false);
     const [tinyBundles, setTinyBundles] = useState(false);
-    const [bookingNote, setBookingNote] = useState('');
+    const bookingNoteRef = useRef(null);
     const [currLanguage, setCurrLanguage] = useState("English");
-    const [tutorialState, setTutorialState] = useState(sessionStorage.getItem('firstTime') ? 1 : 0);
+    const [tutorialState, setTutorialState] = useState(sessionStorage.getItem('firstTime') ? 1 : 1);
 
     const username = sessionStorage.getItem('username');
     const token = sessionStorage.getItem('token');
@@ -86,7 +86,7 @@ export default function ClientDashboard() {
         if (selectedDate && selectedTime) {
             setProcessingBooking(true);
 
-            const data = { appt_date: selectedDate, start_time: selectedTime, booking_notes: bookingNote };
+            const data = { appt_date: selectedDate, start_time: selectedTime, booking_notes: bookingNoteRef.current?.value || '' };
             const res = await bookAppointment(token, data);
 
             if (res && res.success) {
@@ -198,7 +198,7 @@ export default function ClientDashboard() {
     const handleAvailableTimes = async (date) => {
         setSelectedTime(null);
         setSelectedDate(date);
-        setBookingNote('');
+        bookingNoteRef.current.value = '';
         setLoadingTimeGrid(true);
 
         try {
@@ -268,7 +268,7 @@ export default function ClientDashboard() {
             handleAvailableTimes(selectedDate); // Refresh available times after cancellation
         }
         fetchMyAppointment(); // Refresh user's appointment information after cancellation
-        setBookingNote(''); // Reset booking note after cancellation
+        bookingNoteRef.current.value = '';
     }
 
     const fetchMyAppointment = async () => {
@@ -342,25 +342,29 @@ export default function ClientDashboard() {
     return (
         <div className="page">
             <ClientNavBar />
-            <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs" style={{marginLeft: '20px', marginRight: '20px', marginTop: '20px'}}>
+            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{marginLeft: '20px', marginRight: '20px', marginTop: '20px'}}>
                 <div className="box">
                     <h3 style={{marginBottom: '10px', marginTop: '0px'}}>Booking Information</h3>
                     {myAppointment && myAppointment.appt_date ? `You have a booking on ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} from ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')} to ${dayjs(myAppointment.end_time, 'HH:mm:ss').format('h:mm A')}, ` : `Welcome back ${username}! You do not have any upcoming bookings.`}
-                    {myAppointment && myAppointment.appt_date && (
-                        <button type="button" className="text-link-button" onClick={() => openStackPage('base-page')}>
-                            click here to edit/cancel your booking.
-                        </button>
-                    )}
+
                     <p>If you have a pregnant mother or a baby in your family, only Wednesday bookings will be available to you</p>
                     <p>If you have 5 or more members in your family, bookings will be 30 minutes long, otherwise it'll be 15 minutes</p>
+                    <Group justify="space-between" mt={20}>
+                        <Button size='lg' onClick={(event) => openSuccessModal()}>
+                            Check required documents
+                        </Button>
+                        {myAppointment && myAppointment.appt_date && (
+                        <Button size='lg' onClick={() => openStackPage('base-page')}>
+                            Edit Booking
+                        </Button>
+                        )}
+                    </Group>
                 </div>
-                <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
+                {/* <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
                     
-                    <Button justify='center' size='lg' mt={20} onClick={(event) => openSuccessModal()}>
-                        Check required documents
-                    </Button>
+                    
 
-                </div>
+                </div> */}
                 <div className="box">
                     <Group justify='space-between'>
                         <div>
@@ -401,12 +405,38 @@ export default function ClientDashboard() {
             <Grid verticalspacing="xs" style={{ height: '60vh', alignItems: 'stretch' }}>
 
                 <Grid.Col span={6} style={{height: "500px"}}>
-                    <Popover opened={tutorialState === 1} position="right" withArrow>
+                    <Popover opened={tutorialState === 1} position="top" withArrow>
                         <Popover.Target>
                             <div className="calendar" style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'stretch' }}>
                                 <h3 style={{marginBottom: '10px', marginTop: '0px'}}>Booking Calendar</h3>
                                 <DatePicker
                                     size="xl"
+                                    visibleFrom='md'
+                                    value={selectedDate}
+                                    onChange={handleAvailableTimes}
+                                    onMonthSelect={setCurrentMonth}
+                                    onNextMonth={setCurrentMonth}
+                                    onPreviousMonth={setCurrentMonth}
+                                    firstDayOfWeek={0}
+                                    excludeDate={(date) =>{
+                                        if (excludedDays.includes(new Date(date).getDay())) {
+                                            return true;
+                                        } else if (!allTimeslots.some(timeslot => normalizeApptDate(timeslot.appt_date) === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
+                                            return true;
+                                        } else if (dayjs(date).format('YYYY-MM-DD') < dayjs().format('YYYY-MM-DD')) { // Disable past dates
+                                            return true;
+                                        } else if (tinyBundles) { // If tiny bundles, only allow Wednesdays
+                                            return dayjs(date).day() !== 3;
+                                        } else {
+                                            return dayjs(date).day() === 3; // If not tiny bundles, disable Wednesdays
+                                        }
+                                    }}
+                                    hideOutsideDates
+                                    style={{alignSelf: 'center', marginTop: '15px'}}
+                                />
+                                <DatePicker
+                                    size="sm"
+                                    hiddenFrom='md'
                                     value={selectedDate}
                                     onChange={handleAvailableTimes}
                                     onMonthSelect={setCurrentMonth}
@@ -431,7 +461,7 @@ export default function ClientDashboard() {
                                 />
                             </div>
                         </Popover.Target>
-                        <Popover.Dropdown>
+                        <Popover.Dropdown style={{ width: '400px', whiteSpace: 'normal' }}>
                             <p>Welcome to the Surrey Food Bank booking system {username}!</p>
                             <p>Here is a quick tutorial on how to use the system.</p>
                             <p>To start, please select an available date from the calendar on the left here.</p>
@@ -444,11 +474,12 @@ export default function ClientDashboard() {
                         <Popover.Target>
                             <div className="time-grid">
                                 <h3 style={{marginBottom: '0px', marginTop: '0px'}}>Available Time Slots</h3>
-                                <ScrollArea style={{ marginBottom: '60px', height: '100%' }}>
+                                <ScrollArea style={{ flex: '1 1 0', minHeight: 0 }}>
                                     <LoadingOverlay visible={loadingTimeGrid} overlayProps={{ radius: "sm", blur: 2 }} />
                                     
                                     <TimeGrid
                                         data={availableTimes}
+                                        visibleFrom='md'
                                         simpleGridProps={{
                                             type: 'container',
                                             cols: { base: 3 },
@@ -465,23 +496,41 @@ export default function ClientDashboard() {
                                         disabled={selectedDate === null}
                                         style={{ padding: '15px' }}
                                     />
+
+                                    <TimeGrid
+                                        data={availableTimes}
+                                        hiddenFrom='md'
+                                        simpleGridProps={{
+                                            type: 'container',
+                                            cols: { base: 3 },
+                                            spacing: 'sm',
+                                        }}
+                                        format="12h"
+                                        withSeconds={false}
+                                        size="sm"
+                                        disableTime={(time) =>
+                                            bookedTimes.includes(time) || (dayjs(time, 'HH:mm:ss').isBefore(dayjs()) && selectedDate === dayjs().format('YYYY-MM-DD'))
+                                        }
+                                        value={selectedTime}
+                                        onChange={setSelectedTime}
+                                        disabled={selectedDate === null}
+                                        style={{ padding: '15px' }}
+                                    />
                                 </ScrollArea>
-                                <TextInput
-                                    size="lg"
-                                    placeholder="Add booking note"
-                                    value={bookingNote}
-                                    onChange={(event) => setBookingNote(event.currentTarget.value)}
-                                    w="50%"
-                                    style={{ position: 'absolute', bottom: '30px', left: '35px' }}
-                                />
-                                <div className="booking-button">
-                                    <Button size="lg" w="100%" onClick={handleBooking} loading={processingBooking} disabled={!selectedDate || !selectedTime}>
+                                <Group gap="sm" style={{ marginTop: 'auto', paddingTop: '12px' }} grow>
+                                    <TextInput
+                                        ref={bookingNoteRef}
+                                        size="lg"
+                                        placeholder="Add booking note"
+                                        defaultValue=""
+                                    />
+                                    <Button size="lg" onClick={handleBooking} loading={processingBooking} disabled={!selectedDate || !selectedTime} style={{ flexShrink: 0 }}>
                                         Book Appointment
                                     </Button>
-                                </div>
+                                </Group>
                             </div>
                         </Popover.Target>
-                        <Popover.Dropdown>
+                        <Popover.Dropdown style={{ width: '400px', whiteSpace: 'normal' }}>
                             <p>Great! Now please select an available time slot on the right to book your appointment.</p>
                             <p>You can also add any notes regarding your booking in the text box below the time slots.</p>
                             <p>Once you have selected a time and added any notes, click the "Book Appointment" button to confirm your booking.</p>
@@ -496,7 +545,7 @@ export default function ClientDashboard() {
                     <div className="modal-content">
                         <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
                         <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? `${dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A')} - ${dayjs(myAppointment.end_time, 'HH:mm').format('h:mm A')}` : 'N/A'}</p>
-                        <p><strong>Notes:</strong> {myAppointment && myAppointment.booking_notes ? myAppointment.booking_notes : '(Empty)'}</p>
+                        <p><strong>Notes:</strong> {myAppointment && myAppointment.booking_notes ? (myAppointment.booking_notes.length > 30 ? `${myAppointment.booking_notes.substring(0, 30)}...` : myAppointment.booking_notes) : '(Empty)'}</p>
                         <div>
                             <Button mr={10} onClick={() => openStackPage("calendar-page")}>
                                 Edit Booking
@@ -570,24 +619,6 @@ export default function ClientDashboard() {
                         </Button>
                     </div>
                 </Modal>
-{/* 
-                <Modal {...stack.register('confirm-page')} title="Booking Confirmation"  centered >
-                    <LoadingOverlay visible={modalLoading}/>
-                    <div className="modal-content">
-                        <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
-                        <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
-                        <p><strong>Notes:</strong> {myAppointment && myAppointment.appt_notes ? myAppointment.appt_notes : 'N/A'}</p>
-                        <div>
-                            <Button mr={10}>
-                                Edit Booking
-                            </Button>
-
-                            <Button ml={10} onClick={() => handleCancelBooking(myAppointment)}>
-                                Cancel Booking
-                            </Button>
-                        </div>
-                    </div>
-                </Modal> */}
             </Modal.Stack>
 
             
