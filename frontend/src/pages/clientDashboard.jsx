@@ -688,7 +688,7 @@ export default function ClientDashboard() {
                     </div>
                 </Modal>
 
-                <Modal {...stack.register('calendar-page')} title="Choose date" size="70%" transitionProps={{ transition: 'slide-left' }} centered>
+                <Modal {...stack.register('calendar-page')} title="Choose date" size="70%" transitionProps={{ transition: 'slide-left' }} visibleFrom='md' centered>
                     <LoadingOverlay visible={modalLoadingEdit} overlayProps={{ radius: "sm", blur: 2 }}/>
                     <Group grow style={{ position: 'relative', paddingBottom: '80px'}}>
                         <DatePicker
@@ -724,7 +724,7 @@ export default function ClientDashboard() {
                             }}
                             format="12h"
                             withSeconds={false}
-                            size="lg"
+                            size="md"
                             disableTime={(time) =>
                                 modalBookedTimes.includes(time) || (dayjs(time, 'HH:mm:ss').isBefore(dayjs()) && dayjs(modalSelectedDate).isSame(dayjs(), 'day'))
                             }
@@ -734,6 +734,7 @@ export default function ClientDashboard() {
                             style={{marginBottom: '20px', padding: '15px'}}
                         />
                     </Group>
+                    
                     <TextInput
                         size="lg"
                         placeholder="Add booking note"
@@ -748,6 +749,67 @@ export default function ClientDashboard() {
                             Book Appointment
                         </Button>
                     </div>
+                </Modal>
+
+                <Modal {...stack.register('calendar-page')} title="Choose date" size="70%" transitionProps={{ transition: 'slide-left' }} hiddenFrom='md' centered>
+                    <LoadingOverlay visible={modalLoadingEdit} overlayProps={{ radius: "sm", blur: 2 }}/>
+                    <Stack>
+                        <DatePicker
+                            size="md"
+                            value={modalSelectedDate}
+                            onChange={handleAvailableTimesModal}
+                            onMonthSelect={setModalCurrentMonth}
+                            onNextMonth={setModalCurrentMonth}
+                            onPreviousMonth={setModalCurrentMonth}
+                            firstDayOfWeek={0}
+                            excludeDate={(date) =>{
+                                if (excludedDays.includes(new Date(date).getDay())) {
+                                    return true;
+                                } else if (!modalAllTimeslots.some(timeslot => normalizeApptDate(timeslot.appt_date) === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
+                                    return true;
+                                } else if (dayjs(date).format('YYYY-MM-DD') < dayjs().format('YYYY-MM-DD')) { // Disable past dates
+                                    return true;
+                                } else if (tinyBundles) { // If tiny bundles, only allow Wednesdays
+                                    return dayjs(date).day() !== 3;
+                                } else {
+                                    return dayjs(date).day() === 3; // If not tiny bundles, disable Wednesdays
+                                }
+                            }}
+                            hideOutsideDates
+                        />
+
+                        <TimeGrid
+                            data={modalAvailableTimes}
+                            simpleGridProps={{
+                                type: 'container',
+                                cols: { base: 3 },
+                                spacing: 'lg',
+                            }}
+                            format="12h"
+                            withSeconds={false}
+                            size="md"
+                            disableTime={(time) =>
+                                modalBookedTimes.includes(time) || (dayjs(time, 'HH:mm:ss').isBefore(dayjs()) && dayjs(modalSelectedDate).isSame(dayjs(), 'day'))
+                            }
+                            value={modalSelectedTime}
+                            onChange={setModalSelectedTime}
+                            disabled={modalSelectedDate === null}
+                            style={{marginBottom: '20px', padding: '15px'}}
+                        />
+                    </Stack>
+
+                    <Group gap="sm" style={{ marginTop: 'auto', paddingTop: '12px' }} grow>
+                        <TextInput
+                            size="sm"
+                            placeholder="Add booking note"
+                            value={modalBookingNote}
+                            onChange={(event) => setModalBookingNote(event.currentTarget.value)}
+                            w={240}
+                        />
+                        <Button size="sm" onClick={handleEdit} loading={processingEdit} disabled={!modalSelectedDate || !modalSelectedTime}>
+                            Book Appointment
+                        </Button>
+                    </Group>
                 </Modal>
             </Modal.Stack>
 
