@@ -88,22 +88,22 @@ async function resetDB() {
         `,
             ['admin', adminPassword, null, null, null, null, null, 'Admin account']
         );
-        await pool.query(
-            `
-            INSERT INTO familymember (
-                username,
-                f_name,
-                l_name,
-                dob,
-                phone,
-                email,
-                relationship
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-            ON CONFLICT (username, id) DO NOTHING
-        `,
-            ['admin', 'Admin', 'Account', null, null, 'admin@surreyfoodbank.com', 'owner']
-        );
+        // await pool.query(
+        //     `
+        //     INSERT INTO familymember (
+        //         username,
+        //         f_name,
+        //         l_name,
+        //         dob,
+        //         phone,
+        //         email,
+        //         relationship
+        //     )
+        //     VALUES ($1, $2, $3, $4, $5, $6, $7)
+        //     ON CONFLICT (username, id) DO NOTHING
+        // `,
+        //     ['admin', 'Admin', 'Account', null, null, 'admin@surreyfoodbank.com', 'owner']
+        // );
 
         console.log(`Database initialized: ${successCount} successful, ${errorCount} errors. Admin account seeded.`);
         return { success: true, message: 'Database reset successfully with admin account' };
