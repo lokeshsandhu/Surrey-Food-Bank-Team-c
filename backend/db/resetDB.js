@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 const { Pool } = require('pg');
+const bcrypt = require('bcryptjs');
 
 const envFileCandidates = [
     process.env.ENV_FILE,
@@ -62,8 +63,50 @@ async function resetDB() {
             }
         }
 
-        console.log(`Database initialized: ${successCount} successful, ${errorCount} errors`);
-        return { success: true, message: 'Database reset successfully' };
+        const adminPassword = await bcrypt.hash('adminPassword#123', 10);
+        await pool.query(
+            `
+            INSERT INTO account (
+                username,
+                user_password,
+                canada_status,
+                household_size,
+                addr,
+                baby_or_pregnant,
+                language_spoken,
+                account_notes
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            ON CONFLICT (username) DO UPDATE SET
+                user_password = EXCLUDED.user_password,
+                canada_status = EXCLUDED.canada_status,
+                household_size = EXCLUDED.household_size,
+                addr = EXCLUDED.addr,
+                baby_or_pregnant = EXCLUDED.baby_or_pregnant,
+                language_spoken = EXCLUDED.language_spoken,
+                account_notes = EXCLUDED.account_notes
+        `,
+            ['admin', adminPassword, null, null, null, null, null, 'Admin account']
+        );
+        await pool.query(
+            `
+            INSERT INTO familymember (
+                username,
+                f_name,
+                l_name,
+                dob,
+                phone,
+                email,
+                relationship
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            ON CONFLICT (username, id) DO NOTHING
+        `,
+            ['admin', 'Admin', 'Account', null, null, 'admin@surreyfoodbank.com', 'owner']
+        );
+
+        console.log(`Database initialized: ${successCount} successful, ${errorCount} errors. Admin account seeded.`);
+        return { success: true, message: 'Database reset successfully with admin account' };
     } catch (err) {
         console.error('Initialization error:', err.message);
         return { success: false, message: err.message };

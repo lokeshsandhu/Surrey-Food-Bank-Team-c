@@ -14,6 +14,9 @@ router.get("/search/date-time-range", authenticate, controller.getAppointmentsIn
 
 // Admin routes (You have to login under one of the usernames in the ADMIN_USERNAMES in auth.service.ts )
 
+// Delete past appointment slots when the admin dashboard opens
+router.post("/cleanup/past-slots", authenticate, requireAdmin, controller.cleanupPastAppointments);
+
 // Create multiple appointments in a time range 
 router.post("/appointments-in-range", authenticate, requireAdmin, controller.createAppointmentsInTimeRange);
 // Delete a single appointment

@@ -73,6 +73,18 @@ export function deleteAppointment(token, appt_date, start_time) {
   }).then(res => res.json());
 }
 
+/**
+ * Delete past appointment slots (admin only).
+ * Example:
+ *   cleanupPastAppointments(token);
+ */
+export function cleanupPastAppointments(token) {
+  return fetch(`${API_BASE}/cleanup/past-slots`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+  }).then(res => res.json());
+}
+
 
 /**
  * Update an appointment slot or set/clear a booking (admin only).

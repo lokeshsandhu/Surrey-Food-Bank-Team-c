@@ -6,6 +6,8 @@ const { hashPassword } = require('../../src/shared/crypto/password');
 const TEST_USER = 'auth_testuser';
 const TEST_PASS = 'password123';
 const ADMIN_USER = 'admin';
+const TEST_EMAIL = 'auth_testuser@example.com';
+const ADMIN_EMAIL = 'admin@surreyfoodbank.com';
 
 beforeAll(async () => {
     await pool.query('DELETE FROM appointment_booking WHERE username IN ($1, $2)', [TEST_USER, ADMIN_USER]);
@@ -19,9 +21,19 @@ beforeAll(async () => {
         [TEST_USER, hashed]
     );
     await pool.query(
+        `INSERT INTO familymember (username, f_name, l_name, dob, phone, email, relationship)
+         VALUES ($1, 'Auth', 'Tester', '1990-01-01', '111-111-1111', $2, 'owner')`,
+        [TEST_USER, TEST_EMAIL]
+    );
+    await pool.query(
         `INSERT INTO account (username, user_password, canada_status, household_size, addr, baby_or_pregnant, language_spoken, account_notes)
          VALUES ($1, $2, 'citizen', 1, '456 Admin St', false, 'English', 'admin account')`,
         [ADMIN_USER, hashed]
+    );
+    await pool.query(
+        `INSERT INTO familymember (username, f_name, l_name, dob, phone, email, relationship)
+         VALUES ($1, 'Admin', 'Account', '1990-01-01', '222-222-2222', $2, 'owner')`,
+        [ADMIN_USER, ADMIN_EMAIL]
     );
 });
 
@@ -70,6 +82,18 @@ describe('POST /api/auth/login', () => {
         expect(res.body.token).toBeDefined();
     });
 
+    it('should return 200 when logging in with client email', async () => {
+        const res = await request(app)
+            .post('/api/auth/login')
+            .send({ identifier: TEST_EMAIL, password: TEST_PASS });
+
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.role).toBe('client');
+        expect(res.body.username).toBe(TEST_USER);
+        expect(res.body.token).toBeDefined();
+    });
+
     it('should return 200 with admin role for admin user', async () => {
         const res = await request(app)
             .post('/api/auth/login')
@@ -78,6 +102,18 @@ describe('POST /api/auth/login', () => {
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
         expect(res.body.role).toBe('admin');
+        expect(res.body.token).toBeDefined();
+    });
+
+    it('should return 200 when logging in with admin email', async () => {
+        const res = await request(app)
+            .post('/api/auth/login')
+            .send({ identifier: ADMIN_EMAIL, password: TEST_PASS });
+
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.role).toBe('admin');
+        expect(res.body.username).toBe(ADMIN_USER);
         expect(res.body.token).toBeDefined();
     });
 });
