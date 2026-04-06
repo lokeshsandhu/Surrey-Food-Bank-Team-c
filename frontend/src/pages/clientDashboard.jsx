@@ -116,7 +116,7 @@ export default function ClientDashboard() {
                 if (!emailRes?.success) {
                     notifications.show({
                         title: 'Email not sent',
-                        message: emailRes?.error || 'Appointment was booked but confirmation email failed.',
+                        message: 'Appointment was booked but confirmation email failed. Please make sure your account email is valid.',
                         color: 'yellow',
                     });
                 }
@@ -477,7 +477,7 @@ export default function ClientDashboard() {
                     <div className="modal-content">
                         <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
                         <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
-                        <p><strong>Notes:</strong> {myAppointment && myAppointment.booking_notes ? myAppointment.booking_notes : 'N/A'}</p>
+                        <p><strong>Notes:</strong> {myAppointment && myAppointment.booking_notes ? myAppointment.booking_notes : '(Empty)'}</p>
                         <div>
                             <Button mr={10} onClick={() => openStackPage("calendar-page")}>
                                 Edit Booking

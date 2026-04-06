@@ -1,7 +1,7 @@
 // Heavily inspired/referenced from mantine ui's demo from https://alpha.mantine.dev/schedule/schedule/#create-and-update-events
 
 import { useEffect, useState } from 'react';
-import { Modal, TextInput, Text, Button, Stack, Group, NativeSelect, Box, Paper, NumberInput, useModalsStack, Tabs, LoadingOverlay } from '@mantine/core';
+import { Modal, TextInput, Text, Button, Stack, Group, NativeSelect, Box, Paper, NumberInput, useModalsStack, Tabs, LoadingOverlay, Select } from '@mantine/core';
 import React from 'react';
 import { DateTimePicker } from '@mantine/dates';
 import { isNotEmpty, useForm } from '@mantine/form';
@@ -175,14 +175,19 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
         <Box style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 220px', gap: '16px', alignItems: 'start' }}>
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap="md">
-              <NativeSelect
+              <Select
                 label="Select Client to add to this timeslot"
                 placeholder="Client username"
                 radius="md"
                 data-autofocus
+                searchable
+                maxDropdownHeight={120}
                 value={currClient}
-                onChange={(event) => setCurrClient(event.currentTarget.value)}
-                data={[...clients.map(client => ({ value: client.username, label: client.username })), { value: 'admin', label: 'Admin' }, { value: "", label: '', disabled: true, hidden: true }]}
+                onChange={(value) => setCurrClient(value)} 
+                data={[
+                  ...clients.map(client => ({ value: client.username, label: client.username })),
+                  { value: 'admin', label: 'Admin' }
+                ]}
               />
 
                 <DateTimePicker
