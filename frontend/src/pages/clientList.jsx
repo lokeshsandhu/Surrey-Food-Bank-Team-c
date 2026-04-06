@@ -196,7 +196,7 @@ export default function ClientList() {
     return (
         <div className="page">
             <AdminNavBar />
-            <div className="box" style={{ height: '85vh' }}>
+            <div className="box" style={{ height: '85vh', marginLeft: '10px', marginRight: '10px' }}>
                 <ActionIcon mb={10} onClick={() => navigate('/adminDashboard')}>
                     <IconArrowLeft />
                 </ActionIcon>

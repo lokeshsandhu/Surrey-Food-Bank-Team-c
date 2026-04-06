@@ -589,6 +589,8 @@ export default function ClientDashboard() {
                                             return true;
                                         } else if (dayjs(date).format('YYYY-MM-DD') < dayjs().format('YYYY-MM-DD')) { // Disable past dates
                                             return true;
+                                        } else if (dayjs(date).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD') && dayjs().format('HH:mm') > "15:00") { // Disable same-day bookings after 3pm
+                                            return true;
                                         } else if (tinyBundles) { // If tiny bundles, only allow Wednesdays
                                             return dayjs(date).day() !== 3;
                                         } else {
