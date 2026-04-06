@@ -81,8 +81,8 @@ export default function ElegibilityQuestions({ form }) {
                 <CanadaStatusAlert />
             }
             <Fieldset legend="2. Address" variant='unstyled'>
-                <Text size='sm' mb={3}>Please enter your residential address.</Text>
-                <Text size='sm' my={0} fs='italic'>Note: In order to be eligible for the program, clients must reside in British Columbia within Surrey, North Delta, or Cloverdale, north of 40th Avenue.</Text>
+                <Text size='sm' mb={3}>Please make sure your address is accurate, as you will need to provide documentation during your appointment.</Text>
+                <Text size='sm' my={0} fs='italic'><span style={{fontWeight: 600}}>Note:</span> In order to be eligible for the program, clients must reside in British Columbia within Surrey, North Delta, or Cloverdale, north of 40th Avenue.</Text>
                 <Group className='address' my={10}>
                     <Textarea
                         label="Address Line 1"
