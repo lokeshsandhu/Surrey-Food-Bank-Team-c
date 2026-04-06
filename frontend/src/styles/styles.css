@@ -1,12 +1,13 @@
 .page {
     position: flex;
     min-height: 100vh;
-    width: 100vw;
+    width: 100%;
     overflow-x: hidden;
     background: #035170;
     background: linear-gradient(135deg, rgba(3, 81, 112, 1) 13%, rgba(240, 78, 99, 1) 50%, rgba(76, 197, 220, 1) 87%);
     background-size: cover;
     align-items: center;
+    overflow-y: hidden;
 }
 
 .box {

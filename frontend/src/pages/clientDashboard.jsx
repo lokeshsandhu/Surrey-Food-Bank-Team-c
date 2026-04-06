@@ -1,11 +1,11 @@
-import { Button, SimpleGrid, LoadingOverlay, Grid, ScrollArea, Modal, Group, TextInput, Select, useModalsStack, Popover } from '@mantine/core';
+import { Button, SimpleGrid, LoadingOverlay, Grid, ScrollArea, Modal, Group, TextInput, Select, useModalsStack, Popover, Stack, Text } from '@mantine/core';
 import { getTimeRange, DatePicker, TimeGrid, Calendar } from '@mantine/dates';
 import React, { useEffect, useRef } from 'react';
 import '../styles/styles.css';
 
 import { ClientNavBar } from '../components/navBar.jsx';
 import { useState } from 'react';
-import { notifications, Notifications } from '@mantine/notifications';
+import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router';
 import { bookAppointment, deleteAppointmentFromUsername, getAppointmentsInDateRange, getMyAppointments } from '../../api/appointments.js';
 import { me } from '../../api/auth.js';
@@ -74,6 +74,7 @@ export default function ClientDashboard() {
     };
 
     const parseApptDate = (apptDate) => dayjs(normalizeApptDate(apptDate), 'YYYY-MM-DD', true);
+    const toApiDate = (date) => dayjs(date).format('YYYY-MM-DD');
 
     const handleBooking = async () => {
         if (myAppointment && myAppointment.appt_date) {
@@ -198,13 +199,18 @@ export default function ClientDashboard() {
     };
 
     const handleAvailableTimes = async (date) => {
+        if (!date) return;
+
         setSelectedTime(null);
         setSelectedDate(date);
-        bookingNoteRef.current.value = '';
+        if (bookingNoteRef.current) {
+            bookingNoteRef.current.value = '';
+        }
         setLoadingTimeGrid(true);
 
         try {
-            const timeslots = await getAppointmentsInDateRange(token, date, date);
+            const apiDate = toApiDate(date);
+            const timeslots = await getAppointmentsInDateRange(token, apiDate, apiDate);
             const takenTimes = timeslots.filter(slot => slot.username !== null);
             setAvailableTimes(timeslots.map(appointment => appointment.start_time));
             setBookedTimes(takenTimes.map(appointment => appointment.start_time));
@@ -219,13 +225,16 @@ export default function ClientDashboard() {
     }
 
     const handleAvailableTimesModal = async (date) => {
+        if (!date) return;
+
         setModalSelectedTime(null);
         setModalSelectedDate(date);
         setModalBookingNote('');
         setModalLoadingEdit(true);
         try {
             
-            const timeslots = await getAppointmentsInDateRange(token, date, date);
+            const apiDate = toApiDate(date);
+            const timeslots = await getAppointmentsInDateRange(token, apiDate, apiDate);
             const takenTimes = timeslots.filter(slot => slot.username !== null);
             setModalAvailableTimes(timeslots.map(appointment => appointment.start_time));
             setModalBookedTimes(takenTimes.map(appointment => appointment.start_time));
@@ -349,8 +358,68 @@ export default function ClientDashboard() {
     return (
         <div className="page">
             <ClientNavBar />
-            <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs" style={{marginLeft: '20px', marginRight: '20px', marginTop: '20px'}} visibleFrom='md'>
-                <div className="box">
+            <Grid spacing="xs" verticalSpacing="xs" style={{marginLeft: '20px', marginRight: '20px', marginTop: '20px'}} visibleFrom='md'>
+                <Grid.Col span={4}>
+                    <div className="box">
+                        <h3 style={{marginBottom: '10px', marginTop: '0px'}}>Booking Information</h3>
+                        {myAppointment && myAppointment.appt_date ? `You have a booking on ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} from ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')} to ${dayjs(myAppointment.end_time, 'HH:mm:ss').format('h:mm A')}, ` : `Welcome back ${username}! You do not have any upcoming bookings.`}
+
+                        <p>If you have a pregnant mother or a baby in your family, only Wednesday bookings will be available to you</p>
+                        <p>If you have 5 or more members in your family, bookings will be 30 minutes long, otherwise it'll be 15 minutes</p>
+                        <Group justify="space-between" mt={20}>
+                            <Button size='lg' onClick={(event) => openSuccessModal()}>
+                                Check required documents
+                            </Button>
+                            {myAppointment && myAppointment.appt_date && (
+                            <Button size='lg' onClick={() => openStackPage('base-page')}>
+                                Edit Booking
+                            </Button>
+                            )}
+                        </Group>
+                    </div>
+                </Grid.Col>
+                <Grid.Col span={8}>
+                    <div className="box">
+                        <Group justify='space-between'>
+                            <div>
+                                <b>Contact Information</b>
+                                <br />
+                                Tel: 604.581.5443
+                                <br />
+                                Fax: 604.588.8697
+                                <br />
+                                Email: info@surreyfoodbank.org
+                                <br />
+                                <br />
+                                <b>Address</b>
+                                <br />
+                                Unit 1 – 13478 78th Ave
+                                <br />
+                                Surrey, BC, V3W 8J6
+                            </div>
+                            <div>
+                                <b>Office Hours</b>
+                                <br />
+                                Mon – Fri 8:00 a.m. – 4:00 p.m.
+                                <br />
+                                <br />
+                                <b>Food Distribution Hours</b>
+                                <br />
+                                Mon: 9:00 a.m. – 1:00 p.m.
+                                <br />
+                                Tue: 9:00 a.m. – 1:00 p.m.
+                                <br />
+                                Thu: 9:00 a.m. – 1:00 p.m.
+                                <br />
+                                Fri: 9:00 a.m. – 1:00 p.m.
+                            </div>
+                        </Group>
+                    </div>
+                </Grid.Col>
+            </Grid>
+
+            <Stack hiddenFrom='md' gap="xs">
+                <div className="box" style={{ margin: '20px'}}>
                     <h3 style={{marginBottom: '10px', marginTop: '0px'}}>Booking Information</h3>
                     {myAppointment && myAppointment.appt_date ? `You have a booking on ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} from ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')} to ${dayjs(myAppointment.end_time, 'HH:mm:ss').format('h:mm A')}, ` : `Welcome back ${username}! You do not have any upcoming bookings.`}
 
@@ -367,12 +436,7 @@ export default function ClientDashboard() {
                         )}
                     </Group>
                 </div>
-                {/* <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
-                    
-                    
-
-                </div> */}
-                <div className="box">
+                <div className="box" style={{ margin: '20px'}}>
                     <Group justify='space-between'>
                         <div>
                             <b>Contact Information</b>
@@ -408,8 +472,102 @@ export default function ClientDashboard() {
                         </div>
                     </Group>
                 </div>
-            </SimpleGrid>
-            <Grid verticalspacing="xs" style={{ height: '60vh', alignItems: 'stretch' }}>
+
+                <Popover opened={tutorialState === 1} position="top" withArrow>
+                    <Popover.Target>
+                        <div className="calendar" style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'stretch', margin: '20px'}}>
+                            <h3 style={{marginBottom: '10px', marginTop: '0px'}}>Booking Calendar</h3>
+                            <DatePicker
+                                size="md"
+                                value={selectedDate}
+                                onChange={handleAvailableTimes}
+                                onMonthSelect={setCurrentMonth}
+                                onNextMonth={setCurrentMonth}
+                                onPreviousMonth={setCurrentMonth}
+                                firstDayOfWeek={0}
+                                excludeDate={(date) =>{
+                                    if (excludedDays.includes(new Date(date).getDay())) {
+                                        return true;
+                                    } else if (!allTimeslots.some(timeslot => normalizeApptDate(timeslot.appt_date) === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
+                                        return true;
+                                    } else if (dayjs(date).format('YYYY-MM-DD') < dayjs().format('YYYY-MM-DD')) { // Disable past dates
+                                        return true;
+                                    } else if (tinyBundles) { // If tiny bundles, only allow Wednesdays
+                                        return dayjs(date).day() !== 3;
+                                    } else {
+                                        return dayjs(date).day() === 3; // If not tiny bundles, disable Wednesdays
+                                    }
+                                }}
+                                hideOutsideDates
+                                style={{alignSelf: 'center', marginTop: '15px'}}
+                            />
+                        </div>
+                    </Popover.Target>
+                    <Popover.Dropdown style={{ width: '400px', whiteSpace: 'normal' }}>
+                        <Group justify="flex-end" style={{ marginBottom: '0px' }}>
+                            <Button size="compact-xs" onClick={handleCloseTutorial} variant='transparent'>
+                                <img src={x_icon} alt="Close tutorial" height={20} width={20}/>
+                            </Button>
+                        </Group>
+                        <p>Welcome to the Surrey Food Bank booking system {username}!</p>
+                        <p>Here is a quick tutorial on how to use the system.</p>
+                        <p>To start, please select an available date from the calendar on the left here.</p>
+                    </Popover.Dropdown>
+                </Popover>
+                
+                <Popover opened={tutorialState === 2} position="top" withArrow>
+                    <Popover.Target>
+                        <div className="time-grid" style={{margin: '20px', height: '400px'}}>
+                            <h3 style={{marginBottom: '0px', marginTop: '0px'}}>Available Time Slots</h3>
+                            <ScrollArea style={{ flex: '1 1 0', minHeight: 0 }}>
+                                <LoadingOverlay visible={loadingTimeGrid} overlayProps={{ radius: "sm", blur: 2 }} />
+                                
+                                <TimeGrid
+                                    data={availableTimes}
+                                    simpleGridProps={{
+                                        type: 'container',
+                                        cols: { base: 3 },
+                                        spacing: 'sm',
+                                    }}
+                                    format="12h"
+                                    withSeconds={false}
+                                    size="xs"
+                                    disableTime={(time) =>
+                                        bookedTimes.includes(time) || (dayjs(time, 'HH:mm:ss').isBefore(dayjs()) && dayjs(selectedDate).isSame(dayjs(), 'day'))
+                                    }
+                                    value={selectedTime}
+                                    onChange={setSelectedTime}
+                                    disabled={selectedDate === null}
+                                    style={{ padding: '15px' }}
+                                />
+                            </ScrollArea>
+                            <Group gap="sm" style={{ marginTop: 'auto', paddingTop: '12px' }} grow>
+                                <TextInput
+                                    ref={bookingNoteRef}
+                                    size="sm"
+                                    placeholder="Add booking note"
+                                    defaultValue=""
+                                />
+                                <Button size="sm" onClick={handleBooking} loading={processingBooking} disabled={!selectedDate || !selectedTime} style={{ flexShrink: 0 }}>
+                                    Book Appointment
+                                </Button>
+                            </Group>
+                        </div>
+                    </Popover.Target>
+                    <Popover.Dropdown style={{ width: '400px', whiteSpace: 'normal' }}>
+                        <Group justify="flex-end" style={{ marginBottom: '0px' }}>
+                            <Button size="compact-xs" onClick={handleCloseTutorial} variant='transparent'>
+                                <img src={x_icon} alt="Close tutorial" height={20} width={20}/>
+                            </Button>
+                        </Group>
+                        <p>Great! Now please select an available time slot on the right to book your appointment.</p>
+                        <p>You can also add any notes regarding your booking in the text box below the time slots.</p>
+                        <p>Once you have selected a time and added any notes, click the "Book Appointment" button to confirm your booking.</p>
+                    </Popover.Dropdown>
+                </Popover>
+            </Stack>
+
+            <Grid verticalSpacing="xs" style={{ height: '60vh', alignItems: 'stretch' }} visibleFrom='md'>
 
                 <Grid.Col span={6} style={{height: "500px"}}>
                     <Popover opened={tutorialState === 1} position="top" withArrow>
@@ -418,32 +576,6 @@ export default function ClientDashboard() {
                                 <h3 style={{marginBottom: '10px', marginTop: '0px'}}>Booking Calendar</h3>
                                 <DatePicker
                                     size="xl"
-                                    visibleFrom='md'
-                                    value={selectedDate}
-                                    onChange={handleAvailableTimes}
-                                    onMonthSelect={setCurrentMonth}
-                                    onNextMonth={setCurrentMonth}
-                                    onPreviousMonth={setCurrentMonth}
-                                    firstDayOfWeek={0}
-                                    excludeDate={(date) =>{
-                                        if (excludedDays.includes(new Date(date).getDay())) {
-                                            return true;
-                                        } else if (!allTimeslots.some(timeslot => normalizeApptDate(timeslot.appt_date) === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
-                                            return true;
-                                        } else if (dayjs(date).format('YYYY-MM-DD') < dayjs().format('YYYY-MM-DD')) { // Disable past dates
-                                            return true;
-                                        } else if (tinyBundles) { // If tiny bundles, only allow Wednesdays
-                                            return dayjs(date).day() !== 3;
-                                        } else {
-                                            return dayjs(date).day() === 3; // If not tiny bundles, disable Wednesdays
-                                        }
-                                    }}
-                                    hideOutsideDates
-                                    style={{alignSelf: 'center', marginTop: '15px'}}
-                                />
-                                <DatePicker
-                                    size="sm"
-                                    hiddenFrom='md'
                                     value={selectedDate}
                                     onChange={handleAvailableTimes}
                                     onMonthSelect={setCurrentMonth}
@@ -491,7 +623,6 @@ export default function ClientDashboard() {
                                     
                                     <TimeGrid
                                         data={availableTimes}
-                                        visibleFrom='md'
                                         simpleGridProps={{
                                             type: 'container',
                                             cols: { base: 3 },
@@ -501,27 +632,7 @@ export default function ClientDashboard() {
                                         withSeconds={false}
                                         size="lg"
                                         disableTime={(time) =>
-                                            bookedTimes.includes(time) || (dayjs(time, 'HH:mm:ss').isBefore(dayjs()) && selectedDate === dayjs().format('YYYY-MM-DD'))
-                                        }
-                                        value={selectedTime}
-                                        onChange={setSelectedTime}
-                                        disabled={selectedDate === null}
-                                        style={{ padding: '15px' }}
-                                    />
-
-                                    <TimeGrid
-                                        data={availableTimes}
-                                        hiddenFrom='md'
-                                        simpleGridProps={{
-                                            type: 'container',
-                                            cols: { base: 3 },
-                                            spacing: 'sm',
-                                        }}
-                                        format="12h"
-                                        withSeconds={false}
-                                        size="sm"
-                                        disableTime={(time) =>
-                                            bookedTimes.includes(time) || (dayjs(time, 'HH:mm:ss').isBefore(dayjs()) && selectedDate === dayjs().format('YYYY-MM-DD'))
+                                            bookedTimes.includes(time) || (dayjs(time, 'HH:mm:ss').isBefore(dayjs()) && dayjs(selectedDate).isSame(dayjs(), 'day'))
                                         }
                                         value={selectedTime}
                                         onChange={setSelectedTime}
@@ -613,7 +724,7 @@ export default function ClientDashboard() {
                             withSeconds={false}
                             size="lg"
                             disableTime={(time) =>
-                                modalBookedTimes.includes(time) || (dayjs(time, 'HH:mm:ss').isBefore(dayjs()) && modalSelectedDate === dayjs().format('YYYY-MM-DD'))
+                                modalBookedTimes.includes(time) || (dayjs(time, 'HH:mm:ss').isBefore(dayjs()) && dayjs(modalSelectedDate).isSame(dayjs(), 'day'))
                             }
                             value={modalSelectedTime}
                             onChange={setModalSelectedTime}

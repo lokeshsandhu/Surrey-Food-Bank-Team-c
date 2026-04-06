@@ -36,10 +36,6 @@ export default function AdminDashboard() {
     const [hovered, setHovered] = useState(null);
     const [value, setValue] = useState(dayjs());
 
-    // For making bookings
-    const [createBookingDate, setCreateBookingDate] = useState(dayjs().format('YYYY-MM-DD'));
-    const [createBookingTime, setCreateBookingTime] = useState("08:00:00");
-
     // For export csv
     const [csvStartDate, setCsvStartDate] = useState(dayjs().format('YYYY-MM-DD'));
     const [csvEndDate, setCsvEndDate] = useState(dayjs().format('YYYY-MM-DD'));
@@ -51,131 +47,6 @@ export default function AdminDashboard() {
         navigate('/');
         return null;
     }
-
-    const normalizeApptDate = (apptDate) => {
-        if (!apptDate) return apptDate;
-        if (typeof apptDate === 'string') return apptDate.includes('T') ? apptDate.slice(0, 10) : apptDate;
-        if (apptDate instanceof Date) return apptDate.toISOString().slice(0, 10);
-        const asString = String(apptDate);
-        return asString.includes('T') ? asString.slice(0, 10) : asString;
-    };
-
-    const parseApptDate = (apptDate) => dayjs(normalizeApptDate(apptDate), 'YYYY-MM-DD', true);
-
-    const normalizePickerDate = (value) => {
-        if (!value) return null;
-        if (typeof value === 'string') return normalizeApptDate(value);
-        return dayjs(value).format('YYYY-MM-DD');
-    };
-
-    const findBookingsForDate = async (date, onlyBooked = showOnlyBooked) => {
-        setLoadingTimeList(true);
-        setCurrWeek(dayjs(date));
-
-        const timeslotsbyday = [[], [], [], [], [], [], []];
-        const timeslots = await getAppointmentsInDateRange(token, dayjs(startOfWeek(date)).format('YYYY-MM-DD'), dayjs(endOfWeek(date)).format('YYYY-MM-DD'));
-
-        console.log('Finding bookings for date between:', dayjs(startOfWeek(date)).format('YYYY-MM-DD'), 'and', dayjs(endOfWeek(date)).format('YYYY-MM-DD'));
-        console.log('Received number of timeslots:', timeslots.length);
-
-        for (let i = 0; i < 7; i++) {
-            const dateToCheck = dayjs(startOfWeek(date)).add(i, 'day').format('YYYY-MM-DD');
-            console.log('Checking date:', dateToCheck);
-
-            const slotsForDate = timeslots.filter(slot => normalizeApptDate(slot.appt_date) === dateToCheck);
-            console.log(`Found ${slotsForDate.length} slots for date ${dateToCheck}:`, slotsForDate);
-
-            if (timeslots) {
-                if (onlyBooked) {
-                    timeslotsbyday[i] = slotsForDate.filter(slot => slot.username !== null);
-                    console.log(`After filtering for booked slots, ${timeslotsbyday[i].length} slots remain for date ${dateToCheck}:`, timeslotsbyday[i]);
-                } else {
-                    timeslotsbyday[i] = slotsForDate;
-                }
-            } else {
-                console.log('No timeslots received');
-            }
-        }
-
-        setBookedTimeslots(timeslotsbyday);
-        setLoadingTimeList(false);
-    };
-
-    const createTimeslot = async () => {
-
-        const apptDate = normalizePickerDate(createTimeslotDate);
-        console.log('Creating timeslot with date:', apptDate, 'start:', dayjs(createTimeslotStart, 'HH:mm:ss').format('HH:mm'), 'end:', dayjs(createTimeslotEnd, 'HH:mm:ss').format('HH:mm'));
-
-        const res = await createAppointmentsInTimeRange(token, {
-            appt_date: apptDate,
-            start_time: dayjs(createTimeslotStart, 'HH:mm:ss').format('HH:mm'),
-            end_time: dayjs(createTimeslotEnd, 'HH:mm:ss').format('HH:mm'),
-            appt_notes: ""
-        });
-
-        console.log('Create timeslot response:', res);
-
-        if (res && res.success) {
-            notifications.show({
-                title: 'Success',
-                message: 'Timeslot created successfully',
-                color: 'green'
-            });
-
-        } else {
-            notifications.show({
-                title: 'Error',
-                message: 'Failed to create timeslot: ' + (res?.error || ''),
-                color: 'red'
-            });
-        }
-    };
-
-    const makeBooking = async (bookingDate = createBookingDate, bookingTime = createBookingTime) => {
-
-        const apptDate = normalizePickerDate(bookingDate);
-        console.log('Creating booking with date:', apptDate, 'start:', dayjs(bookingTime, 'HH:mm:ss').format('HH:mm'));
-
-        const times = await getAppointmentsInDateTimeRange(token, apptDate, dayjs(bookingTime, 'HH:mm:ss').format('HH:mm'), dayjs(bookingTime, 'HH:mm:ss').add(15, 'minutes').format('HH:mm'));
-        console.log('Received timeslots for booking:', times);
-
-        if (times.length === 0) {
-            notifications.show({
-                title: 'Error',
-                message: 'No available timeslot found for the selected date and time.',
-                color: 'red'
-            });
-            return;
-        } else if (times[0].username !== null) {
-            notifications.show({
-                title: 'Error',
-                message: 'The selected timeslot is already booked.',
-                color: 'red'
-            });
-            return;
-        }
-
-        const res = await updateAppointment(token, apptDate, dayjs(bookingTime, 'HH:mm:ss').format('HH:mm'), { username: "admin" });
-        console.log('Make booking response:', res);
-
-        if (res.error) {
-            notifications.show({
-                title: 'Error',
-                message: 'Failed to create booking: ' + (res?.error || ''),
-                color: 'red'
-            });
-        } else {
-            notifications.show({
-                title: 'Success',
-                message: 'Booking created successfully',
-                color: 'green'
-            });
-            // Reload the time list for the selected week
-            if (value) {
-                await findBookingsForDate(value);
-            }
-        }
-    };
 
     // Get appointments within a time range to export to csv
     const handleApptRangeExport = async () => {
@@ -239,8 +110,6 @@ export default function AdminDashboard() {
             } catch (error) {
                 console.error('Error archiving past appointments:', error);
             }
-
-            await findBookingsForDate(value);
         };
 
         initializeDashboard();
@@ -270,14 +139,7 @@ export default function AdminDashboard() {
                         <li>View or edit a client's account information</li>
                         <li>View a client's past appointment history</li>
                     </ul>
-                    {/* <DatePickerInput
-                        label="Pick date to make booking for client"
-                        value={createBookingDate ? createBookingDate : dayjs()}
-                        onChange={setCreateBookingDate}
-                    />
 
-                    <TimePicker label="Appointment timeslot start time" value={createBookingTime} onChange={setCreateBookingTime} format="12h" withDropdown presets={getTimeRange({ startTime: '08:00:00', endTime: '16:00:00', interval: '00:15:00' })} />
-                    <Button onClick={() => makeBooking()} style={{ marginTop: '20px' }}>Make booking</Button> */}
                 </div>
                 <div className="box">
                     <Text style={{ textAlign: 'center' }} fw={600}>Export booked appointments</Text>
@@ -311,114 +173,8 @@ export default function AdminDashboard() {
                         </Button>
                     </div>
 
-                    {/* <DatePickerInput
-                        label="Pick date for new timeslots"
-                        value={createTimeslotDate ? createTimeslotDate : dayjs()}
-                        onChange={setCreateTimeslotDate}
-                    />
-
-                    <TimePicker label="From" value={createTimeslotStart} onChange={setCreateTimeslotStart} format="12h" withDropdown presets={getTimeRange({ startTime: '08:00:00', endTime: createTimeslotEnd, interval: '00:15:00' })} />
-                    <TimePicker label="To" value={createTimeslotEnd} onChange={setCreateTimeslotEnd} format="12h" withDropdown presets={getTimeRange({ startTime: createTimeslotStart, endTime: '16:00:00', interval: '00:15:00' })} />
-                    <Button onClick={createTimeslot} style={{ marginTop: '20px' }}>Create timeslots</Button> */}
                 </div>
             </SimpleGrid>
-            {/* <Grid verticalspacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
-                <Grid.Col span={4} style={{ height: "500px" }}>
-                    <div className="calendar">
-                        <DatePicker
-                            size="xl"
-                            onChange={findBookingsForDate}
-                            firstDayOfWeek={0}
-                            excludeDate={(date) => excludedDays.includes(new Date(date).getDay())}
-                            getDayProps={(date) => {
-                                const isHovered = isInWeekRange(date, hovered);
-                                const isSelected = isInWeekRange(date, value);
-                                const isInRange = isHovered || isSelected;
-                                return {
-                                    onMouseEnter: () => setHovered(date),
-                                    onMouseLeave: () => setHovered(null),
-                                    inRange: isInRange,
-                                    firstInRange: isInRange && new Date(date).getDay() === 1,
-                                    lastInRange: isInRange && new Date(date).getDay() === 0,
-                                    selected: isSelected,
-                                    onClick: () => setValue(date),
-                                };
-                            }}
-                        />
-                    </div>
-                </Grid.Col>
-
-                <Grid.Col span={8} style={{ height: '500px' }}>
-                    <div className="time-list">
-
-                        <LoadingOverlay visible={loadingTimeList} overlayProps={{ radius: "sm", blur: 2 }} />
-
-                        <Switch label="Show only booked timeslots" checked={showOnlyBooked} onChange={(event) => {
-                            const next = event.currentTarget.checked;
-                            setShowOnlyBooked(next);
-                            findBookingsForDate(currWeek, next);
-                        }} />
-
-                        <ScrollArea style={{ flex: 1, minHeight: 0 }}>
-                            {bookedTimeslots.map((day, i) => (
-                                <div key={i} style={{ marginBottom: '20px' }}>
-                                    {day.length > 0 && (
-                                        <Text size="lg" weight={500} style={{ marginBottom: '10px' }}>
-                                            {parseApptDate(day[0].appt_date).format('dddd, MMMM D, YYYY')}
-                                        </Text>
-                                    )}
-                                    {day.map(slot => (
-                                        slot.username ? (
-                                            <Button key={`${slot.appt_date}-${slot.start_time}`} variant="filled" color="red" style={{ width: "100%", marginBottom: '10px' }}>
-                                                {dayjs(slot.start_time, 'HH:mm:ss').format('h:mm A')} - Booked by {slot.username}
-                                            </Button>
-                                        ) : (
-                                            <Menu key={`${slot.appt_date}-${slot.start_time}-menu`} shadow="md" width={200} withArrow>
-                                                <Menu.Target>
-                                                    <Button key={`${slot.appt_date}-${slot.start_time}`} variant="filled" style={{ width: "100%", marginBottom: '10px' }} color="green">
-                                                        {normalizeApptDate(slot.appt_date)} {dayjs(slot.start_time, 'HH:mm:ss').format('h:mm A')} - {slot.username ? `Booked by ${slot.username}` : 'Available'}
-                                                    </Button>
-                                                </Menu.Target>
-                                                <Menu.Dropdown>
-                                                    <Menu.Item key={`${slot.appt_date}-${slot.start_time}-create`} onClick={() => {
-                                                        makeBooking(normalizeApptDate(slot.appt_date), dayjs(slot.start_time, 'HH:mm:ss').format('HH:mm:ss'));
-                                                    }}>
-                                                        Create Booking
-                                                    </Menu.Item>
-                                                </Menu.Dropdown>
-                                            </Menu>
-                                        )
-                                    ))}
-                                </div>
-                            ))}
-                        </ScrollArea>
-                    </div>
-                </Grid.Col>
-            </Grid> */}
         </div>
     );
-}
-
-function getDay(date) {
-    const day = dayjs(date).day();
-    return day === 0 ? 6 : day - 1;
-}
-
-function startOfWeek(date) {
-    return dayjs(date)
-        .subtract(getDay(date) + 1, 'day')
-        .toDate();
-}
-
-function endOfWeek(date) {
-    return dayjs(date)
-        .add(6 - getDay(date), 'day')
-        .endOf('day')
-        .toDate();
-}
-
-function isInWeekRange(date, value) {
-    return value
-        ? dayjs(date).isBefore(endOfWeek(value)) && dayjs(date).isAfter(startOfWeek(value))
-        : false;
 }
