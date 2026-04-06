@@ -75,22 +75,20 @@ export default function AppointmentsTab({ clientUsername }) {
     }, []);
 
     const cellStyle = {
-        wordBreak: 'break-word'
+        wordBreak: 'break-word',
+        whiteSpace: 'normal',
     }
+
+    const indexStyle = { maxWidth: 20}
 
     const rows = appointments.map((appt, index) => (
         <Table.Tr key={index}>
-            <Table.Td style={cellStyle}>{index + 1}</Table.Td>
-            <Table.Td style={cellStyle}>{appt.appt_date}</Table.Td>
-            <Table.Td style={cellStyle}>{appt.start_time.slice(0, 5)}</Table.Td>
-            <Table.Td style={cellStyle}>{appt.end_time.slice(0, 5)}</Table.Td>
-            <Table.Td style={cellStyle}>{appt.booking_status}</Table.Td>
-            <Table.Td style={cellStyle}>{appt.booking_notes}</Table.Td>
-            <Table.Td>{index + 1}</Table.Td>
-            <Table.Td>{appt.appt_date}</Table.Td>
-            <Table.Td>{appt.start_time?.slice(0, 5) ?? '-'}</Table.Td>
-            <Table.Td>{appt.end_time?.slice(0, 5) ?? '-'}</Table.Td>
-            <Table.Td>{appt.appt_notes ?? appt.booking_notes ?? '-'}</Table.Td>
+            <Table.Td style={{... cellStyle, ...indexStyle}}>{index + 1}</Table.Td>
+            <Table.Td style={{ ...cellStyle}}>{appt.appt_date}</Table.Td>
+            <Table.Td style={{ ...cellStyle}}>{appt.start_time?.slice(0, 5) ?? '-'}</Table.Td>
+            <Table.Td style={{ ...cellStyle}}>{appt.end_time?.slice(0, 5) ?? '-'}</Table.Td>
+            <Table.Td style={{ ...cellStyle}}>{appt.booking_status}</Table.Td>
+            <Table.Td style={{ ...cellStyle}}>{appt.booking_notes ?? '-'}</Table.Td>
         </Table.Tr>
     ));
 
@@ -129,12 +127,12 @@ export default function AppointmentsTab({ clientUsername }) {
                     withTableBorder
                     highlightOnHover
                     bgcolor='white'
-                    style={{ tableLayout: 'fixed' }}
+                    style={{ tableLayout: "fixed" }}
                     w={'100%'}
                 >
                     <Table.Thead>
                         <Table.Tr>
-                            <Table.Th>#</Table.Th>
+                            <Table.Th style={{...indexStyle}}>#</Table.Th>
                             <Table.Th>Date</Table.Th>
                             <Table.Th>Start Time</Table.Th>
                             <Table.Th>End Time</Table.Th>
