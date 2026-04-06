@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import { provinceOptions, canadaStatusOptions } from "../constants/FormOptions";
 import { splitAddress } from "../utils/displayHelpers";
+import { capitalize } from "../utils/displayHelpers";
 
 export default function AccountInformationTab({ clientUsername }) {
     const token = sessionStorage.getItem('token');
@@ -116,20 +117,20 @@ export default function AccountInformationTab({ clientUsername }) {
                     canada_status: result.canada_status,
                     household_size: result.household_size,
                     addr: {
-                        line1: address.line1,
-                        line2: address.line2,
-                        city: address.city,
+                        line1: capitalize(address.line1),
+                        line2: capitalize(address.line2),
+                        city: capitalize(address.city),
                         province: address.province,
                         postal_code: address.postal_code
                     },
                     baby_or_pregnant: result.baby_or_pregnant === true ? 'true' : 'false',
-                    language_spoken: result.language_spoken,
-                    account_notes: result.account_notes
+                    language_spoken: capitalize(result.language_spoken),
+                    account_notes: capitalize(result.account_notes)
                 },
                 accountOwner: {
                     id: owner.id,
-                    f_name: owner.f_name,
-                    l_name: owner.l_name,
+                    f_name: capitalize(owner.f_name),
+                    l_name: capitalize(owner.l_name),
                     dob: owner.dob,
                     phone: owner.phone,
                     email: owner.email

@@ -13,6 +13,7 @@ import { getAccount } from '../../api/accounts';
 import { splitAddress } from '../utils/displayHelpers';
 import { notifications } from '@mantine/notifications';
 import dayjs from 'dayjs';
+import { capitalize } from '../utils/displayHelpers';
 
 import { mkConfig, generateCsv, download } from "export-to-csv";
 
@@ -44,16 +45,16 @@ export default function ClientList() {
 
                     return {
                         username: owner.username,
-                        f_name: owner.f_name,
-                        l_name: owner.l_name,
+                        f_name: capitalize(owner.f_name),
+                        l_name: capitalize(owner.l_name),
                         email: owner.email,
                         phone: owner.phone,
-                        address_line1: address.line1,
-                        address_line2: address.line2,
-                        address_city: address.city,
+                        address_line1: capitalize(address.line1),
+                        address_line2: capitalize(address.line2),
+                        address_city: capitalize(address.city),
                         address_postal_code: address.postal_code,
                         household_size: details.household_size,
-                        account_notes: details.account_notes
+                        account_notes: capitalize(details.account_notes)
 
                     };
                 })
