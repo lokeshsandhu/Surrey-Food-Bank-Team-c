@@ -298,9 +298,12 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
           <Tabs.Panel value="appt-notes" pt="xs">
             <LoadingOverlay visible={loadingNotes} />
             <Text>{clientNotes || "No additional notes for this appointment."}</Text>
-            <Button size="md" mt="md" onClick={() => updateAppointment(selectedClient)}>
+
+            
+            { //TODO: allow editing notes here and saving changes, but requires changes to API to update notes without changing other booking details
+            /* <Button size="md" mt="md" onClick={() => updateAppointment(token, selectedClient)}>
               Update Notes
-            </Button>
+            </Button> */}
           </Tabs.Panel>
         </Tabs>
 

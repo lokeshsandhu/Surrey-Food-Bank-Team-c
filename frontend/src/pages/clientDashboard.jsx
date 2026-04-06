@@ -276,7 +276,19 @@ export default function ClientDashboard() {
         const earliestAppointment = myAppointment.filter(
             appointment => appointment.end_time && normalizeApptDate(appointment.appt_date) >= dayjs().format('YYYY-MM-DD')
         );
-        setMyAppointment(earliestAppointment[0]);
+
+        if (earliestAppointment.length > 0) {
+            if (earliestAppointment[0].appt_date === earliestAppointment[1].appt_date) {
+                 if (earliestAppointment[0].end_time == earliestAppointment[1].start_time) {
+                    const appt = earliestAppointment[0];
+                    appt.end_time = earliestAppointment[1].end_time;
+                    setMyAppointment(appt);
+                 }
+            }
+        } else {
+            setMyAppointment(earliestAppointment[0]);
+        }
+        
     };
 
     const fetchModalTimeslots = async () => {
@@ -330,9 +342,10 @@ export default function ClientDashboard() {
     return (
         <div className="page">
             <ClientNavBar />
-            <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs">
+            <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs" style={{marginLeft: '20px', marginRight: '20px', marginTop: '20px'}}>
                 <div className="box">
-                    {myAppointment && myAppointment.appt_date ? `You have a booking for ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} at ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')}, ` : `Welcome back ${username}! You do not have any upcoming bookings.`}
+                    <h3 style={{marginBottom: '10px', marginTop: '0px'}}>Booking Information</h3>
+                    {myAppointment && myAppointment.appt_date ? `You have a booking on ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} from ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')} to ${dayjs(myAppointment.end_time, 'HH:mm:ss').format('h:mm A')}, ` : `Welcome back ${username}! You do not have any upcoming bookings.`}
                     {myAppointment && myAppointment.appt_date && (
                         <button type="button" className="text-link-button" onClick={() => openStackPage('base-page')}>
                             click here to edit/cancel your booking.
@@ -383,12 +396,13 @@ export default function ClientDashboard() {
                     </Group>
                 </div>
             </SimpleGrid>
-            <Grid verticalspacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
+            <Grid verticalspacing="xs" style={{ height: '60vh', alignItems: 'stretch' }}>
 
                 <Grid.Col span={6} style={{height: "500px"}}>
                     <Popover opened={tutorialState === 1} position="right" withArrow>
                         <Popover.Target>
-                            <div className="calendar">
+                            <div className="calendar" style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'stretch' }}>
+                                <h3 style={{marginBottom: '10px', marginTop: '0px'}}>Booking Calendar</h3>
                                 <DatePicker
                                     size="xl"
                                     value={selectedDate}
@@ -411,7 +425,7 @@ export default function ClientDashboard() {
                                         }
                                     }}
                                     hideOutsideDates
-                                    style={{justifySelf: 'center', marginTop: '15px'}}
+                                    style={{alignSelf: 'center', marginTop: '15px'}}
                                 />
                             </div>
                         </Popover.Target>
@@ -424,9 +438,10 @@ export default function ClientDashboard() {
                 </Grid.Col>
 
                 <Grid.Col span={6} style={{height: "500px"}}>
-                    <Popover opened={tutorialState === 2} position="left" withArrow>
+                    <Popover opened={tutorialState === 2} position="top" withArrow>
                         <Popover.Target>
                             <div className="time-grid">
+                                <h3 style={{marginBottom: '0px', marginTop: '0px'}}>Available Time Slots</h3>
                                 <ScrollArea style={{ marginBottom: '60px', height: '100%' }}>
                                     <LoadingOverlay visible={loadingTimeGrid} overlayProps={{ radius: "sm", blur: 2 }} />
                                     
@@ -455,7 +470,7 @@ export default function ClientDashboard() {
                                     value={bookingNote}
                                     onChange={(event) => setBookingNote(event.currentTarget.value)}
                                     w="50%"
-                                    style={{ position: 'absolute', bottom: '30px', left: '30px' }}
+                                    style={{ position: 'absolute', bottom: '30px', left: '35px' }}
                                 />
                                 <div className="booking-button">
                                     <Button size="lg" w="100%" onClick={handleBooking} loading={processingBooking} disabled={!selectedDate || !selectedTime}>
@@ -478,8 +493,8 @@ export default function ClientDashboard() {
                     <LoadingOverlay visible={modalLoading}/>
                     <div className="modal-content">
                         <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
-                        <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
-                        <p><strong>Notes:</strong> {myAppointment && myAppointment.booking_notes ? myAppointment.booking_notes : 'N/A'}</p>
+                        <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? `${dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A')} - ${dayjs(myAppointment.end_time, 'HH:mm').format('h:mm A')}` : 'N/A'}</p>
+                        <p><strong>Notes:</strong> {myAppointment && myAppointment.booking_notes ? myAppointment.booking_notes : '(Empty)'}</p>
                         <div>
                             <Button mr={10} onClick={() => openStackPage("calendar-page")}>
                                 Edit Booking
