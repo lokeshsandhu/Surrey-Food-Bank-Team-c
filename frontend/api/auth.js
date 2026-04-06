@@ -4,16 +4,16 @@ import { apiUrl } from "./baseUrl";
 // API functions for authentication endpoints
 
 /**
- * Login and get a JWT token.
+ * Login with a username or email and get a JWT token.
  * Example:
  *   login("johndoe", "password123");
  *   // Save the returned token for future API calls.
  */
-export function login(username, password) {
+export function login(identifier, password) {
   return fetch(apiUrl("/api/auth/login"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password })
+    body: JSON.stringify({ identifier, username: identifier, password })
   }).then(res => res.json());
 }
 

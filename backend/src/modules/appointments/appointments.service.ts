@@ -230,6 +230,16 @@ export async function deleteAppointmentFromUsername(username: string) {
     return rows;
 }
 
+export async function cleanupPastAppointments() {
+    const text = `
+        DELETE FROM appointment_slot
+        WHERE appt_date < CURRENT_DATE
+        RETURNING appt_date, start_time
+    `;
+    const { rows } = await pool.query(text);
+    return { deletedSlots: rows.length };
+}
+
 
 export async function createAppointmentsInTimeRange(data: CreateAppointmentsInRangeDTO) {
     const [startHour, startMin] = data.start_time.split(":").map(Number);
@@ -518,20 +528,21 @@ export async function bookAppointment(data: BookAppointmentDTO, username: string
 export async function getMyAppointments(username: string) {
     const text = `
         SELECT
-            s.appt_date,
-            s.start_time,
+            b.appt_date,
+            b.start_time,
             s.end_time,
             s.appt_notes,
             s.capacity,
             b.username,
             b.booking_status,
-            b.booking_notes
+            b.booking_notes,
+            b.created_at
         FROM appointment_booking b
-        JOIN appointment_slot s
+        LEFT JOIN appointment_slot s
           ON s.appt_date = b.appt_date
          AND s.start_time = b.start_time
         WHERE b.username = $1
-        ORDER BY s.appt_date, s.start_time
+        ORDER BY b.appt_date, b.start_time
     `;
     const { rows } = await pool.query(text, [username]);
     return rows;

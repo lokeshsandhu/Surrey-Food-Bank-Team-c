@@ -273,7 +273,9 @@ export default function ClientDashboard() {
 
     const fetchMyAppointment = async () => {
         const myAppointment = await getMyAppointments(token);
-        const earliestAppointment = myAppointment.filter(appointment => normalizeApptDate(appointment.appt_date) >= dayjs().format('YYYY-MM-DD'));
+        const earliestAppointment = myAppointment.filter(
+            appointment => appointment.end_time && normalizeApptDate(appointment.appt_date) >= dayjs().format('YYYY-MM-DD')
+        );
         setMyAppointment(earliestAppointment[0]);
     };
 
