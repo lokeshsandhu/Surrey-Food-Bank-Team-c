@@ -64,7 +64,7 @@ async function sampleJaneData(){
         l_name: 'Doe',
         dob: '2026/01/01',
         phone: '(111) 111-1111',
-        email: '',
+        email: 'jess@email.com',
         relationship: 'Spouse',
     }
 
