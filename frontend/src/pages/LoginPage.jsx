@@ -11,7 +11,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { login, me } from '../../api/auth.js';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [shownAdminDenied, setShownAdminDenied] = useState(false);
@@ -44,16 +44,19 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setError('');
     try {
-      const result = await login(username, password);
+      const result = await login(identifier, password);
       if (result && result.token) {
         sessionStorage.setItem('token', result.token);
-        sessionStorage.setItem('username', username);
-        sessionStorage.setItem('role', result.role);
         // Fetch user info to determine role
         const userInfo = await me(result.token);
-        if (userInfo && userInfo.role === 'admin') {
+        const resolvedUsername = userInfo?.username || result.username || identifier;
+        const resolvedRole = userInfo?.role || result.role;
+        sessionStorage.setItem('username', resolvedUsername);
+        sessionStorage.setItem('role', resolvedRole);
+
+        if (resolvedRole === 'admin') {
           navigate('/adminDashboard');
-        } else if (userInfo && userInfo.role === 'client') {
+        } else if (resolvedRole === 'client') {
           navigate('/clientDashboard');
         } else {
           navigate('/dashboard'); // fallback
@@ -70,11 +73,7 @@ export default function LoginPage() {
     <div className="top-container linear-gradient">
       <Card className="login-card card" padding={20}>
         <Image src={logo} h={150} w="auto" m={10} p={2} />
-        <TextInput 
-        placeholder='Username' 
-        value={username} onChange={e => setUsername(e.target.value)} 
-        className='login username'
-        />
+        <TextInput placeholder='Username or email' value={identifier} onChange={e => setIdentifier(e.target.value)} />
         <PasswordInput
           placeholder='Password'
           value={password}

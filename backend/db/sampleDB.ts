@@ -5,21 +5,6 @@ import * as account from "../src/modules/accounts/accounts.service";
 import * as familymember from "../src/modules/familyMembers/familyMembers.service";
 import * as appointment from "../src/modules/appointments/appointments.service";
 
-// sample admin account
-async function sampleAdminData(){
-    const adminAccount = {
-        username: 'admin',
-        user_password: 'adminPassword#123',
-        canada_status: undefined,
-        household_size: undefined,
-        addr: undefined,
-        baby_or_pregnant: undefined,
-        language_spoken: undefined,
-        account_notes: 'Admin account'
-    }
-
-    await account.createAccount(adminAccount);
-}
 
 // sample account and family members for Jane Doe user persona
 async function sampleJaneData(){
@@ -178,7 +163,6 @@ async function aprilTimeSlots() {
 // run init functions
 async function runSample() {
     try {
-        await sampleAdminData();
         await sampleJaneData();
         await sampleJeffData();
         await sampleApptData();

@@ -8,9 +8,9 @@ import { getOwnerEmailByUsername } from "../familyMembers/familyMembers.service"
 
 const ADMIN_USERNAMES = new Set(["admin"]);
 
-// Verify if account with given username and password exists and role (admin or client), return role and token
+// Verify if account with given username/email and password exists and role (admin or client), return role and token
 export async function login(data: LoginDTO) {
-    const account = await getAccountWithPassword(data.username);
+    const account = await getAccountWithPassword(data.identifier);
     if (!account) {
         return null;
     }
@@ -25,6 +25,7 @@ export async function login(data: LoginDTO) {
 
     return {
         success: true,
+        username: account.username,
         role,
         token,
     };

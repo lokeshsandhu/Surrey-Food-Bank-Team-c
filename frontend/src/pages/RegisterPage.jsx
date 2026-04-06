@@ -24,6 +24,22 @@ import { canadaStatusOptions } from '../constants/FormOptions.js';
 import { isMinAge } from '../utils/registrationHelpers.js';
 import { IconCheck, IconCircleCheck, IconInfoCircle } from '@tabler/icons-react';
 
+const USERNAME_PATTERN = /^[A-Za-z0-9_-]+$/;
+
+function getUsernameValidationError(value) {
+    const normalized = String(value ?? '').trim();
+
+    if (normalized.length < 5) {
+        return 'Username must be at least 5 characters';
+    }
+
+    if (!USERNAME_PATTERN.test(normalized)) {
+        return 'Username can only contain letters, numbers, underscores, and hyphens.';
+    }
+
+    return null;
+}
+
 export default function RegisterPage() {
     const errorRef = useRef(null);
     const [activeSection, setActiveSection] = useState(0);
@@ -32,6 +48,48 @@ export default function RegisterPage() {
     const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
+
+    const sanitizeUsernameInput = (value) => String(value ?? '').replace(/[^A-Za-z0-9_-]/g, '');
+
+    const isUsernameField = (event) => event.target?.name === 'username';
+
+    const handleUsernameKeyDown = (event) => {
+        if (!isUsernameField(event)) {
+            return;
+        }
+
+        if (event.ctrlKey || event.metaKey || event.altKey) {
+            return;
+        }
+
+        if (event.key.length === 1 && sanitizeUsernameInput(event.key) !== event.key) {
+            event.preventDefault();
+        }
+    };
+
+    const handleUsernamePaste = (event) => {
+        if (!isUsernameField(event)) {
+            return;
+        }
+
+        const pastedText = event.clipboardData.getData('text');
+        const sanitizedText = sanitizeUsernameInput(pastedText);
+
+        if (sanitizedText === pastedText) {
+            return;
+        }
+
+        event.preventDefault();
+        if (sanitizedText.length === 0) {
+            return;
+        }
+
+        const input = event.target;
+        const start = input.selectionStart ?? input.value.length;
+        const end = input.selectionEnd ?? input.value.length;
+        const nextValue = `${input.value.slice(0, start)}${sanitizedText}${input.value.slice(end)}`;
+        form.setFieldValue('username', nextValue);
+    };
 
     const form = useForm({
         initialValues: {
@@ -64,24 +122,8 @@ export default function RegisterPage() {
         validateInputOnBlur: true,
         validateInputOnChange: true,
         validate: {
-            username: (value) => {
-                if (/\s/.test(value)) {
-                    return 'Username cannot contain spaces.';
-                }
-
-                if (value.trim().length < 5) {
-                    return 'Username must be at least 5 characters.';
-                }
-            },
-            user_password: (value) => {
-                if (/\s/.test(value)) {
-                    return 'Password cannot contain spaces.';
-                }
-
-                if (!validator.isStrongPassword(value)) {
-                    return 'Password must contain 8+ characters (incl. uppercase, lowercase, number, and symbol).';
-                }
-            },
+            username: (value) => getUsernameValidationError(value),
+            user_password: (value) => validator.isStrongPassword(value) ? null : 'Password must contain 8+ characters, uppercase, lowercase, number, and symbol.',
             confirm_password: matchesField('user_password', 'Passwords do not match. Please re-try.'),
             canada_status: (value) => {
                 if (value.trim().length === 0) {
@@ -190,8 +232,8 @@ export default function RegisterPage() {
     }, [registerError, activeSection]);
 
     const checkUsername = async () => {
-        const currentUsername = form.values.username;
-        if (currentUsername.length < 5) return;
+        const currentUsername = form.values.username.trim();
+        if (getUsernameValidationError(currentUsername)) return;
 
         const result = await usernameExists(currentUsername);
 
@@ -402,7 +444,12 @@ export default function RegisterPage() {
 
     return (
         <div className="top-container linear-gradient">
-            <Card className="register-card card" padding={20} >
+            <Card
+                className="register-card card"
+                padding={20}
+                onKeyDownCapture={handleUsernameKeyDown}
+                onPasteCapture={handleUsernamePaste}
+            >
                 <Group>
                     <Image src={logo} h={80} w="auto" m={10} p={2} />
                     <h2 className='login-title'>Registration Form</h2>

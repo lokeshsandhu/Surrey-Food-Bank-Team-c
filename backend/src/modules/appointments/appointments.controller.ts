@@ -28,6 +28,16 @@ export async function deleteAppointmentFromUsername(req: Request, res: Response)
     }
 }
 
+// Admin: delete past appointment slots
+export async function cleanupPastAppointments(req: Request, res: Response) {
+    try {
+        const result = await service.cleanupPastAppointments();
+        res.status(200).json({ success: true, ...result });
+    } catch (err: any) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+}
+
 // Admin: create multiple appointments in a time range
 export async function createAppointmentsInTimeRange(req: Request, res: Response) {
     try {

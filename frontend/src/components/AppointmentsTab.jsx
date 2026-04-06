@@ -1,4 +1,4 @@
-import { Stack, TextInput, Group, Table, Button, Modal, Select, Title } from "@mantine/core";
+import { Group, Table, Button, Title } from "@mantine/core";
 import React, { useEffect, useState } from "react";
 import '../styles/clientList.css';
 import { getMyAppointments, getUsernameAppointments } from "../../api/appointments";
@@ -86,6 +86,11 @@ export default function AppointmentsTab({ clientUsername }) {
             <Table.Td style={cellStyle}>{appt.end_time.slice(0, 5)}</Table.Td>
             <Table.Td style={cellStyle}>{appt.booking_status}</Table.Td>
             <Table.Td style={cellStyle}>{appt.booking_notes}</Table.Td>
+            <Table.Td>{index + 1}</Table.Td>
+            <Table.Td>{appt.appt_date}</Table.Td>
+            <Table.Td>{appt.start_time?.slice(0, 5) ?? '-'}</Table.Td>
+            <Table.Td>{appt.end_time?.slice(0, 5) ?? '-'}</Table.Td>
+            <Table.Td>{appt.appt_notes ?? appt.booking_notes ?? '-'}</Table.Td>
         </Table.Tr>
     ));
 
