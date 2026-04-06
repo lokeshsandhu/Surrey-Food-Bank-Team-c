@@ -10,7 +10,7 @@ import { getOwnerFamilyMembers } from '../../api/familyMembers.js';
 import AccountInformationTab from "../components/AccountInformationTab";
 import back_icon from '../assets/arrow-left.svg';
 import '../styles/styles.css'
-import { getUsernameAppointments, BOOKING_STATUS, updateBookingStatus } from '../../api/appointments.js';
+import { getUsernameAppointments, BOOKING_STATUS, updateBookingStatus, updateAppointment } from '../../api/appointments.js';
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
 export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDeleteTimeslot, values, bookedUsers = [], onRemoveBookedUser, removingBookingUsername, ...others }) {
@@ -54,7 +54,11 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
 
   const fetchBooking = async (clientUsername) => {
     const res = await getUsernameAppointments(token, clientUsername);
-    const booking = res.filter(appt => dayjs(form.values.start).isSame(dayjs(appt.appt_date), 'day') && dayjs(appt.start_time, "HH:mm").format('HH:mm') === dayjs(form.values.start).format('HH:mm'));
+    const booking = res.filter(appt => {
+      return dayjs(values.start).isSame(dayjs(appt.appt_date), 'day') && 
+      dayjs(appt.start_time, "HH:mm").format('HH:mm') === dayjs(values.start).format('HH:mm');
+    });
+    console.log(booking);
     return booking;
   }
 
@@ -72,8 +76,9 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
   };
 
   const fetchBookingStatus = async (clientUsername) => {
-    try {      
+    try {
       const booking = await fetchBooking(clientUsername);
+      console.log(booking)
       const status = booking.length > 0 ? booking[0].booking_status : BOOKING_STATUS.DID_NOT_SHOW;
       return status;
     }
@@ -125,11 +130,13 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
         bookedUsers.map(async (user) => [user, await fetchBookingStatus(user)])
       );
 
+      console.log(statuses)
+
       setBookingStatuses(Object.fromEntries(statuses));
     };
 
     loadBookingStatuses();
-  }, [bookedUsers, values?.start]);
+  }, [bookedUsers, values]);
 
   useEffect(() => {
     if (opened) {
@@ -151,12 +158,6 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
     handleCloseAll();
   };
 
-  // no longer useful
-  // const handleDeleteBooking = () => {
-  //   onDeleteBooking?.(form.values);
-  //   onClose();
-  // };
-
   const handleDeleteTimeslot = () => {
     onDeleteTimeslot?.(form.values);
     handleCloseAll();
@@ -169,10 +170,10 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
         onClose={handleCloseAll}
         title="Manage Bookings"
         radius="md"
-        size="lg"
+        size="xl"
         {...others}
       >
-        <Box style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 220px', gap: '16px', alignItems: 'start' }}>
+        <Box style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: '16px', alignItems: 'start' }}>
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap="md">
               <NativeSelect
@@ -297,6 +298,9 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
           <Tabs.Panel value="appt-notes" pt="xs">
             <LoadingOverlay visible={loadingNotes} />
             <Text>{clientNotes || "No additional notes for this appointment."}</Text>
+            <Button size="md" mt="md" onClick={() => updateAppointment(selectedClient)}>
+              Update Notes
+            </Button>
           </Tabs.Panel>
         </Tabs>
 

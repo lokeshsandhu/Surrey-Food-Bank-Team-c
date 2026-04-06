@@ -44,7 +44,9 @@ export default function TimeslotPage() {
         return null;
     }
 
-    const handleTimeslotClick = (slotStart, slotEnd) => {
+    const handleTimeslotClick = (data) => {
+        const slotStart = data.slotStart;
+        const slotEnd = data.slotEnd;
         if (!events.find((event) => dayjs(event.start).isSame(dayjs(slotStart)))) {
             setSelectedTimeslotData({start: slotStart, end: slotEnd});
             timeslotModalHandlers.open();
