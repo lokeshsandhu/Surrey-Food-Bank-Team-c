@@ -197,68 +197,75 @@ export default function ClientList() {
     return (
         <div className="page">
             <AdminNavBar />
-            <div className="box" style={{ height: '85vh', display: 'flex', flexDirection: 'column' }}>
+            <div className="box" style={{ height: '85vh' }}>
                 <ActionIcon mb={10} onClick={() => navigate('/adminDashboard')}>
                     <IconArrowLeft />
                 </ActionIcon>
-                <Title order={1}>Client List</Title>
-                <TextInput
-                    className='search-bar'
-                    size="md"
-                    placeholder="Search Clients"
-                    radius={30}
-                    mt={15}
-                    value={searchText}
-                    onChange={e => {
-                        setSearchText(e.target.value);
-                        if (e.target.value.length === 0) {
-                            getAllAccountOwners();
-                        } else {
-                            searchClients(e.target.value);
-                        }
-                    }}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                <div
+                    style={{
+                        flex: 1,
+                        height: '95%',
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                    }}>
+                    <Title order={1}>Client List</Title>
+                    <TextInput
+                        className='search-bar'
+                        size="md"
+                        placeholder="Search Clients"
+                        radius={30}
+                        mt={15}
+                        value={searchText}
+                        onChange={e => {
+                            setSearchText(e.target.value);
                             if (e.target.value.length === 0) {
                                 getAllAccountOwners();
                             } else {
                                 searchClients(e.target.value);
                             }
-                        }
-                    }}
-                    rightSection={<CloseButton onClick={() => resetSearch()} />}
-                    maxLength={CHARLIMITS.openTextField}
-                />
-                <div
-                    style={{
-                        width: '100%',
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        marginTop: 10
-                    }}>
-                    <Button
-                        variant='outline'
-                        onClick={handleExportData}
-                        loading={exportLoading}
-                    >
-                        Export All Clients to CSV
-                    </Button>
-                </div>
-                <div
-                    style={{
-                        flex: 1,
-                        height: '100%',
-                        width: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                    }}>
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                if (e.target.value.length === 0) {
+                                    getAllAccountOwners();
+                                } else {
+                                    searchClients(e.target.value);
+                                }
+                            }
+                        }}
+                        rightSection={<CloseButton onClick={() => resetSearch()} />}
+                        maxLength={CHARLIMITS.openTextField}
+                    />
+                    <div
+                        style={{
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            marginTop: 10
+                        }}>
+                        <Button
+                            variant='outline'
+                            onClick={handleExportData}
+                            loading={exportLoading}
+                        >
+                            Export All Clients to CSV
+                        </Button>
+                    </div>
 
                     <Table.ScrollContainer
                         style={{
                             flex: 1,
                             overflowY: 'auto',
+                            marginTop: 10
                         }}>
-                        <Table mt={15} stickyHeader withTableBorder highlightOnHover bgcolor='white' w={'100%'} style={{ tableLayout: 'fixed', width: '100%' }}>
+                        <Table
+                            stickyHeader
+                            withTableBorder
+                            highlightOnHover
+                            bgcolor='white'
+                            w={'100%'}
+                            style={{ tableLayout: 'fixed', width: '100%' }}>
                             <Table.Thead>
                                 <Table.Tr>
                                     <Table.Th>Last Name</Table.Th>

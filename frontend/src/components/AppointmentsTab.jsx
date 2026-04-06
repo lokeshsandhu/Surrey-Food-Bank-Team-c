@@ -74,19 +74,28 @@ export default function AppointmentsTab({ clientUsername }) {
         getAppointmentHistory();
     }, []);
 
+    const cellStyle = {
+        wordBreak: 'break-word'
+    }
+
     const rows = appointments.map((appt, index) => (
         <Table.Tr key={index}>
-            <Table.Td>{index + 1}</Table.Td>
-            <Table.Td>{appt.appt_date}</Table.Td>
-            <Table.Td>{appt.start_time.slice(0, 5)}</Table.Td>
-            <Table.Td>{appt.end_time.slice(0, 5)}</Table.Td>
-            <Table.Td>{appt.booking_status}</Table.Td>
-            <Table.Td>{appt.booking_notes}</Table.Td>
+            <Table.Td style={cellStyle}>{index + 1}</Table.Td>
+            <Table.Td style={cellStyle}>{appt.appt_date}</Table.Td>
+            <Table.Td style={cellStyle}>{appt.start_time.slice(0, 5)}</Table.Td>
+            <Table.Td style={cellStyle}>{appt.end_time.slice(0, 5)}</Table.Td>
+            <Table.Td style={cellStyle}>{appt.booking_status}</Table.Td>
+            <Table.Td style={cellStyle}>{appt.booking_notes}</Table.Td>
         </Table.Tr>
     ));
 
     return (
-        <div>
+        <div style={{
+            height: '100%',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+        }}>
             <Group justify="space-between" mb={10}>
                 <Title order={2}>Appointment History</Title>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
@@ -103,41 +112,34 @@ export default function AppointmentsTab({ clientUsername }) {
                     </Button>
                 </div>
             </Group>
-            <div
+
+            <Table.ScrollContainer
                 style={{
-                    height: '100%',
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
+                    flex: 1,
+                    overflowY: 'auto',
                 }}>
-                <Table.ScrollContainer
-                    style={{
-                        flex: 1,
-                        overflowY: 'auto',
-                    }}>
-                    <Table
-                        miw={500}
-                        verticalSpacing="sm"
-                        stickyHeader
-                        withTableBorder
-                        highlightOnHover
-                        bgcolor='white'
-                        w={'100%'}
-                    >
-                        <Table.Thead>
-                            <Table.Tr>
-                                <Table.Th>#</Table.Th>
-                                <Table.Th>Date</Table.Th>
-                                <Table.Th>Start Time</Table.Th>
-                                <Table.Th>End Time</Table.Th>
-                                <Table.Th>Booking Status</Table.Th>
-                                <Table.Th>Booking Notes</Table.Th>
-                            </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>{rows}</Table.Tbody>
-                    </Table>
-                </Table.ScrollContainer>
-            </div>
+                <Table
+                    verticalSpacing="sm"
+                    stickyHeader
+                    withTableBorder
+                    highlightOnHover
+                    bgcolor='white'
+                    style={{ tableLayout: 'fixed' }}
+                    w={'100%'}
+                >
+                    <Table.Thead>
+                        <Table.Tr>
+                            <Table.Th>#</Table.Th>
+                            <Table.Th>Date</Table.Th>
+                            <Table.Th>Start Time</Table.Th>
+                            <Table.Th>End Time</Table.Th>
+                            <Table.Th>Booking Status</Table.Th>
+                            <Table.Th>Booking Notes</Table.Th>
+                        </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>{rows}</Table.Tbody>
+                </Table>
+            </Table.ScrollContainer>
         </div>
     );
 };

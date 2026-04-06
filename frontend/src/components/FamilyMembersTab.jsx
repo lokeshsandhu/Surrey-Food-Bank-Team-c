@@ -308,17 +308,19 @@ export default function FamilyMembersTab({ clientUsername }) {
     checkEmail();
   }, [form.values.email]);
 
+  const cellStyle = {
+    wordBreak: 'break-word'
+  }
+
   const rows = familyMemberInfo.map((FM) => (
     <Table.Tr key={FM.id}>
-      <Table.Td
-        style={{ wordBreak: 'break-word' }}
-      >{FM.f_name}</Table.Td>
-      <Table.Td>{FM.l_name}</Table.Td>
-      <Table.Td>{FM.dob.slice(0, 10)}</Table.Td>
-      <Table.Td><a href={`mailto:${FM.email}`}>{FM.email}</a></Table.Td>
-      <Table.Td>{FM.phone}</Table.Td>
-      <Table.Td>{FM.relationship}</Table.Td>
-      <Table.Td>
+      <Table.Td style={cellStyle}>{FM.f_name}</Table.Td>
+      <Table.Td style={cellStyle}>{FM.l_name}</Table.Td>
+      <Table.Td style={cellStyle}>{FM.dob.slice(0, 10)}</Table.Td>
+      <Table.Td style={cellStyle}><a href={`mailto:${FM.email}`}>{FM.email}</a></Table.Td>
+      <Table.Td style={cellStyle}>{FM.phone}</Table.Td>
+      <Table.Td style={cellStyle}>{FM.relationship}</Table.Td>
+      <Table.Td style={cellStyle}>
         <Button size='compact-sm'
           onClick={() => openUpdateModal(FM)}>Edit</Button>
       </Table.Td>
@@ -341,12 +343,12 @@ export default function FamilyMembersTab({ clientUsername }) {
         }}
       >
         <Table
-          miw={500}
           verticalSpacing="sm"
           stickyHeader
           withTableBorder
           highlightOnHover
           bgcolor='white'
+          style={{tableLayout: 'fixed'}}
           w={'100%'}
         >
           <Table.Thead>
@@ -359,7 +361,7 @@ export default function FamilyMembersTab({ clientUsername }) {
               <Table.Th>Relationship</Table.Th>
               <Table.Th>
                 <Button
-                  size='sm'
+                  size='xs'
                   color='green'
                   leftSection={<IconUserPlus />}
                   onClick={openAddModal}
