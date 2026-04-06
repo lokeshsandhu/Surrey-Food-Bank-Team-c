@@ -67,11 +67,12 @@ export default function AddFamilyMembers({ form }) {
                                 label="3. Date of Birth"
                                 placeholder="YYYY-MM-DD"
                                 valueFormat='YYYY-MM-DD'
-                                maxDate={new Date()}
+                                defaultDate={dayjs()}
+                                maxDate={dayjs()}
+                                minDate={dayjs().subtract(120, 'year').toDate()}
                                 key={form.key(`family_members.${index}.dob`)}
                                 {...form.getInputProps(`family_members.${index}.dob`)}
                                 withAsterisk
-                                minDate={dayjs().subtract(120, 'year').toDate()}
                                 w={'30%'}
                             />
                             <Textarea

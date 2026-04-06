@@ -404,7 +404,8 @@ export default function FamilyMembersTab({ clientUsername }) {
             label="Date of Birth"
             placeholder="YYYY-MM-DD"
             valueFormat='YYYY-MM-DD'
-            maxDate={new Date()}
+            defaultDate={dayjs()}
+            maxDate={dayjs()}
             minDate={dayjs().subtract(120, 'year').toDate()}
             key={form.key(`dob`)}
             {...form.getInputProps(`dob`)}
