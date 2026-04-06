@@ -235,7 +235,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
               <Stack gap={6}>
                 {bookedUsers.map((user) => (
                   <Group key={user} justify="space-between" gap="xs" wrap="nowrap">
-                    <Button size="xs" onClick={() => { stack.open('User Info'); setSelectedClient(user); }}>
+                    <Button size="xs" onClick={() => { if (user !== 'admin') {stack.open('User Info'); setSelectedClient(user); }}}>
                       {user}
                     </Button>
                     <NativeSelect
