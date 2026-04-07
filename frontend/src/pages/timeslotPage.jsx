@@ -255,7 +255,9 @@ export default function TimeslotPage() {
 
         setRemovingBookingUsername(usernameToRemove);
         try {
-            const res = await deleteAppointmentFromUsername(token, usernameToRemove);
+            const bookingDate = dayjs(selectedBookingData.start).format('YYYY-MM-DD');
+            const bookingTime = dayjs(selectedBookingData.start, 'YYYY-MM-DD HH:mm').format('HH:mm');
+            const res = await deleteAppointmentFromUsername(token, usernameToRemove, bookingDate, bookingTime);
             if (res?.error) {
                 notifications.show({
                     title: 'Error',
@@ -269,7 +271,7 @@ export default function TimeslotPage() {
             if (deletedCount === 0) {
                 notifications.show({
                     title: 'Notice',
-                    message: `No upcoming bookings were removed for ${usernameToRemove}. Only bookings with status "upcoming" can be deleted here.`,
+                    message: `No upcoming bookings were removed for ${usernameToRemove}. Only the selected slot's upcoming booking can be deleted here.`,
                     color: 'yellow',
                 });
             } else {
