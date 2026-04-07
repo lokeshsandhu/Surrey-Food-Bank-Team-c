@@ -223,14 +223,27 @@ export async function updateAppointment(
 }
 
 
-export async function deleteAppointmentFromUsername(username: string) {
-    const text = `
+export async function deleteAppointmentFromUsername(username: string, appt_date?: string, start_time?: string) {
+    const values: unknown[] = [username];
+    let text = `
         DELETE FROM appointment_booking
         WHERE username = $1
           AND booking_status = 'upcoming'
+    `;
+
+    if (appt_date && start_time) {
+        text += `
+          AND appt_date = $2
+          AND start_time = $3::time
+        `;
+        values.push(appt_date, start_time);
+    }
+
+    text += `
         RETURNING *
     `;
-    const { rows } = await pool.query(text, [username]);
+
+    const { rows } = await pool.query(text, values);
     return rows;
 }
 

@@ -27,6 +27,8 @@ export default function ProfileButton() {
                     <Menu.Divider/>
                     <Menu.Item leftSection={<img src={logout_icon} width={20} height={20} alt="Logout"/>} onClick={() => {
                         sessionStorage.removeItem('token');
+                        sessionStorage.removeItem('username');
+                        sessionStorage.removeItem('role');
                         notifications.show({
                             title: 'Logged out',
                             message: 'You have been successfully logged out.',

@@ -133,15 +133,16 @@ export function markBookingDidNotShow(token, appt_date, start_time, username) {
 
 /**
  * Delete upcoming appointments for a username (admin only).
- * Required field: username
+ * Optional fields: appt_date, start_time
+ * If appt_date and start_time are provided, deletes the booking for that exact slot.
  * Example:
- *   deleteAppointmentFromUsername(token, "johndoe");
+ *   deleteAppointmentFromUsername(token, "johndoe", "2024-06-01", "10:00");
  */
-export function deleteAppointmentFromUsername(token, username) {
+export function deleteAppointmentFromUsername(token, username, appt_date, start_time) {
   return fetch(`${API_BASE}/delete/username`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ username })
+    body: JSON.stringify({ username, appt_date, start_time })
   }).then(res => res.json());
 }
 
