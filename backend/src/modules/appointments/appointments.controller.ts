@@ -17,11 +17,15 @@ export async function updateAppointment(req: Request, res: Response) {
     }
 }
 
-// Delete appointments by username
+// Delete upcoming appointments by username
 export async function deleteAppointmentFromUsername(req: Request, res: Response) {
     try {
         const { username } = req.body;
         const deleted = await service.deleteAppointmentFromUsername(username);
+        if (deleted.length === 0) {
+            res.status(404).json({ error: "No upcoming appointments found" });
+            return;
+        }
         res.status(200).json({ deleted });
     } catch (err: any) {
         res.status(500).json({ error: err.message });

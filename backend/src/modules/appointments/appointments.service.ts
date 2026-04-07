@@ -48,13 +48,20 @@ export async function updateAppointment(
 
     if (username !== undefined) {
         if (username === null || username === "") {
-            await pool.query(
+            const deleteResult = await pool.query(
                 `
                 DELETE FROM appointment_booking
-                WHERE appt_date = $1 AND start_time = $2::time
+                WHERE appt_date = $1
+                  AND start_time = $2::time
+                  AND booking_status = 'upcoming'
+                RETURNING *
             `,
                 [appt_date, start_time]
             );
+
+            if (deleteResult.rowCount === 0) {
+                return null;
+            }
         } else {
             if (booking_status !== undefined) {
                 const bookingUpdateFields = ["booking_status = $4"];
@@ -224,6 +231,7 @@ export async function deleteAppointmentFromUsername(username: string) {
     const text = `
         DELETE FROM appointment_booking
         WHERE username = $1
+          AND booking_status = 'upcoming'
         RETURNING *
     `;
     const { rows } = await pool.query(text, [username]);
@@ -356,7 +364,12 @@ export async function findAppointmentsInDateTimeRange(apptDate: string, startTim
 export async function deleteAppointment(appt_date: string, start_time: string) {
     const text = `
         DELETE FROM appointment_slot
-        WHERE appt_date = $1 AND start_time = $2::time
+        WHERE appt_date = $1
+          AND start_time = $2::time
+          AND (
+              appt_date > CURRENT_DATE
+              OR (appt_date = CURRENT_DATE AND start_time > CURRENT_TIME::time)
+          )
         RETURNING *
     `;
     const { rows } = await pool.query(text, [appt_date, start_time]);
