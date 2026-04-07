@@ -71,7 +71,11 @@ export default function LoginPage() {
 
   return (
     <div className="top-container linear-gradient">
-      <Card className="login-card card" padding={20}>
+      <Card component="form" className="login-card card" padding={20} 
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleLogin();
+      }}>
         <Image src={logo} h={150} w="auto" m={10} p={2} />
         <TextInput className='login username' placeholder='Username or Email' value={identifier} onChange={e => setIdentifier(e.target.value)} />
         <PasswordInput
@@ -80,7 +84,10 @@ export default function LoginPage() {
           onChange={e => setPassword(e.target.value)}
           className='login password'
         />
-        <Button onClick={handleLogin}>Login</Button>
+        <Button
+          type="submit"
+        >Login
+        </Button>
         {error && <Text c="red" mt={10}>{error}</Text>}
         <Group style={{ flexDirection: 'column', gap: 1, alignItems: 'flex-start' }}>
           <Button
@@ -92,7 +99,7 @@ export default function LoginPage() {
             Create Account
           </Button>
           <Button
-            className='link'    
+            className='link'
             variant='white'
             size='sm'
             onClick={() => navigate('/requestPasswordChange')}

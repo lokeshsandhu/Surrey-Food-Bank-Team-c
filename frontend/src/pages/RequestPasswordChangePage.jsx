@@ -53,7 +53,12 @@ export default function RequestPasswordChangePage() {
 
     return (
         <div className="top-container linear-gradient">
-            <Card className="login-card card" padding={20} miw={350} maw={400}>
+            <Card component="form" className="login-card card" padding={20} miw={350} maw={400}
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    handleResetEmail();
+                }}
+            >
                 <Image
                     src={logo}
                     h={70}
@@ -72,7 +77,10 @@ export default function RequestPasswordChangePage() {
                     className='account-recovery'
                 />
                 {error && <Text c="red" mt={10}>{error}</Text>}
-                <Button onClick={handleResetEmail} loading={submitting}>Send Reset Link</Button>
+                <Button
+                    onClick={handleResetEmail}
+                    loading={submitting}
+                >Send Reset Link</Button>
                 <Button variant='light' onClick={() => navigate('/login')}>Back</Button>
             </Card>
         </div>
