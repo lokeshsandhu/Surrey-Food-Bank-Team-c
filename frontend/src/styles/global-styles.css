@@ -43,7 +43,7 @@ html, body {
     cursor: pointer;
 }
 
-.mantine-InputWrapper-root:not(.search-bar, .login, .account-recovery) {
+.mantine-InputWrapper-root:not(.search-bar, .login, .account-recovery, .reset-password) {
     min-height: 80px;
 }
 
