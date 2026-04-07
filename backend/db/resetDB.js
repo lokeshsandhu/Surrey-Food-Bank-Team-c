@@ -6,6 +6,10 @@ const path = require('path');
 const dotenv = require('dotenv');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+
+const ENCRYPTION_PREFIX = 'enc:v1';
+const ENCRYPTION_IV_BYTES = 12;
 
 const envFileCandidates = [
     process.env.ENV_FILE,
@@ -38,6 +42,46 @@ const pool = new Pool(
             ssl: enableSsl ? { rejectUnauthorized: false } : undefined,
         }
 );
+
+let cachedFieldEncryptionKey = null;
+
+function getFieldEncryptionKey() {
+    if (cachedFieldEncryptionKey) return cachedFieldEncryptionKey;
+
+    const keyB64 = process.env.FIELD_ENCRYPTION_KEY;
+    if (!keyB64) {
+        throw new Error('Missing FIELD_ENCRYPTION_KEY');
+    }
+
+    const key = Buffer.from(keyB64, 'base64');
+    if (key.length !== 32) {
+        throw new Error('FIELD_ENCRYPTION_KEY must be base64 for exactly 32 bytes');
+    }
+
+    cachedFieldEncryptionKey = key;
+    return key;
+}
+
+function encryptStringForSeed(value, aad) {
+    if (value === null || value === undefined) return value;
+
+    const key = getFieldEncryptionKey();
+    const iv = crypto.randomBytes(ENCRYPTION_IV_BYTES);
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    cipher.setAAD(Buffer.from(aad, 'utf8'));
+
+    const ciphertext = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
+    const tag = cipher.getAuthTag();
+
+    return `${ENCRYPTION_PREFIX}:${iv.toString('base64')}:${tag.toString('base64')}:${ciphertext.toString('base64')}`;
+}
+
+function hashEmailForLookup(value) {
+    if (typeof value !== 'string') return null;
+    const normalized = value.trim().toLowerCase();
+    if (!normalized) return null;
+    return crypto.createHash('sha256').update(normalized, 'utf8').digest('hex');
+}
 
 // resets database by executing schema.sql
 async function resetDB() {
@@ -97,12 +141,22 @@ async function resetDB() {
                 dob,
                 phone,
                 email,
-                relationship
+                relationship,
+                email_lookup_hash
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             ON CONFLICT (username, id) DO NOTHING
         `,
-            ['admin', 'Admin', 'Account', null, null, 'admin@surreyfoodbank.com', 'owner']
+            [
+                'admin',
+                'Admin',
+                'Account',
+                null,
+                null,
+                encryptStringForSeed('admin@surreyfoodbank.com', 'familymember.email'),
+                'owner',
+                hashEmailForLookup('admin@surreyfoodbank.com')
+            ]
         );
 
         console.log(`Database initialized: ${successCount} successful, ${errorCount} errors. Admin account seeded.`);

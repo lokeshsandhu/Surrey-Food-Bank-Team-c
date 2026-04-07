@@ -5,8 +5,7 @@ import { LoginDTO } from "./auth.dto";
 import { sendRecoveryMessage } from "../email/email.service";
 import { env } from "../../config/env";
 import { getOwnerEmailByUsername } from "../familyMembers/familyMembers.service";
-
-const ADMIN_USERNAMES = new Set(["admin"]);
+import { isAdminUsername } from "../../shared/auth/adminUsers";
 
 // Verify if account with given username/email and password exists and role (admin or client), return role and token
 export async function login(data: LoginDTO) {
@@ -20,7 +19,7 @@ export async function login(data: LoginDTO) {
         return null;
     }
 
-    const role = ADMIN_USERNAMES.has(account.username) ? "admin" : "client";
+    const role = isAdminUsername(account.username) ? "admin" : "client";
     const token = signToken({ username: account.username, role });
 
     return {

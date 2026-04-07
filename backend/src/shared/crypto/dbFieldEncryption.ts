@@ -16,14 +16,17 @@ export function decryptRowFromDb<T extends Record<string, any>>(table: string, r
   const decrypted: Record<string, any> = { ...row };
   for (const column of encryptedColumnsFor(table)) {
     if (!(column in decrypted)) continue;
-    const value = decrypted[column];
-    if (value === null || value === undefined) continue;
-    if (typeof value !== "string") continue;
-    decrypted[column] = decryptString(value, aadFor(table, column));
+    decrypted[column] = decryptValueFromDb(table, column, decrypted[column]);
   }
   return decrypted as T;
 }
 
 export function decryptRowsFromDb<T extends Record<string, any>>(table: string, rows: T[]): T[] {
   return rows.map((r) => decryptRowFromDb(table, r));
+}
+
+export function decryptValueFromDb(table: string, column: string, value: unknown): unknown {
+  if (value === null || value === undefined) return value;
+  if (typeof value !== "string") return value;
+  return decryptString(value, aadFor(table, column));
 }

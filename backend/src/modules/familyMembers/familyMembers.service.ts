@@ -1,5 +1,31 @@
 import pool from "../../db/postgres";
 import { FamilyMemberDTO, UpdateFamilyMemberDTO } from "./familyMembers.dto";
+import { decryptRowFromDb, decryptValueFromDb, encryptForDb } from "../../shared/crypto/dbFieldEncryption";
+import { hashEmailForLookup } from "../../shared/crypto/emailLookup";
+import { isAdminUsername } from "../../shared/auth/adminUsers";
+
+const FAMILY_MEMBER_PUBLIC_COLUMNS = "id, username, f_name, l_name, dob, phone, email, relationship";
+
+function normalizeRelationshipValue(value: unknown): string {
+    const decrypted = decryptValueFromDb("familymember", "relationship", value);
+    return typeof decrypted === "string" ? decrypted : "";
+}
+
+function normalizeFamilyMemberRow<T extends Record<string, any>>(row: T): T {
+    const decryptedRow = decryptRowFromDb("familymember", row) as Record<string, any>;
+    if ("relationship" in decryptedRow) {
+        decryptedRow.relationship = normalizeRelationshipValue(decryptedRow.relationship);
+    }
+    return decryptedRow as T;
+}
+
+function normalizeFamilyMemberRows<T extends Record<string, any>>(rows: T[]): T[] {
+    return rows.map((row) => normalizeFamilyMemberRow(row));
+}
+
+function isOwnerRelationship(value: unknown): boolean {
+    return normalizeRelationshipValue(value).trim().toLowerCase() === "owner";
+}
 
 async function syncHouseholdSize(username: string) {
     const countText = `
@@ -35,56 +61,58 @@ function buildFamilyMemberLookupClause(identifier: number | string, startIndex =
 // Select all rows with given first name from familymember table, return row(s)
 export async function findFamilyMembersByFName(f_name: string) {
     const text = `
-        SELECT * FROM familymember
+        SELECT ${FAMILY_MEMBER_PUBLIC_COLUMNS} FROM familymember
         WHERE f_name ILIKE '%' || TRIM($1) || '%'
         ORDER BY username, f_name
     `;
     const { rows } = await pool.query(text, [f_name]);
-    return rows;
+    return normalizeFamilyMemberRows(rows);
 }
 
 // Select all rows with given last name from familymember table, return row(s)
 export async function findFamilyMembersByLName(l_name: string) {
     const text = `
-        SELECT * FROM familymember
+        SELECT ${FAMILY_MEMBER_PUBLIC_COLUMNS} FROM familymember
         WHERE l_name ILIKE '%' || TRIM($1) || '%'
         ORDER BY username, l_name, f_name
     `;
     const { rows } = await pool.query(text, [l_name]);
-    return rows;
+    return normalizeFamilyMemberRows(rows);
 }
 
 // Insert row into familymember table, return row(s)
 export async function createFamilyMember(data: FamilyMemberDTO) {
+    const emailLookupHash = hashEmailForLookup(data.email);
     const text = `
         INSERT INTO familymember
-        (username, f_name, l_name, dob, phone, email, relationship)
-        VALUES ($1, LOWER($2), LOWER($3), $4, $5, $6, $7)
-        RETURNING *
+        (username, f_name, l_name, dob, phone, email, relationship, email_lookup_hash)
+        VALUES ($1, LOWER($2), LOWER($3), $4, $5, $6, $7, $8)
+        RETURNING ${FAMILY_MEMBER_PUBLIC_COLUMNS}
     `;
     const values = [
         data.username,
         data.f_name,
         data.l_name,
         data.dob,
-        data.phone,
-        data.email,
+        encryptForDb("familymember", "phone", data.phone),
+        encryptForDb("familymember", "email", data.email),
         data.relationship,
+        emailLookupHash,
     ];
     const { rows } = await pool.query(text, values);
     await syncHouseholdSize(data.username);
-    return rows[0];
+    return rows[0] ? normalizeFamilyMemberRow(rows[0]) : null;
 }
 
 // Select all rows with given username from familymember table, return row(s)
 export async function getFamilyMembers(username: string) {
     const text = `
-        SELECT * FROM familymember
+        SELECT ${FAMILY_MEMBER_PUBLIC_COLUMNS} FROM familymember
         WHERE username = $1
         ORDER BY f_name
     `;
     const { rows } = await pool.query(text, [username]);
-    return rows;
+    return normalizeFamilyMemberRows(rows);
 }
 
 // Update row in familymember table with given username and first name, return row
@@ -112,11 +140,13 @@ export async function updateFamilyMember(
     }
     if (data.phone !== undefined) {
         fields.push(`phone = $${idx++}`);
-        values.push(data.phone);
+        values.push(encryptForDb("familymember", "phone", data.phone));
     }
     if (data.email !== undefined) {
         fields.push(`email = $${idx++}`);
-        values.push(data.email);
+        values.push(encryptForDb("familymember", "email", data.email));
+        fields.push(`email_lookup_hash = $${idx++}`);
+        values.push(hashEmailForLookup(data.email));
     }
     if (data.relationship !== undefined) {
         fields.push(`relationship = $${idx++}`);
@@ -126,10 +156,10 @@ export async function updateFamilyMember(
     if (fields.length === 0) {
         const lookup = buildFamilyMemberLookupClause(identifier);
         const { rows } = await pool.query(
-            `SELECT * FROM familymember WHERE ${lookup.clause}`,
+            `SELECT ${FAMILY_MEMBER_PUBLIC_COLUMNS} FROM familymember WHERE ${lookup.clause}`,
             [username, ...lookup.values]
         );
-        return rows[0] ?? null;
+        return rows[0] ? normalizeFamilyMemberRow(rows[0]) : null;
     }
 
     const lookup = buildFamilyMemberLookupClause(identifier, idx);
@@ -138,10 +168,10 @@ export async function updateFamilyMember(
         UPDATE familymember
         SET ${fields.join(", ")}
         WHERE ${lookup.clause}
-        RETURNING *
+        RETURNING ${FAMILY_MEMBER_PUBLIC_COLUMNS}
     `;
     const { rows } = await pool.query(text, values);
-    return rows[0] ?? null;
+    return rows[0] ? normalizeFamilyMemberRow(rows[0]) : null;
 }
 
 // Delete row from familymember table with given username and identifier, return row
@@ -150,34 +180,35 @@ export async function deleteFamilyMember(username: string, identifier: number | 
     const text = `
         DELETE FROM familymember
         WHERE ${lookup.clause}
-        RETURNING *
+        RETURNING ${FAMILY_MEMBER_PUBLIC_COLUMNS}
     `;
     const { rows } = await pool.query(text, [username, ...lookup.values]);
     if (rows[0]) {
         await syncHouseholdSize(username);
     }
-    return rows[0] ?? null;
+    return rows[0] ? normalizeFamilyMemberRow(rows[0]) : null;
 }
 
 // Select all rows with relationship = 'owner' from familymember table
 export async function getOwnerFamilyMembers() {
-    const text = `SELECT * FROM familymember WHERE relationship = 'owner' ORDER BY username, f_name`;
+    const text = `SELECT ${FAMILY_MEMBER_PUBLIC_COLUMNS} FROM familymember ORDER BY username, f_name`;
     const { rows } = await pool.query(text);
-    return rows;
+    return normalizeFamilyMemberRows(rows).filter(
+        (member) => isOwnerRelationship(member.relationship) && !isAdminUsername(member.username)
+    );
 }
 
 // Select owner email for a username, return first non-empty email or null
 export async function getOwnerEmailByUsername(username: string): Promise<string | null> {
     const text = `
-        SELECT email
+        SELECT email, relationship
         FROM familymember
         WHERE username = $1
-          AND LOWER(COALESCE(relationship, '')) = 'owner'
-          AND email IS NOT NULL
-          AND TRIM(email) <> ''
         ORDER BY id ASC
-        LIMIT 1
     `;
     const { rows } = await pool.query(text, [username]);
-    return rows[0]?.email ?? null;
+    const owner = normalizeFamilyMemberRows(rows).find(
+        (member) => isOwnerRelationship(member.relationship) && member.email != null && String(member.email).trim() !== ""
+    );
+    return owner?.email ?? null;
 }

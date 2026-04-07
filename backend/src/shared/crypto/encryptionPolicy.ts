@@ -1,7 +1,6 @@
 export const ENCRYPTION_POLICY = {
   account: ["addr"],
-  familymember: ["phone", "email", "relationship"],
-  appointment: ["appt_notes"],
+  familymember: ["email", "phone"],
 } as const;
 
 export type EncryptedTable = keyof typeof ENCRYPTION_POLICY;
@@ -19,4 +18,3 @@ export function isEncryptedColumn(table: string, column: string): boolean {
   const col = column.toLowerCase();
   return encryptedColumnsFor(table).some((c) => c.toLowerCase() === col);
 }
-

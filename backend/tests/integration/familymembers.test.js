@@ -1,5 +1,7 @@
-const { findFamilyMembersByFName, findFamilyMembersByLName, createFamilyMember, getFamilyMembers, updateFamilyMember, deleteFamilyMember, getOwnerFamilyMembers } = require('../../src/modules/familyMembers/familyMembers.service');
+const { findFamilyMembersByFName, findFamilyMembersByLName, createFamilyMember, getFamilyMembers, updateFamilyMember, deleteFamilyMember, getOwnerFamilyMembers, getOwnerEmailByUsername } = require('../../src/modules/familyMembers/familyMembers.service');
 const pool = require('../../src/db/postgres').default;
+const { hashEmailForLookup } = require('../../src/shared/crypto/emailLookup');
+const { encryptString } = require('../../src/shared/crypto/fieldEncryption');
 
 function normalizeDateOnly(value) {
     if (value == null) return value;
@@ -51,6 +53,16 @@ describe('familyMembers.service', () => {
         expect(newMember.phone).toBe('(111) 111-111');
         expect(newMember.email).toBe('email@email.com');
         expect(newMember.relationship).toBe('owner');
+
+        const raw = await pool.query(
+            `SELECT phone, email, email_lookup_hash FROM familymember WHERE username = $1 AND id = $2`,
+            ['testuser', newMember.id]
+        );
+        expect(raw.rows[0].phone).not.toBe('(111) 111-111');
+        expect(raw.rows[0].phone).toMatch(/^enc:v1:/);
+        expect(raw.rows[0].email).not.toBe('email@email.com');
+        expect(raw.rows[0].email).toMatch(/^enc:v1:/);
+        expect(raw.rows[0].email_lookup_hash).toBe(hashEmailForLookup('email@email.com'));
     });
 
     // createFamilyMembers should add multiple FMs under an account with differing first names, return each new FM info
@@ -350,6 +362,16 @@ describe('familyMembers.service', () => {
         expect(result.phone).toBe('(222) 222-222');
         expect(result.email).toBe('newemail@email.com');
         expect(result.relationship).toBe('newRelation');
+
+        const raw = await pool.query(
+            `SELECT phone, email, email_lookup_hash FROM familymember WHERE username = $1 AND id = $2`,
+            ['testuser', initial.id]
+        );
+        expect(raw.rows[0].phone).not.toBe('(222) 222-222');
+        expect(raw.rows[0].phone).toMatch(/^enc:v1:/);
+        expect(raw.rows[0].email).not.toBe('newemail@email.com');
+        expect(raw.rows[0].email).toMatch(/^enc:v1:/);
+        expect(raw.rows[0].email_lookup_hash).toBe(hashEmailForLookup('newemail@email.com'));
     });
 
     // updateFamilyMember should update some fields (except for username) of given FM, return updated FM
@@ -622,6 +644,81 @@ describe('familyMembers.service', () => {
         expect(result).not.toBeNull();
         const ours = result.filter(r => r.username === 'testuser' || r.username === 'otheruser');
         expect(ours).toHaveLength(0);
+    });
+
+    it('getOwnerEmailByUsername should return decrypted owner email', async () => {
+        await createFamilyMember({
+            username: 'testuser',
+            f_name: 'Owner',
+            l_name: 'User',
+            dob: '1990/01/01',
+            phone: '(111) 111-111',
+            email: 'owner@email.com',
+            relationship: 'owner'
+        });
+
+        const result = await getOwnerEmailByUsername('testuser');
+        expect(result).toBe('owner@email.com');
+    });
+
+    it('getOwnerFamilyMembers should support legacy encrypted owner relationships', async () => {
+        await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, dob, phone, email, relationship, email_lookup_hash)
+             VALUES ($1, 'legacy', 'owner', $2, $3, $4, $5, $6)`,
+            [
+                'testuser',
+                '1990-01-01',
+                '(111) 111-111',
+                'legacy-owner@email.com',
+                encryptString('owner', 'familymember.relationship'),
+                hashEmailForLookup('legacy-owner@email.com'),
+            ]
+        );
+
+        const result = await getOwnerFamilyMembers();
+        expect(result).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                username: 'testuser',
+                f_name: 'legacy',
+                relationship: 'owner',
+            }),
+        ]));
+    });
+
+    it('getOwnerFamilyMembers should exclude admin accounts', async () => {
+        await pool.query(`INSERT INTO account VALUES ($1, 'password', NULL, NULL, NULL, NULL, NULL, NULL)`, ['admin']);
+        await createFamilyMember({
+            username: 'admin',
+            f_name: 'Admin',
+            l_name: 'Account',
+            dob: '1990/01/01',
+            phone: '(111) 111-111',
+            email: 'admin@surreyfoodbank.com',
+            relationship: 'owner'
+        });
+
+        const result = await getOwnerFamilyMembers();
+        expect(result.find(member => member.username === 'admin')).toBeUndefined();
+
+        await pool.query('DELETE FROM account WHERE username = $1', ['admin']);
+    });
+
+    it('getOwnerEmailByUsername should support legacy encrypted owner relationships', async () => {
+        await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, dob, phone, email, relationship, email_lookup_hash)
+             VALUES ($1, 'legacy', 'owner', $2, $3, $4, $5, $6)`,
+            [
+                'testuser',
+                '1990-01-01',
+                '(111) 111-111',
+                'legacy-owner@email.com',
+                encryptString('owner', 'familymember.relationship'),
+                hashEmailForLookup('legacy-owner@email.com'),
+            ]
+        );
+
+        const result = await getOwnerEmailByUsername('testuser');
+        expect(result).toBe('legacy-owner@email.com');
     });
 
     // NOT USED

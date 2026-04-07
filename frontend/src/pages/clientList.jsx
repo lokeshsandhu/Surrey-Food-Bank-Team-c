@@ -37,27 +37,36 @@ export default function ClientList() {
         let accountOwnerDetails = [];
         // get account details
         if (resultOwners && Array.isArray(resultOwners) && resultOwners.length > 0) {
-            accountOwnerDetails = await Promise.all(
+            const accountDetails = await Promise.all(
                 resultOwners.map(async (owner) => {
-                    const details = await getAccount(token, owner.username);
-                    const address = splitAddress(details.addr);
+                    try {
+                        const details = await getAccount(token, owner.username);
+                        if (!details || details.error) {
+                            return null;
+                        }
 
-                    return {
-                        username: owner.username,
-                        f_name: owner.f_name,
-                        l_name: owner.l_name,
-                        email: owner.email,
-                        phone: owner.phone,
-                        address_line1: address.line1,
-                        address_line2: address.line2,
-                        address_city: address.city,
-                        address_postal_code: address.postal_code,
-                        household_size: details.household_size,
-                        account_notes: details.account_notes
+                        const address = splitAddress(details.addr ?? '');
 
-                    };
+                        return {
+                            username: owner.username,
+                            f_name: owner.f_name,
+                            l_name: owner.l_name,
+                            email: owner.email,
+                            phone: owner.phone,
+                            address_line1: address.line1,
+                            address_line2: address.line2,
+                            address_city: address.city,
+                            address_postal_code: address.postal_code,
+                            household_size: details.household_size,
+                            account_notes: details.account_notes
+                        };
+                    } catch (error) {
+                        console.error(`Failed to load account details for ${owner.username}`, error);
+                        return null;
+                    }
                 })
             );
+            accountOwnerDetails = accountDetails.filter(Boolean);
         }
         setAccountOwners(accountOwnerDetails);
     };
