@@ -255,7 +255,9 @@ export default function TimeslotPage() {
 
         setRemovingBookingUsername(usernameToRemove);
         try {
-            const res = await deleteAppointmentFromUsername(token, usernameToRemove);
+            const bookingDate = dayjs(selectedBookingData.start).format('YYYY-MM-DD');
+            const bookingTime = dayjs(selectedBookingData.start, 'YYYY-MM-DD HH:mm').format('HH:mm');
+            const res = await deleteAppointmentFromUsername(token, usernameToRemove, bookingDate, bookingTime);
             if (res?.error) {
                 notifications.show({
                     title: 'Error',
@@ -265,11 +267,20 @@ export default function TimeslotPage() {
                 return;
             }
 
-            notifications.show({
-                title: 'Success',
-                message: `Removed all bookings for ${usernameToRemove}`,
-                color: 'green',
-            });
+            const deletedCount = Array.isArray(res?.deleted) ? res.deleted.length : 0;
+            if (deletedCount === 0) {
+                notifications.show({
+                    title: 'Notice',
+                    message: `No upcoming bookings were removed for ${usernameToRemove}. Only the selected slot's upcoming booking can be deleted here.`,
+                    color: 'yellow',
+                });
+            } else {
+                notifications.show({
+                    title: 'Success',
+                    message: `Removed ${deletedCount} upcoming booking(s) for ${usernameToRemove}`,
+                    color: 'green',
+                });
+            }
 
             const refreshedEvents = await fetchTimeslots();
             const refreshed = refreshedEvents?.find((event) => event.start === selectedBookingData.start);

@@ -33,10 +33,23 @@ export async function updateBookingNotes(req: Request, res: Response) {
 }
 
 // Delete appointments by username
+// Delete upcoming appointments by username, optionally limited to a specific slot
 export async function deleteAppointmentFromUsername(req: Request, res: Response) {
     try {
-        const { username } = req.body;
-        const deleted = await service.deleteAppointmentFromUsername(username);
+        const { username, appt_date, start_time } = req.body;
+        const deleted = await service.deleteAppointmentFromUsername(username, appt_date, start_time);
+        res.status(200).json({ deleted });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+// Client: cancel their own appointment, deleting the whole booked range if needed
+export async function cancelMyAppointment(req: Request, res: Response) {
+    try {
+        const username = req.user!.username;
+        const { appt_date, start_time, end_time } = req.body;
+        const deleted = await service.deleteAppointmentFromUsername(username, appt_date, start_time, end_time);
         res.status(200).json({ deleted });
     } catch (err: any) {
         res.status(500).json({ error: err.message });

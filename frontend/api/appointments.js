@@ -91,7 +91,7 @@ export function cleanupPastAppointments(token) {
  * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), updateData (object with fields to update)
  * updateData can include: end_time, appt_notes, capacity, username, booking_status, booking_notes
  * - username: "someuser" adds a booking on that slot (if capacity allows)
- * - username: null clears all bookings for that slot
+ * - username: null clears upcoming bookings for that slot
  * - booking_status: one of BOOKING_STATUS.UPCOMING | BOOKING_STATUS.ARRIVED | BOOKING_STATUS.DID_NOT_SHOW
  * Example:
  *   updateAppointment(token, "2024-06-01", "10:00", { capacity: 3 });
@@ -146,16 +146,29 @@ export function markBookingDidNotShow(token, appt_date, start_time, username) {
 
 
 /**
- * Delete all appointments for a username (admin only).
- * Required field: username
+ * Delete upcoming appointments for a username (admin only).
+ * Optional fields: appt_date, start_time
+ * If appt_date and start_time are provided, deletes the booking for that exact slot.
  * Example:
- *   deleteAppointmentFromUsername(token, "johndoe");
+ *   deleteAppointmentFromUsername(token, "johndoe", "2024-06-01", "10:00");
  */
-export function deleteAppointmentFromUsername(token, username) {
+export function deleteAppointmentFromUsername(token, username, appt_date, start_time) {
   return fetch(`${API_BASE}/delete/username`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ username })
+    body: JSON.stringify({ username, appt_date, start_time })
+  }).then(res => res.json());
+}
+
+/**
+ * Cancel the current user's own appointment range.
+ * If the booking spans two consecutive slots, passing end_time removes both.
+ */
+export function cancelMyAppointment(token, appt_date, start_time, end_time) {
+  return fetch(`${API_BASE}/cancel`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ appt_date, start_time, end_time })
   }).then(res => res.json());
 }
 

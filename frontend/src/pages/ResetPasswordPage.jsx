@@ -76,8 +76,13 @@ export default function ResetPasswordPage() {
     };
 
     return (
-        <div className="top-container linear-gradient">
-            <Card className="login-card card" padding={20} miw={350} maw={400}>
+        <div className="top-container linear-gradient" >
+            <Card component="form" className="login-card card" padding={20} miw={400} maw={400}
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    handleResetPassword();
+                }}
+            >
                 <Image
                     src={logo}
                     h={70}
@@ -89,6 +94,7 @@ export default function ResetPasswordPage() {
                 <Group style={{ flexDirection: 'column', gap: 40, justifyContent: 'flex-start' }}>
                     <PasswordInput
                         label="New Password"
+                        className="reset-password"
                         placeholder="Enter new password"
                         key={form.key('user_password')}
                         {...form.getInputProps('user_password')}
@@ -98,6 +104,7 @@ export default function ResetPasswordPage() {
                     />
                     <PasswordInput
                         label="Confirm New Password"
+                        className="reset-password"
                         placeholder="Re-enter new password"
                         key={form.key('confirm_password')}
                         {...form.getInputProps('confirm_password')}
@@ -107,7 +114,12 @@ export default function ResetPasswordPage() {
                         withAsterisk
                     />
                 </Group>
-                <Button onClick={handleResetPassword} loading={submitting}>Reset Password</Button>
+                <Button
+                    type='submit'
+                    onClick={handleResetPassword}
+                    loading={submitting}>
+                    Reset Password
+                </Button>
             </Card>
         </div>
     );

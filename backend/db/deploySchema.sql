@@ -49,23 +49,16 @@ CREATE TABLE IF NOT EXISTS public.appointment_booking
     created_at timestamp with time zone NOT NULL DEFAULT now(),
     CONSTRAINT appointment_booking_pkey PRIMARY KEY (appt_date, start_time, username),
     CONSTRAINT appointment_booking_status_check CHECK (booking_status IN ('upcoming', 'arrived', 'did_not_show')),
+    CONSTRAINT appointment_booking_fkey_slot FOREIGN KEY (appt_date, start_time)
+        REFERENCES public.appointment_slot (appt_date, start_time) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
     CONSTRAINT appointment_booking_fkey_user FOREIGN KEY (username)
         REFERENCES public.account (username) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
 
-ALTER TABLE IF EXISTS public.appointment_booking
-    ADD COLUMN IF NOT EXISTS booking_notes varchar;
-
-ALTER TABLE IF EXISTS public.appointment_booking
-    DROP CONSTRAINT IF EXISTS appointment_booking_fkey_slot;
-
-ALTER TABLE IF EXISTS public.familymember
-    ADD COLUMN IF NOT EXISTS email_lookup_hash varchar;
-
-ALTER TABLE IF EXISTS public.familymember
-    DROP CONSTRAINT IF EXISTS familymember_email_key;
 
 CREATE INDEX IF NOT EXISTS idx_appointment_booking_username_date
     ON public.appointment_booking (username, appt_date, start_time);

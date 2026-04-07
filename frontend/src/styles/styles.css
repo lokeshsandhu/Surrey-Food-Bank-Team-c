@@ -78,6 +78,16 @@ body {
     justify-content: center;
 }
 
+.rtl-message {
+    direction: rtl;
+    text-align: right;
+}
+
+.rtl-message ul {
+    padding-inline-start: 1rem;
+    padding-inline-end: 1.5rem;
+}
+
 .text-link-button {
     background: none;
     border: none;
