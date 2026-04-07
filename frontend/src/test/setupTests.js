@@ -33,3 +33,13 @@ if (!window.ResizeObserver) {
 if (!window.scrollTo) {
   window.scrollTo = vi.fn();
 }
+
+if (!document.fonts) {
+  Object.defineProperty(document, 'fonts', {
+    writable: true,
+    value: {
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    },
+  });
+}
