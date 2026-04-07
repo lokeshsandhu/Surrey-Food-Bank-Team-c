@@ -56,8 +56,8 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
   const fetchBooking = async (clientUsername) => {
     const res = await getUsernameAppointments(token, clientUsername);
     const booking = res.filter(appt => {
-      return dayjs(values.start).isSame(dayjs(appt.appt_date), 'day') && 
-      dayjs(appt.start_time, "HH:mm").format('HH:mm') === dayjs(values.start).format('HH:mm');
+      return dayjs(values.start).isSame(dayjs(appt.appt_date), 'day') &&
+        dayjs(appt.start_time, "HH:mm").format('HH:mm') === dayjs(values.start).format('HH:mm');
     });
     console.log(booking);
     return booking;
@@ -79,7 +79,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
   const fetchBookingStatus = async (clientUsername) => {
     try {
       const booking = await fetchBooking(clientUsername);
-      console.log(booking)
+      console.log(booking);
       const status = booking.length > 0 ? booking[0].booking_status : BOOKING_STATUS.DID_NOT_SHOW;
       return status;
     }
@@ -131,7 +131,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
         bookedUsers.map(async (user) => [user, await fetchBookingStatus(user)])
       );
 
-      console.log(statuses)
+      console.log(statuses);
 
       setBookingStatuses(Object.fromEntries(statuses));
     };
@@ -185,9 +185,10 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
                 searchable
                 maxDropdownHeight={120}
                 value={currClient}
-                onChange={(value) => setCurrClient(value)} 
+                onChange={(value) => setCurrClient(value)}
                 data={[
                   ...clients.map(client => ({ value: client.username, label: client.username })),
+                  { value: 'admin', label: 'Admin' }
                 ]}
               />
 
@@ -236,7 +237,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
               <Stack gap={6}>
                 {bookedUsers.map((user) => (
                   <Group key={user} justify="space-between" gap="xs" wrap="nowrap">
-                    <Button size="xs" onClick={() => {{stack.open('User Info'); setSelectedClient(user); }}}>
+                    <Button size="xs" onClick={() => { { stack.open('User Info'); setSelectedClient(user); } }}>
                       {user}
                     </Button>
                     <NativeSelect
@@ -307,7 +308,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
             <LoadingOverlay visible={loadingNotes} />
             <Text>{clientNotes || "No additional notes for this appointment."}</Text>
 
-            
+
             { //TODO: allow editing notes here and saving changes, but requires changes to API to update notes without changing other booking details
             /* <Button size="md" mt="md" onClick={() => updateAppointment(token, selectedClient)}>
               Update Notes
