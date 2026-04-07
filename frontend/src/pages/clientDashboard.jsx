@@ -289,18 +289,22 @@ export default function ClientDashboard() {
             appointment => appointment.end_time && normalizeApptDate(appointment.appt_date) >= dayjs().format('YYYY-MM-DD')
         );
 
-        if (earliestAppointment.length > 0) {
-            if (earliestAppointment[0].appt_date === earliestAppointment[1].appt_date) {
-                 if (earliestAppointment[0].end_time == earliestAppointment[1].start_time) {
-                    const appt = earliestAppointment[0];
-                    appt.end_time = earliestAppointment[1].end_time;
-                    setMyAppointment(appt);
-                 }
+        let endTime = earliestAppointment[0]?.end_time;
+
+        for (let i = 1; i < earliestAppointment.length; i++) {
+            if (earliestAppointment[0].appt_date == earliestAppointment[i].appt_date) {
+                if (endTime == earliestAppointment[i].start_time) {
+                    endTime = earliestAppointment[i].end_time;
+                } else {
+                    break;
+                }
+            } else {
+                break;
             }
-        } else {
-            setMyAppointment(earliestAppointment[0]);
         }
-        
+
+        const myappt = earliestAppointment[0] ? { ...earliestAppointment[0], end_time: endTime } : null;
+        setMyAppointment(myappt);
     };
 
     const fetchModalTimeslots = async () => {

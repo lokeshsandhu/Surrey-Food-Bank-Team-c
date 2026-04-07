@@ -258,6 +258,8 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
                         );
                       }}
 
+                      styles={{ root: { minHeight: 'unset' } }}
+                      
                     />
                     <Button
                       type="button"
