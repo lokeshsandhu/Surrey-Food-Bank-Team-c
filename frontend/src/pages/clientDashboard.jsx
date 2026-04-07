@@ -364,7 +364,7 @@ export default function ClientDashboard() {
         <div className="page">
             <ClientNavBar />
             <Grid spacing="xs" verticalSpacing="xs" style={{ marginLeft: '20px', marginRight: '20px', paddingTop: '20px' }} visibleFrom='md'>
-                <Grid.Col span={4}>
+                <Grid.Col span={6}>
                     <div className="box">
                         <h3 style={{marginBottom: '10px', marginTop: '0px'}}>Booking Information</h3>
                         {myAppointment && myAppointment.appt_date ? `You have a booking on ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} from ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')} to ${dayjs(myAppointment.end_time, 'HH:mm:ss').format('h:mm A')}, ` : `Welcome back ${username}! You do not have any upcoming bookings.`}
@@ -383,7 +383,7 @@ export default function ClientDashboard() {
                         </Group>
                     </div>
                 </Grid.Col>
-                <Grid.Col span={8}>
+                <Grid.Col span={6}>
                     <div className="box">
                         <Group justify='space-between'>
                             <div>
