@@ -685,6 +685,8 @@ describe('familyMembers.service', () => {
     });
 
     it('getOwnerFamilyMembers should exclude admin accounts', async () => {
+        await pool.query('DELETE FROM familymember WHERE username = $1', ['admin']);
+        await pool.query('DELETE FROM account WHERE username = $1', ['admin']);
         await pool.query(`INSERT INTO account VALUES ($1, 'password', NULL, NULL, NULL, NULL, NULL, NULL)`, ['admin']);
         await createFamilyMember({
             username: 'admin',
@@ -699,6 +701,7 @@ describe('familyMembers.service', () => {
         const result = await getOwnerFamilyMembers();
         expect(result.find(member => member.username === 'admin')).toBeUndefined();
 
+        await pool.query('DELETE FROM familymember WHERE username = $1', ['admin']);
         await pool.query('DELETE FROM account WHERE username = $1', ['admin']);
     });
 
