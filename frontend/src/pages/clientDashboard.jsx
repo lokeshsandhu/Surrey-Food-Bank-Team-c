@@ -1,5 +1,6 @@
-import { Button, SimpleGrid, LoadingOverlay, Grid, ScrollArea, Modal, Group, TextInput, Select, useModalsStack, Popover, Stack, Text } from '@mantine/core';
+import { Button, SimpleGrid, LoadingOverlay, Grid, ScrollArea, Modal, Group, TextInput, Select, useModalsStack, Popover, Stack, Text, Menu } from '@mantine/core';
 import { getTimeRange, DatePicker, TimeGrid, Calendar } from '@mantine/dates';
+import { IconChevronDown } from '@tabler/icons-react';
 import React, { useEffect, useRef } from 'react';
 import '../styles/styles.css';
 
@@ -11,6 +12,7 @@ import { bookAppointment, cancelMyAppointment, deleteAppointmentFromUsername, ge
 import { me } from '../../api/auth.js';
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import utc from "dayjs/plugin/utc";
 import { useDisclosure } from '@mantine/hooks';
 import { getAccount, getAccountEmail } from '../../api/accounts.js';
 import { sendConfirmationEmail } from '../../api/email.js';
@@ -45,6 +47,7 @@ export default function ClientDashboard() {
     const navigate = useNavigate();
 
     dayjs.extend(customParseFormat);
+    dayjs.extend(utc);
 
     const stack = useModalsStack(['base-page', 'calendar-page', 'confirm-page']);
     const [modalSelectedDate, setModalSelectedDate] = useState(null);
@@ -76,6 +79,166 @@ export default function ClientDashboard() {
 
     const parseApptDate = (apptDate) => dayjs(normalizeApptDate(apptDate), 'YYYY-MM-DD', true);
     const toApiDate = (date) => dayjs(date).format('YYYY-MM-DD');
+    const hasUpcomingAppointment = Boolean(myAppointment?.appt_date && myAppointment?.start_time && myAppointment?.end_time);
+
+    const getGoogleCalendarUrl = (appointment) => {
+        if (!appointment?.appt_date || !appointment?.start_time || !appointment?.end_time) {
+            return '#';
+        }
+
+        const eventStart = dayjs(
+            `${normalizeApptDate(appointment.appt_date)} ${appointment.start_time}`,
+            'YYYY-MM-DD HH:mm:ss'
+        );
+        const eventEnd = dayjs(
+            `${normalizeApptDate(appointment.appt_date)} ${appointment.end_time}`,
+            'YYYY-MM-DD HH:mm:ss'
+        );
+
+        const location = 'Surrey Food Bank, Unit 1 - 13478 78th Ave, Surrey, BC V3W 8J6';
+        const details = [
+            'Surrey Food Bank appointment',
+            appointment.booking_notes ? `Booking notes: ${appointment.booking_notes}` : null,
+            'Bring your required registration documents.'
+        ].filter(Boolean).join('\n');
+
+        const params = new URLSearchParams({
+            action: 'TEMPLATE',
+            text: 'Surrey Food Bank Appointment',
+            dates: `${eventStart.format('YYYYMMDDTHHmmss')}/${eventEnd.format('YYYYMMDDTHHmmss')}`,
+            details,
+            location,
+            ctz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Vancouver',
+        });
+
+        return `https://calendar.google.com/calendar/render?${params.toString()}`;
+    };
+
+    const getOutlookCalendarUrl = (appointment) => {
+        if (!appointment?.appt_date || !appointment?.start_time || !appointment?.end_time) {
+            return '#';
+        }
+
+        const eventStart = dayjs(
+            `${normalizeApptDate(appointment.appt_date)} ${appointment.start_time}`,
+            'YYYY-MM-DD HH:mm:ss'
+        );
+        const eventEnd = dayjs(
+            `${normalizeApptDate(appointment.appt_date)} ${appointment.end_time}`,
+            'YYYY-MM-DD HH:mm:ss'
+        );
+
+        const location = 'Surrey Food Bank, Unit 1 - 13478 78th Ave, Surrey, BC V3W 8J6';
+        const details = [
+            'Surrey Food Bank appointment',
+            appointment.booking_notes ? `Booking notes: ${appointment.booking_notes}` : null,
+            'Bring your required registration documents.'
+        ].filter(Boolean).join('\n');
+
+        const params = new URLSearchParams({
+            path: '/calendar/action/compose',
+            rru: 'addevent',
+            subject: 'Surrey Food Bank Appointment',
+            startdt: eventStart.toISOString(),
+            enddt: eventEnd.toISOString(),
+            body: details,
+            location,
+        });
+
+        return `https://outlook.office.com/calendar/0/deeplink/compose?${params.toString()}`;
+    };
+
+    const handleAddToGoogleCalendar = () => {
+        if (!hasUpcomingAppointment) {
+            return;
+        }
+
+        window.open(getGoogleCalendarUrl(myAppointment), '_blank', 'noopener,noreferrer');
+    };
+
+    const handleAddToOutlookCalendar = () => {
+        if (!hasUpcomingAppointment) {
+            return;
+        }
+
+        window.open(getOutlookCalendarUrl(myAppointment), '_blank', 'noopener,noreferrer');
+    };
+
+    const escapeIcsText = (value = '') => String(value)
+        .replace(/\\/g, '\\\\')
+        .replace(/\n/g, '\\n')
+        .replace(/,/g, '\\,')
+        .replace(/;/g, '\\;');
+
+    const handleDownloadCalendarFile = () => {
+        if (!hasUpcomingAppointment) {
+            return;
+        }
+
+        const eventStart = dayjs(
+            `${normalizeApptDate(myAppointment.appt_date)} ${myAppointment.start_time}`,
+            'YYYY-MM-DD HH:mm:ss'
+        );
+        const eventEnd = dayjs(
+            `${normalizeApptDate(myAppointment.appt_date)} ${myAppointment.end_time}`,
+            'YYYY-MM-DD HH:mm:ss'
+        );
+        const nowStamp = dayjs().utc().format('YYYYMMDDTHHmmss[Z]');
+        const uid = `surrey-food-bank-${eventStart.format('YYYYMMDDTHHmmss')}-${username || 'guest'}@surreyfoodbank`;
+        const location = 'Surrey Food Bank, Unit 1 - 13478 78th Ave, Surrey, BC V3W 8J6';
+        const description = [
+            'Surrey Food Bank appointment',
+            myAppointment.booking_notes ? `Booking notes: ${myAppointment.booking_notes}` : null,
+            'Bring your required registration documents.'
+        ].filter(Boolean).join('\n');
+
+        const icsContent = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Surrey Food Bank//Appointments//EN',
+            'BEGIN:VEVENT',
+            `UID:${uid}`,
+            `DTSTAMP:${nowStamp}`,
+            `DTSTART:${eventStart.utc().format('YYYYMMDDTHHmmss[Z]')}`,
+            `DTEND:${eventEnd.utc().format('YYYYMMDDTHHmmss[Z]')}`,
+            `SUMMARY:${escapeIcsText('Surrey Food Bank Appointment')}`,
+            `DESCRIPTION:${escapeIcsText(description)}`,
+            `LOCATION:${escapeIcsText(location)}`,
+            'END:VEVENT',
+            'END:VCALENDAR',
+        ].join('\r\n');
+
+        const file = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+        const downloadUrl = URL.createObjectURL(file);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `surrey-food-bank-${eventStart.format('YYYY-MM-DD-HHmm')}.ics`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(downloadUrl);
+    };
+
+    const renderAddToCalendarMenu = (buttonProps = {}) => (
+        <Menu shadow="md" width={200} withinPortal>
+            <Menu.Target>
+                <Button size='lg' rightSection={<IconChevronDown size={16} />} {...buttonProps}>
+                    Add to Calender
+                </Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+                <Menu.Item onClick={handleAddToGoogleCalendar}>
+                    Google
+                </Menu.Item>
+                <Menu.Item onClick={handleAddToOutlookCalendar}>
+                    Outlook
+                </Menu.Item>
+                <Menu.Item onClick={handleDownloadCalendarFile}>
+                    Other
+                </Menu.Item>
+            </Menu.Dropdown>
+        </Menu>
+    );
 
     const handleBooking = async () => {
         if (myAppointment && myAppointment.appt_date) {
@@ -391,10 +554,13 @@ export default function ClientDashboard() {
                             <Button size='lg' onClick={(event) => openSuccessModal()}>
                                 Check required documents
                             </Button>
-                            {myAppointment && myAppointment.appt_date && (
-                            <Button size='lg' onClick={() => openStackPage('base-page')}>
-                                Edit Booking
-                            </Button>
+                            {hasUpcomingAppointment && (
+                                <>
+                                    {renderAddToCalendarMenu()}
+                                    <Button size='lg' onClick={() => openStackPage('base-page')}>
+                                        Edit Booking
+                                    </Button>
+                                </>
                             )}
                         </Group>
                     </div>
@@ -450,11 +616,14 @@ export default function ClientDashboard() {
                         <Button size='lg' onClick={(event) => openSuccessModal()}>
                             Check required documents
                         </Button>
-                        {myAppointment && myAppointment.appt_date && (
-                        <Button size='lg' onClick={() => openStackPage('base-page')}>
-                            Edit Booking
-                        </Button>
-                        )}
+                    {hasUpcomingAppointment && (
+                        <>
+                            {renderAddToCalendarMenu()}
+                            <Button size='lg' onClick={() => openStackPage('base-page')}>
+                                Edit Booking
+                            </Button>
+                        </>
+                    )}
                     </Group>
                 </div>
                 <div className="box" style={{ margin: '20px'}}>
@@ -696,11 +865,12 @@ export default function ClientDashboard() {
             <Modal.Stack>
                 <Modal {...stack.register('base-page')} title="Booking Information" transitionProps={{ transition: 'slide-left' }} centered>
                     <LoadingOverlay visible={modalLoading} />
-                    <div className="modal-content">
+                        <div className="modal-content">
                         <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
                         <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? `${dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A')} - ${dayjs(myAppointment.end_time, 'HH:mm').format('h:mm A')}` : 'N/A'}</p>
                         <p><strong>Notes:</strong> {myAppointment && myAppointment.booking_notes ? (myAppointment.booking_notes.length > 30 ? `${myAppointment.booking_notes.substring(0, 30)}...` : myAppointment.booking_notes) : '(Empty)'}</p>
                         <div>
+                            {renderAddToCalendarMenu({ mr: 10 })}
                             <Button mr={10} onClick={() => openStackPage("calendar-page")}>
                                 Edit Booking
                             </Button>
@@ -904,7 +1074,7 @@ export default function ClientDashboard() {
                     )}
 
                     {currLanguage === "پښتو (Pashto)" && (
-                        <div style={{ textAlign: "right" }}>
+                        <div className="rtl-message" dir="rtl">
                             <h3>پوهاوی</h3>
                             <p>د نوم لیکنې لپاره اړین اسناد</p>
 
@@ -936,7 +1106,7 @@ export default function ClientDashboard() {
                     )}
 
                     {currLanguage === "درى (Dari)" && (
-                        <div style={{ textAlign: "right" }}>
+                        <div className="rtl-message" dir="rtl">
                             <h3>اگاهی</h3>
 
                             <p>اسناد ضروری برای ثبت نام و تازه سازی دوسیه ها </p>
