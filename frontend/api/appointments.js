@@ -105,6 +105,20 @@ export function updateAppointment(token, appt_date, start_time, updateData) {
 }
 
 /**
+ * Update a booking's booking notes.
+ * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), username, booking notes
+ * Example:
+ *   updateAppointment(token, "2024-06-01", "10:00", "jane123", "new note");
+ */
+export function updateBookingNotes(token, appt_date, start_time, username, bookingNotes) {
+  return fetch(`${API_BASE}/update/booking-notes`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ appt_date, start_time, username, bookingNotes })
+  }).then(res => res.json());
+}
+
+/**
  * Update booking status for a specific user in a specific slot (admin only).
  * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), username, bookingStatus
  * bookingStatus must be one of BOOKING_STATUS values.

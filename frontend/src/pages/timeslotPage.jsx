@@ -298,8 +298,8 @@ export default function TimeslotPage() {
     return (
         <div className="page">
             <AdminNavBar/>
-                <LoadingOverlay visible={loadingTimeslots}/>
-                <WeekView
+            <LoadingOverlay visible={loadingTimeslots}/>
+            <WeekView
                 date={date}
                 onDateChange={(newDate) => { if (dayjs(newDate).day() === 1 && dayjs(newDate).isSame(dayjs(date), 'day') === false) setDate(newDate); }}
                 events={events}
@@ -339,23 +339,22 @@ export default function TimeslotPage() {
                     padding: '20px',
                     margin: '20px',
                     boxShadow: '0px 4px 4px 2px #0000006a',
-                    height: '100%',
                     justifySelf: 'top',
                 }}
-                />
-                <TimeslotForm opened={timeslotModalOpened} onClose={timeslotModalHandlers.close} values={selectedTimeslotData} onSubmit={handleTimeslotFormSubmit}/>
-                
-                <BookingForm
-                    opened={bookingModalOpened}
-                    onClose={bookingModalHandlers.close}
-                    onDeleteBooking={handleDeleteBooking} 
-                    onDeleteTimeslot={handleDeleteTimeslot} 
-                    values={selectedBookingData}
-                    bookedUsers={selectedBookingData?.bookedUsers || []}
-                    removingBookingUsername={removingBookingUsername}
-                    onRemoveBookedUser={handleRemoveBookedUser}
-                    onSubmit={handleBookingFormSubmit}
-                />
+            />
+            <TimeslotForm opened={timeslotModalOpened} onClose={timeslotModalHandlers.close} values={selectedTimeslotData} onSubmit={handleTimeslotFormSubmit}/>
+            
+            <BookingForm
+                opened={bookingModalOpened}
+                onClose={bookingModalHandlers.close}
+                onDeleteBooking={handleDeleteBooking} 
+                onDeleteTimeslot={handleDeleteTimeslot} 
+                values={selectedBookingData}
+                bookedUsers={selectedBookingData?.bookedUsers || []}
+                removingBookingUsername={removingBookingUsername}
+                onRemoveBookedUser={handleRemoveBookedUser}
+                onSubmit={handleBookingFormSubmit}
+            />
         </div>
     );
 }

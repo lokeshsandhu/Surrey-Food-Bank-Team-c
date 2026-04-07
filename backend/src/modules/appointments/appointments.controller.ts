@@ -17,6 +17,22 @@ export async function updateAppointment(req: Request, res: Response) {
     }
 }
 
+// Update an appointment's booking notes
+export async function updateBookingNotes(req: Request, res: Response) {
+    try {
+        const { appt_date, start_time, username, bookingNotes } = req.body;
+        const updated = await service.updateBookingNotes(appt_date, start_time, username, bookingNotes);
+        if (!updated) {
+            res.status(404).json({ error: "Appointment not found" });
+            return;
+        }
+        res.status(200).json(updated);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+// Delete appointments by username
 // Delete upcoming appointments by username, optionally limited to a specific slot
 export async function deleteAppointmentFromUsername(req: Request, res: Response) {
     try {

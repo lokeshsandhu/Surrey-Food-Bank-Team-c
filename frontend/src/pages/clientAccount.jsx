@@ -71,7 +71,7 @@ export function ClientAccountAdminView() {
     return (
         <div className="page">
             <AdminNavBar />
-            <div className="box" style={{ height: '85vh' }}>
+            <div className="box" style={{ height: '85vh', margin: '20px' }}>
                 <ActionIcon mb={10} onClick={() => navigate('/adminDashboard/clientList')}>
                     <IconArrowLeft />
                 </ActionIcon>
@@ -86,7 +86,7 @@ export function ClientAccountClientView() {
     return (
         <div className="page" style={{ overflowY: 'auto' }}>
             <ClientNavBar />
-            <div className="box" style={{ height: '85vh' }}>
+            <div className="box" style={{ height: '85vh', margin: '20px'  }}>
                 <ActionIcon mb={10} onClick={() => navigate('/clientDashboard')}>
                     <IconArrowLeft />
                 </ActionIcon>

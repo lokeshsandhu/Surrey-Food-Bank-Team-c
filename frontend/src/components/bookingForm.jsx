@@ -10,9 +10,10 @@ import { getOwnerFamilyMembers } from '../../api/familyMembers.js';
 import AccountInformationTab from "../components/AccountInformationTab";
 import back_icon from '../assets/arrow-left.svg';
 import '../styles/styles.css';
-import { getUsernameAppointments, BOOKING_STATUS, updateBookingStatus } from '../../api/appointments.js';
+import { getUsernameAppointments, BOOKING_STATUS, updateBookingStatus, updateBookingNotes} from '../../api/appointments.js';
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { CHARLIMITS } from '../constants/Validation.js';
+import { notifications } from '@mantine/notifications';
 
 export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDeleteTimeslot, values, bookedUsers = [], onRemoveBookedUser, removingBookingUsername, ...others }) {
   const form = useForm({
@@ -67,7 +68,8 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
     setLoadingNotes(true);
     try {
       const booking = await fetchBooking(clientUsername);
-      const notes = booking.length > 0 ? booking[0].booking_notes : "No additional notes for this appointment.";
+      const notes = booking.length > 0 ? (booking[0].booking_notes === null ? "No additional notes for this appointment." : booking[0].booking_notes) : "No additional notes for this appointment.";
+      console.log("check1", booking);
       setClientNotes(notes);
     } catch (error) {
       console.error('Error fetching notes for client:', error);
@@ -100,6 +102,37 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
     } catch (error) {
       console.error('Error fetching clients:', error);
     }
+  };
+
+  const handleUpdateNotes = async () => {
+    try {
+      console.log("check3", clientNotes);
+      const res = await updateBookingNotes(token, dayjs(form.values.start).format('YYYY-MM-DD'), dayjs(form.values.start).format('HH:mm'), selectedClient, clientNotes);
+      if (res && !res.error) {
+        notifications.show({
+          title: 'Success',
+          message: 'Booking notes updated successfully',
+          color: 'green',
+        });
+        stack.close('User Info');
+        return;
+      }
+
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to update booking notes: ' + (res?.error || 'Unknown error'),
+        color: 'red',
+      });
+    } catch (error) {
+      console.error('Error updating booking notes:', error);
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to update booking notes:' + (error.response?.data?.message || error.message),
+        color: 'red',
+      });
+    }
+
+    
   };
 
   useEffect(() => {
@@ -259,6 +292,8 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
                         );
                       }}
 
+                      styles={{ root: { minHeight: 'unset' } }}
+                      
                     />
                     <Button
                       type="button"
@@ -291,6 +326,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
         <Tabs defaultValue="client-info" onChange={(value) => {
           if (value === 'appt-notes') {
             fetchNotesForClient(selectedClient);
+            console.log(clientNotes);
           }
         }}>
           <Tabs.List>
@@ -306,13 +342,11 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
           </Tabs.Panel>
           <Tabs.Panel value="appt-notes" pt="xs">
             <LoadingOverlay visible={loadingNotes} />
-            <Text>{clientNotes || "No additional notes for this appointment."}</Text>
+            <Textarea value={clientNotes} onChange={(event) => setClientNotes(event.currentTarget.value)} />
 
-
-            { //TODO: allow editing notes here and saving changes, but requires changes to API to update notes without changing other booking details
-            /* <Button size="md" mt="md" onClick={() => updateAppointment(token, selectedClient)}>
+            <Button size="md" mt="md" onClick={() => handleUpdateNotes()}>
               Update Notes
-            </Button> */}
+            </Button>
           </Tabs.Panel>
         </Tabs>
 

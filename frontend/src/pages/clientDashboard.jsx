@@ -468,22 +468,22 @@ export default function ClientDashboard() {
             appointment => appointment.end_time && normalizeApptDate(appointment.appt_date) >= dayjs().format('YYYY-MM-DD')
         );
 
-        if (earliestAppointment.length === 0) {
-            setMyAppointment({});
-            return;
+        let endTime = earliestAppointment[0]?.end_time;
+
+        for (let i = 1; i < earliestAppointment.length; i++) {
+            if (earliestAppointment[0].appt_date == earliestAppointment[i].appt_date) {
+                if (endTime == earliestAppointment[i].start_time) {
+                    endTime = earliestAppointment[i].end_time;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
         }
 
-        if (
-            earliestAppointment.length > 1 &&
-            earliestAppointment[0].appt_date === earliestAppointment[1].appt_date &&
-            earliestAppointment[0].end_time === earliestAppointment[1].start_time
-        ) {
-            const appt = { ...earliestAppointment[0], end_time: earliestAppointment[1].end_time };
-            setMyAppointment(appt);
-            return;
-        }
-
-        setMyAppointment(earliestAppointment[0]);
+        const myappt = earliestAppointment[0] ? { ...earliestAppointment[0], end_time: endTime } : null;
+        setMyAppointment(myappt);
     };
 
     const fetchModalTimeslots = async () => {
@@ -542,8 +542,8 @@ export default function ClientDashboard() {
     return (
         <div className="page">
             <ClientNavBar />
-            <Grid spacing="xs" verticalSpacing="xs" style={{marginLeft: '20px', marginRight: '20px', marginTop: '20px'}} visibleFrom='md'>
-                <Grid.Col span={4}>
+            <Grid spacing="xs" verticalSpacing="xs" style={{ marginLeft: '20px', marginRight: '20px', paddingTop: '20px' }} visibleFrom='md'>
+                <Grid.Col span={6}>
                     <div className="box">
                         <h3 style={{marginBottom: '10px', marginTop: '0px'}}>Booking Information</h3>
                         {myAppointment && myAppointment.appt_date ? `You have a booking on ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} from ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')} to ${dayjs(myAppointment.end_time, 'HH:mm:ss').format('h:mm A')}, ` : `Welcome back ${username}! You do not have any upcoming bookings.`}
@@ -565,7 +565,7 @@ export default function ClientDashboard() {
                         </Group>
                     </div>
                 </Grid.Col>
-                <Grid.Col span={8}>
+                <Grid.Col span={6}>
                     <div className="box">
                         <Group justify='space-between'>
                             <div>
@@ -758,7 +758,7 @@ export default function ClientDashboard() {
                 </Popover>
             </Stack>
 
-            <Grid verticalSpacing="xs" style={{ height: '60vh', alignItems: 'stretch' }} visibleFrom='md'>
+            <Grid verticalSpacing="xs" style={{ alignItems: 'stretch' }} visibleFrom='md'>
 
                 <Grid.Col span={6} style={{height: "500px"}}>
                     <Popover opened={tutorialState === 1} position="top" withArrow>

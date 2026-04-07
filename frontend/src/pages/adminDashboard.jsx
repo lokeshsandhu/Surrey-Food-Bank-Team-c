@@ -118,7 +118,7 @@ export default function AdminDashboard() {
     return (
         <div className="page">
             <AdminNavBar />
-            <SimpleGrid cols={3} spacing="xs" verticalspacing="xs" style={{ height: '100%', marginLeft: '10px', marginRight: '10px' }}>
+            <SimpleGrid cols={3} spacing="xs" verticalspacing="xs" style={{ marginLeft: '10px', marginRight: '10px' }}>
                 <div className="box" style={{ height: '100%' }}>
                     <Text>
                         Welcome back {sessionStorage.getItem('username')}!

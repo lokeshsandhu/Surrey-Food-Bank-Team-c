@@ -1,13 +1,26 @@
+html, body {
+  /* Prevent the 'bounce' and ensure the background fills the screen */
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  overflow: hidden;
+}
+
 .page {
-    position: flex;
-    min-height: 100vh;
-    width: 100%;
-    overflow-x: hidden;
-    background: #035170;
-    background: linear-gradient(135deg, rgba(3, 81, 112, 1) 13%, rgba(240, 78, 99, 1) 50%, rgba(76, 197, 220, 1) 87%);
-    background-size: cover;
-    align-items: center;
-    overflow-y: hidden;
+  /* Change: Use min-height: 100% instead of 100vh */
+  /* Change: Remove 'overflow-y: auto' if it was there */
+  min-height: 100vh;
+  height: 100vh;
+  width: 100%;
+  padding-bottom: 40px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: linear-gradient(135deg, rgba(3, 81, 112, 1) 13%, rgba(240, 78, 99, 1) 50%, rgba(76, 197, 220, 1) 87%);
+  background-attachment: fixed; /* Keeps the gradient from moving as you scroll */
 }
 
 .box {
@@ -16,7 +29,6 @@
     padding: 20px;
     margin: 0px;
     box-shadow: 0px 4px 4px 2px #0000006a;
-    height: 100%;
     justify-self: top;
 }
 
@@ -25,8 +37,7 @@
     justify-content: center;
     align-items: center;
     width: auto;
-    height: 100%;
-    min-height: 0;
+    min-height: 500px;
 
     background: rgba(255, 255, 255, 0.8);
     border-radius: 10px;
@@ -37,8 +48,7 @@
 
 .time-grid {
     width: auto;
-    height: 100%;
-    min-height: 0;
+    min-height: 500px;
 
     display: flex;
     flex-direction: column;
