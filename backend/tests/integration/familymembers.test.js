@@ -46,8 +46,8 @@ describe('familyMembers.service', () => {
 
         expect(newMember).not.toBeNull();
         expect(newMember.username).toBe('testuser');
-        expect(newMember.f_name).toBe('TEST');
-        expect(newMember.l_name).toBe('uSeR');
+        expect(newMember.f_name).toBe('test');
+        expect(newMember.l_name).toBe('user');
         expectDobEqual(newMember.dob, '1990-01-01');
         expect(newMember.phone).toBe('(111) 111-111');
         expect(newMember.email).toBe('email@email.com');
@@ -100,15 +100,15 @@ describe('familyMembers.service', () => {
         expect(newMember1).not.toBeNull();
         expect(newMember1.username).toBe('testuser');
         expect(newMember1.f_name).toBe('first');
-        expect(newMember1.l_name).toBe('User');
+        expect(newMember1.l_name).toBe('user');
         expect(newMember2).not.toBeNull();
         expect(newMember2.username).toBe('testuser');
-        expect(newMember2.f_name).toBe('Second');
-        expect(newMember2.l_name).toBe('User');
+        expect(newMember2.f_name).toBe('second');
+        expect(newMember2.l_name).toBe('user');
         expect(newMember3).not.toBeNull();
         expect(newMember3.username).toBe('testuser');
-        expect(newMember3.f_name).toBe('THIRD');
-        expect(newMember3.l_name).toBe('User');
+        expect(newMember3.f_name).toBe('third');
+        expect(newMember3.l_name).toBe('user');
     });
 
     // createFamilyMembers should throw an error if adding a FM to account that does not exist
@@ -291,16 +291,16 @@ describe('familyMembers.service', () => {
         expect(result).toEqual(expect.arrayContaining([
                 expect.objectContaining({
                     'username': 'testuser',
-                    'f_name': 'First',
-                    'l_name': 'User',
+                    'f_name': 'first',
+                    'l_name': 'user',
                 })
             ])
         );
         expect(result).toEqual(expect.arrayContaining([
                 expect.objectContaining({
                     'username':'testuser', 
-                    'f_name': 'Second',
-                    'l_name':'Lastname'
+                    'f_name': 'second',
+                    'l_name':'lastname'
                 })
             ])
         );
@@ -345,8 +345,8 @@ describe('familyMembers.service', () => {
         
         const initial = await createFamilyMember(fmData);
         expect(initial.username).toBe('testuser');
-        expect(initial.f_name).toBe('First');
-        expect(initial.l_name).toBe('User');
+        expect(initial.f_name).toBe('first');
+        expect(initial.l_name).toBe('user');
         expectDobEqual(initial.dob, '1990-01-01');
         expect(initial.phone).toBe('(111) 111-111');
         expect(initial.email).toBe('email@email.com');
@@ -393,8 +393,8 @@ describe('familyMembers.service', () => {
         
         const initial = await createFamilyMember(fmData);
         expect(initial.username).toBe('testuser');
-        expect(initial.f_name).toBe('First');
-        expect(initial.l_name).toBe('User');
+        expect(initial.f_name).toBe('first');
+        expect(initial.l_name).toBe('user');
         expectDobEqual(initial.dob, '1990-01-01');
         expect(initial.phone).toBe('(111) 111-111');
         expect(initial.email).toBe('email@email.com');
@@ -403,7 +403,7 @@ describe('familyMembers.service', () => {
         const result = await updateFamilyMember('testuser', 'first', updateData);
         expect(result).not.toBeNull();
         expect(initial.username).toBe('testuser');
-        expect(initial.f_name).toBe('First');
+        expect(initial.f_name).toBe('first');
         expect(result.l_name).toBe('NewUser');
         expectDobEqual(initial.dob, '1990-01-01');
         expect(result.phone).toBe('(222) 222-222');
@@ -428,8 +428,8 @@ describe('familyMembers.service', () => {
         
         const initial = await createFamilyMember(fmData);
         expect(initial.username).toBe('testuser');
-        expect(initial.f_name).toBe('First');
-        expect(initial.l_name).toBe('User');
+        expect(initial.f_name).toBe('first');
+        expect(initial.l_name).toBe('user');
         expectDobEqual(initial.dob, '1990-01-01');
         expect(initial.phone).toBe('(111) 111-111');
         expect(initial.email).toBe('email@email.com');
@@ -438,8 +438,8 @@ describe('familyMembers.service', () => {
         const result = await updateFamilyMember('testuser', 'first', updateData);
         expect(result).not.toBeNull();
         expect(initial.username).toBe('testuser');
-        expect(initial.f_name).toBe('First');
-        expect(initial.l_name).toBe('User');
+        expect(initial.f_name).toBe('first');
+        expect(initial.l_name).toBe('user');
         expectDobEqual(initial.dob, '1990-01-01');
         expect(initial.phone).toBe('(111) 111-111');
         expect(initial.email).toBe('email@email.com');
@@ -507,16 +507,16 @@ describe('familyMembers.service', () => {
         expect(initial).toEqual(expect.arrayContaining([
                 expect.objectContaining({
                     'username': 'testuser',
-                    'f_name': 'First',
-                    'l_name': 'User',
+                    'f_name': 'first',
+                    'l_name': 'user',
                 })
             ])
         );
         expect(initial).toEqual(expect.arrayContaining([
                 expect.objectContaining({
                     'username':'testuser', 
-                    'f_name': 'Second',
-                    'l_name':'Lastname'
+                    'f_name': 'second',
+                    'l_name':'lastname'
                 })
             ])
         );
@@ -524,8 +524,8 @@ describe('familyMembers.service', () => {
         const remove = await deleteFamilyMember('testuser', 'first');
         expect(remove).toEqual(expect.objectContaining({
                     'username':'testuser', 
-                    'f_name': 'First',
-                    'l_name':'User'
+                    'f_name': 'first',
+                    'l_name':'user'
                 })
             );
     });
@@ -582,16 +582,16 @@ describe('familyMembers.service', () => {
         expect(ours).toEqual(expect.arrayContaining([
                 expect.objectContaining({
                     'username': 'testuser',
-                    'f_name': 'First',
-                    'l_name': 'User',
+                    'f_name': 'first',
+                    'l_name': 'user',
                 })
             ])
         );
         expect(ours).toEqual(expect.arrayContaining([
                 expect.objectContaining({
                     'username':'otheruser', 
-                    'f_name': 'Third',
-                    'l_name':'Last'
+                    'f_name': 'third',
+                    'l_name':'last'
                 })
             ])
         );

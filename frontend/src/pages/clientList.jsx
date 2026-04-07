@@ -13,13 +13,11 @@ import { getAccount } from '../../api/accounts';
 import { splitAddress } from '../utils/displayHelpers';
 import { notifications } from '@mantine/notifications';
 import dayjs from 'dayjs';
-import { capitalize } from '../utils/displayHelpers';
 
-import { mkConfig, generateCsv, download } from "export-to-csv";
+import { mkConfig, generateCsv, download } from 'export-to-csv';
 import { CHARLIMITS } from '../constants/Validation';
 
 export default function ClientList() {
-
     const token = sessionStorage.getItem('token');
     const navigate = useNavigate();
 
@@ -28,16 +26,13 @@ export default function ClientList() {
         return null;
     }
 
-    // state
     const [searchText, setSearchText] = useState('');
     const [accountOwners, setAccountOwners] = useState([]);
-
-    // export to csv
     const [exportLoading, setExportLoading] = useState(false);
 
     const getAccountDetails = async (resultOwners) => {
         let accountOwnerDetails = [];
-        // get account details
+
         if (resultOwners && Array.isArray(resultOwners) && resultOwners.length > 0) {
             const accountDetails = await Promise.all(
                 resultOwners.map(async (owner) => {
@@ -60,7 +55,7 @@ export default function ClientList() {
                             address_city: address.city,
                             address_postal_code: address.postal_code,
                             household_size: details.household_size,
-                            account_notes: details.account_notes
+                            account_notes: details.account_notes,
                         };
                     } catch (error) {
                         console.error(`Failed to load account details for ${owner.username}`, error);
@@ -68,20 +63,21 @@ export default function ClientList() {
                     }
                 })
             );
-                accountOwnerDetails = accountDetails
+
+            accountOwnerDetails = accountDetails
                 .filter(Boolean)
                 .filter((d) => d.username !== 'admin');
+        }
 
+        setAccountOwners(accountOwnerDetails);
+        return accountOwnerDetails;
     };
 
-    // Fetch the account owners and their details
     const getAllAccountOwners = async () => {
-        // get account owners
         const resultOwners = await getOwnerFamilyMembers(token);
-        await getAccountDetails(resultOwners);
+        return getAccountDetails(resultOwners);
     };
 
-    // Handle search locally
     const searchClients = async (input) => {
         let searchQuery = '';
         if (input && input.trim().length > 0) {
@@ -91,38 +87,33 @@ export default function ClientList() {
         }
         const lowercaseSearchText = searchQuery.toLowerCase();
 
-        const filtered = accountOwners.filter(d =>
-            d.f_name.toLowerCase().includes(lowercaseSearchText) ||
-            d.l_name.toLowerCase().includes(lowercaseSearchText) ||
-            d.username.toLowerCase().includes(lowercaseSearchText)
+        const filtered = accountOwners.filter((d) =>
+            d.f_name.toLowerCase().includes(lowercaseSearchText)
+            || d.l_name.toLowerCase().includes(lowercaseSearchText)
+            || d.username.toLowerCase().includes(lowercaseSearchText)
         );
 
         setAccountOwners(filtered);
     };
 
-    // Clear search
     const resetSearch = async () => {
-        getAllAccountOwners();
+        await getAllAccountOwners();
         setSearchText('');
     };
 
-    // Handle export clients to csv
     const handleExportData = async () => {
         setSearchText('');
         try {
             setExportLoading(true);
-            await getAllAccountOwners();
+            const latestOwners = await getAllAccountOwners();
 
-            if (accountOwners.length > 0) {
-                // setting export to csv configurations
-                const csvConfig = mkConfig(
-                    {
-                        useKeysAsHeaders: true,
-                        filename: `client_list_Export${dayjs().format('YYYY-MM-DD')}`
-                    });
+            if (latestOwners.length > 0) {
+                const csvConfig = mkConfig({
+                    useKeysAsHeaders: true,
+                    filename: `client_list_Export${dayjs().format('YYYY-MM-DD')}`,
+                });
 
-                // Generate and download csv
-                const csv = generateCsv(csvConfig)(accountOwners);
+                const csv = generateCsv(csvConfig)(latestOwners);
                 download(csvConfig)(csv);
             } else {
                 notifications.show({
@@ -131,10 +122,9 @@ export default function ClientList() {
                     color: 'red',
                 });
             }
-
         } catch (err) {
             notifications.show({
-                title: `Error Exporting CSV`,
+                title: 'Error Exporting CSV',
                 message: 'There was an error exporting the clients to CSV. Please try again.',
                 color: 'red',
             });
@@ -153,8 +143,9 @@ export default function ClientList() {
         postal: { width: '8%' },
         household: { width: '3%' },
         notes: { width: '5%' },
-        action: { width: '3%' }
+        action: { width: '3%' },
     };
+
     const cellBase = {
         whiteSpace: 'normal',
         wordBreak: 'break-word',
@@ -165,33 +156,17 @@ export default function ClientList() {
     }, []);
 
     const clientRows = accountOwners.map((owner) => (
-        <Table.Tr
-            key={owner.username}
-        >
-            <Table.Td
-                style={{ ...cellBase, ...colStyles.name }}>
-                {owner.l_name}
-            </Table.Td>
-            <Table.Td
-                style={{ ...cellBase, ...colStyles.name }}>
-                {owner.f_name}
-            </Table.Td>
-            <Table.Td
-                style={{ ...cellBase, ...colStyles.username }}>
-                {owner.username}
-            </Table.Td>
-            <Table.Td
-                style={{ ...cellBase, ...colStyles.email }}>
+        <Table.Tr key={owner.username}>
+            <Table.Td style={{ ...cellBase, ...colStyles.name }}>{owner.l_name}</Table.Td>
+            <Table.Td style={{ ...cellBase, ...colStyles.name }}>{owner.f_name}</Table.Td>
+            <Table.Td style={{ ...cellBase, ...colStyles.username }}>{owner.username}</Table.Td>
+            <Table.Td style={{ ...cellBase, ...colStyles.email }}>
                 <a href={`mailto:${owner.email}`}>{owner.email}</a>
             </Table.Td>
-            <Table.Td
-                style={{ ...cellBase, ...colStyles.phone }}>{owner.phone}</Table.Td>
-            <Table.Td
-                style={{ ...cellBase, ...colStyles.address }}>
+            <Table.Td style={{ ...cellBase, ...colStyles.phone }}>{owner.phone}</Table.Td>
+            <Table.Td style={{ ...cellBase, ...colStyles.address }}>
                 {owner.address_line1}
-                {owner.address_line2 && owner.address_line2.length > 0
-                    ?
-                    `, ${owner.address_line2}` : null}
+                {owner.address_line2 && owner.address_line2.length > 0 ? `, ${owner.address_line2}` : null}
             </Table.Td>
             <Table.Td style={{ ...cellBase, ...colStyles.city }}>{owner.address_city}</Table.Td>
             <Table.Td style={{ ...cellBase, ...colStyles.postal }}>{owner.address_postal_code}</Table.Td>
@@ -199,7 +174,9 @@ export default function ClientList() {
             <Table.Td style={{ ...cellBase, ...colStyles.notes }}>{owner.account_notes}</Table.Td>
             <Table.Td style={{ ...cellBase, ...colStyles.action }}>
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
-                    <Button size='compact-sm' onClick={() => navigate(`/adminDashboard/clientList/account/${owner.username}`)}>View</Button>
+                    <Button size="compact-sm" onClick={() => navigate(`/adminDashboard/clientList/account/${owner.username}`)}>
+                        View
+                    </Button>
                 </div>
             </Table.Td>
         </Table.Tr>
@@ -219,16 +196,17 @@ export default function ClientList() {
                         width: '100%',
                         display: 'flex',
                         flexDirection: 'column',
-                    }}>
+                    }}
+                >
                     <Title order={1}>Client List</Title>
                     <TextInput
-                        className='search-bar'
+                        className="search-bar"
                         size="md"
                         placeholder="Search Clients"
                         radius={30}
                         mt={15}
                         value={searchText}
-                        onChange={e => {
+                        onChange={(e) => {
                             setSearchText(e.target.value);
                             if (e.target.value.length === 0) {
                                 getAllAccountOwners();
@@ -253,13 +231,10 @@ export default function ClientList() {
                             width: '100%',
                             display: 'flex',
                             justifyContent: 'flex-end',
-                            marginTop: 10
-                        }}>
-                        <Button
-                            variant='outline'
-                            onClick={handleExportData}
-                            loading={exportLoading}
-                        >
+                            marginTop: 10,
+                        }}
+                    >
+                        <Button variant="outline" onClick={handleExportData} loading={exportLoading}>
                             Export All Clients to CSV
                         </Button>
                     </div>
@@ -268,15 +243,17 @@ export default function ClientList() {
                         style={{
                             flex: 1,
                             overflowY: 'auto',
-                            marginTop: 10
-                        }}>
+                            marginTop: 10,
+                        }}
+                    >
                         <Table
                             stickyHeader
                             withTableBorder
                             highlightOnHover
-                            bgcolor='white'
-                            w={'100%'}
-                            style={{ tableLayout: 'fixed', width: '100%' }}>
+                            bgcolor="white"
+                            w="100%"
+                            style={{ tableLayout: 'fixed', width: '100%' }}
+                        >
                             <Table.Thead>
                                 <Table.Tr>
                                     <Table.Th>Last Name</Table.Th>
@@ -289,7 +266,7 @@ export default function ClientList() {
                                     <Table.Th>Postal Code</Table.Th>
                                     <Table.Th>Family Members</Table.Th>
                                     <Table.Th>Account Notes</Table.Th>
-                                    <Table.Th></Table.Th>
+                                    <Table.Th />
                                 </Table.Tr>
                             </Table.Thead>
                             <Table.Tbody>{clientRows}</Table.Tbody>
