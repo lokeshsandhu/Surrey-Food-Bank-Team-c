@@ -364,12 +364,7 @@ export async function findAppointmentsInDateTimeRange(apptDate: string, startTim
 export async function deleteAppointment(appt_date: string, start_time: string) {
     const text = `
         DELETE FROM appointment_slot
-        WHERE appt_date = $1
-          AND start_time = $2::time
-          AND (
-              appt_date > CURRENT_DATE
-              OR (appt_date = CURRENT_DATE AND start_time > CURRENT_TIME::time)
-          )
+        WHERE appt_date = $1 AND start_time = $2::time
         RETURNING *
     `;
     const { rows } = await pool.query(text, [appt_date, start_time]);
