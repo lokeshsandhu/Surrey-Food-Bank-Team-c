@@ -80,7 +80,15 @@ export default function LoginPage() {
           onChange={e => setPassword(e.target.value)}
           className='login password'
         />
-        <Button onClick={handleLogin}>Login</Button>
+        <Button
+          onClick={handleLogin}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              handleLogin();
+            }
+          }}
+        >Login
+        </Button>
         {error && <Text c="red" mt={10}>{error}</Text>}
         <Group style={{ flexDirection: 'column', gap: 1, alignItems: 'flex-start' }}>
           <Button
@@ -92,7 +100,7 @@ export default function LoginPage() {
             Create Account
           </Button>
           <Button
-            className='link'    
+            className='link'
             variant='white'
             size='sm'
             onClick={() => navigate('/requestPasswordChange')}

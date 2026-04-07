@@ -72,7 +72,15 @@ export default function RequestPasswordChangePage() {
                     className='account-recovery'
                 />
                 {error && <Text c="red" mt={10}>{error}</Text>}
-                <Button onClick={handleResetEmail} loading={submitting}>Send Reset Link</Button>
+                <Button
+                    onClick={handleResetEmail}
+                    onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                            handleResetEmail();
+                        }
+                    }}
+                    loading={submitting}
+                >Send Reset Link</Button>
                 <Button variant='light' onClick={() => navigate('/login')}>Back</Button>
             </Card>
         </div>

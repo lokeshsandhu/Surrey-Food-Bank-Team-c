@@ -107,7 +107,16 @@ export default function ResetPasswordPage() {
                         withAsterisk
                     />
                 </Group>
-                <Button onClick={handleResetPassword} loading={submitting}>Reset Password</Button>
+                <Button
+                    onClick={handleResetPassword}
+                    onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                            handleResetPassword();
+                        }
+                    }}
+                    loading={submitting}>
+                    Reset Password
+                </Button>
             </Card>
         </div>
     );
