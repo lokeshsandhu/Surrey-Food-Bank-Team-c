@@ -71,7 +71,11 @@ export default function LoginPage() {
 
   return (
     <div className="top-container linear-gradient">
-      <Card className="login-card card" padding={20}>
+      <Card component="form" className="login-card card" padding={20} 
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleLogin();
+      }}>
         <Image src={logo} h={150} w="auto" m={10} p={2} />
         <TextInput className='login username' placeholder='Username or Email' value={identifier} onChange={e => setIdentifier(e.target.value)} />
         <PasswordInput
@@ -81,12 +85,7 @@ export default function LoginPage() {
           className='login password'
         />
         <Button
-          onClick={handleLogin}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              handleLogin();
-            }
-          }}
+          type="submit"
         >Login
         </Button>
         {error && <Text c="red" mt={10}>{error}</Text>}
