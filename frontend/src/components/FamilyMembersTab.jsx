@@ -1,9 +1,10 @@
-import { Stack, TextInput, Group, Table, Button, Modal, Select, Title } from "@mantine/core";
+import { Stack, TextInput, Group, Table, Button, Modal, Select, Title, Textarea } from "@mantine/core";
 import React, { useEffect, useState } from "react";
 import { createFamilyMember, deleteFamilyMember, getFamilyMembers, updateFamilyMember } from "../../api/familyMembers";
 import { useDisclosure } from "@mantine/hooks";
 import '../styles/clientList.css';
 import { useForm } from "@mantine/form";
+import dayjs from 'dayjs';
 import { DateInput } from "@mantine/dates";
 import { IMaskInput } from 'react-imask';
 import validator from 'validator';
@@ -12,6 +13,8 @@ import { IconUserPlus } from '@tabler/icons-react';
 import { FMRelationshipOptions } from '../constants/FormOptions';
 import { useNavigate } from "react-router";
 import { emailExists, updateAccount } from "../../api/accounts";
+import { capitalize } from "../utils/displayHelpers";
+import { CHARLIMITS } from "../constants/Validation";
 
 // enum for the modal mode
 const modeEnum = { updateMember: 1, addMember: 2 };
@@ -63,17 +66,17 @@ export default function FamilyMembersTab({ clientUsername }) {
           }
         }
       },
-      phone: (value) => form.values.relationship === 'owner' && isMemberOwner() ?
+      phone: (value) => form.values.relationship === 'owner' ?
         (value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).') : null,
-      relationship: (value) => value.trim().length > 0 ? (value.toLowerCase().trim() === 'owner' && !isMemberOwner() ? 'Only the account owner can be an "owner". Please enter a different relationship.' : null) : 'Please enter your relationship to this family member.'
+      relationship: (value) => value.trim().length > 0 ? null : "Please select your relationship to this family member."
     }
   });
 
   // check if email exists in database
   // duplicate error if exists: true AND is_member_email: false
   const checkEmail = async () => {
+    if (form.values.email === null || form.values.email.trim().length === 0) return;
     const currentEmail = form.values.email.trim();
-    if (currentEmail.length === 0) return;
 
     let currentUsername = null;
     let currentId = null;
@@ -96,12 +99,6 @@ export default function FamilyMembersTab({ clientUsername }) {
     return false;
   };
 
-  const isMemberOwner = () => {
-    const currentMember = { f_name: form.values.f_name, relationship: form.values.relationship };
-    const relationships = familyMemberInfo.map(m => { return { f_name: m.f_name, relationship: m.relationship }; });
-    return relationships.some(m => m.f_name === currentMember.f_name && m.relationship === currentMember.relationship);
-  };
-
   // Gets family members under this account
   // Returns the number of family members
   const getFamilyMembersInformation = async () => {
@@ -121,8 +118,13 @@ export default function FamilyMembersTab({ clientUsername }) {
   };
 
   const openUpdateModal = (member) => {
-    setCurrentMember(member);
-    form.setValues(member);
+    const curMember = {
+      ...member,
+      email: member.email === null ? '' : member.email,
+      phone: member.phone === null ? '' : member.phone
+    };
+    setCurrentMember(curMember);
+    form.setValues(curMember);
     setMode(modeEnum.updateMember);
     open();
   };
@@ -164,6 +166,7 @@ export default function FamilyMembersTab({ clientUsername }) {
         email: member.email.trim().length > 0 ? member.email.trim() : null,
         relationship: member.relationship
       };
+      console.log(memberData);
       try {
         const result = await updateFamilyMember(token, clientUsername, currentMember.id, memberData);
         await getFamilyMembersInformation();
@@ -201,11 +204,6 @@ export default function FamilyMembersTab({ clientUsername }) {
         hasErrors = true;
       }
     });
-
-    // const memberEmailIsValid = await checkMemberEmail();
-    // if (!memberEmailIsValid) {
-    //   hasErrors = true;
-    // }
 
     const hasDupEmail = await checkEmail();
     if (form.errors.email) return;
@@ -311,15 +309,19 @@ export default function FamilyMembersTab({ clientUsername }) {
     checkEmail();
   }, [form.values.email]);
 
+  const cellStyle = {
+    wordBreak: 'break-word'
+  };
+
   const rows = familyMemberInfo.map((FM) => (
     <Table.Tr key={FM.id}>
-      <Table.Td>{FM.f_name}</Table.Td>
-      <Table.Td>{FM.l_name}</Table.Td>
-      <Table.Td>{FM.dob.slice(0, 10)}</Table.Td>
-      <Table.Td><a href={`mailto:${FM.email}`}>{FM.email}</a></Table.Td>
-      <Table.Td>{FM.phone}</Table.Td>
-      <Table.Td>{FM.relationship}</Table.Td>
-      <Table.Td>
+      <Table.Td style={{ ...cellStyle }}>{FM.f_name}</Table.Td>
+      <Table.Td style={{ ...cellStyle }}>{FM.l_name}</Table.Td>
+      <Table.Td style={{ ...cellStyle }}>{FM.dob.slice(0, 10)}</Table.Td>
+      <Table.Td style={{ ...cellStyle }}><a href={`mailto:${FM.email}`}>{FM.email}</a></Table.Td>
+      <Table.Td style={{ ...cellStyle }}>{FM.phone}</Table.Td>
+      <Table.Td style={{ ...cellStyle }}>{FM.relationship}</Table.Td>
+      <Table.Td style={{ ...cellStyle }}>
         <Button size='xs'
           onClick={() => openUpdateModal(FM)}>Edit</Button>
       </Table.Td>
@@ -327,16 +329,27 @@ export default function FamilyMembersTab({ clientUsername }) {
   ));
 
   return (
-    <div>
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
       <Title order={2} mb={10}>Family Members</Title>
-      <Table.ScrollContainer maxHeight={'80%'}>
+      <Table.ScrollContainer
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+        }}
+      >
         <Table
-          miw={500}
           verticalSpacing="sm"
           stickyHeader
           withTableBorder
           highlightOnHover
           bgcolor='white'
+          style={{ tableLayout: 'fixed' }}
           w={'100%'}
         >
           <Table.Thead>
@@ -349,6 +362,7 @@ export default function FamilyMembersTab({ clientUsername }) {
               <Table.Th>Relationship</Table.Th>
               <Table.Th>
                 <Button
+                  size='xs'
                   color='green'
                   leftSection={<IconUserPlus />}
                   onClick={openAddModal}
@@ -368,44 +382,51 @@ export default function FamilyMembersTab({ clientUsername }) {
         centered>
         <Stack w='100%'>
           <Group>
-            <TextInput
+            <Textarea
               label="First Name"
               placeholder="e.g. Alex"
               key={form.key(`f_name`)}
               {...form.getInputProps(`f_name`)}
               withAsterisk
               w={'45%'}
+              autosize
+              maxLength={CHARLIMITS.name}
             />
-            <TextInput
+            <Textarea
               label="Last Name"
               placeholder="e.g. Doe"
               key={form.key(`l_name`)}
               {...form.getInputProps(`l_name`)}
               withAsterisk
               w={'45%'}
+              autosize
+              maxLength={CHARLIMITS.name}
             />
           </Group>
           <DateInput
             label="Date of Birth"
-            placeholder="YYYY MM DD"
-            valueFormat='YYYY MM DD'
-            maxDate={new Date()}
+            placeholder="YYYY-MM-DD"
+            valueFormat='YYYY-MM-DD'
+            defaultDate={dayjs()}
+            maxDate={dayjs()}
+            minDate={dayjs().subtract(120, 'year').toDate()}
             key={form.key(`dob`)}
             {...form.getInputProps(`dob`)}
             withAsterisk
             w={'45%'}
           />
-          <TextInput
+          <Textarea
             label={`Email ${form.values.relationship !== 'owner' ? '(Optional)' : ''}`}
             placeholder="e.g. alexdoe@gmail.com"
             key={form.key(`email`)}
             {...form.getInputProps(`email`)}
-            w={'45%'}
             onBlur={async (event) => {
               form.getInputProps('email').onBlur(event);
               await checkEmail();
             }}
             withAsterisk={form.values.relationship === 'owner'}
+            autosize
+            maxLength={CHARLIMITS.email}
           />
           <TextInput
             label={`Phone ${form.values.relationship !== 'owner' ? '(Optional)' : ''}`}
@@ -415,14 +436,14 @@ export default function FamilyMembersTab({ clientUsername }) {
             component={IMaskInput}
             mask='(000) 000-0000'
             w={'45%'}
-            withAsterisk={form.values.relationship === 'owner' && isMemberOwner()}
+            withAsterisk={form.values.relationship === 'owner'}
           />
 
           {form.values.relationship !== 'owner' &&
             <Select
               label='Relationship to Account Owner'
               placeholder='Select Relationship'
-              description='e.g. if this family member is your mother, select the "Parent" option.'
+              description='i.e. If this family member is your mother, select the "Parent" option.'
               data={FMRelationshipOptions}
               key={form.key(`relationship`)}
               {...form.getInputProps(`relationship`)}
@@ -445,7 +466,7 @@ export default function FamilyMembersTab({ clientUsername }) {
           {mode === modeEnum.updateMember &&
             <Button
               color='red'
-              disabled={form.values.relationship === 'owner' && isMemberOwner()}
+              disabled={form.values.relationship === 'owner'}
               onClick={removeMember} >
               Remove
             </Button>

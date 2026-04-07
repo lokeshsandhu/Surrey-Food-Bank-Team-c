@@ -45,7 +45,7 @@ export async function requestPasswordReset(identifier: string): Promise<void> {
     const baseUrl = env.FRONTEND_BASE_URL.replace(/\/+$/, "");
     const link = `${baseUrl}/resetPassword?token=${encodeURIComponent(token)}`;
 
-    const result = await sendRecoveryMessage(emailTo, link);
+    const result = await sendRecoveryMessage(emailTo, link, account.username);
     if (!result) {
         throw new Error("Failed to send recovery email");
     }

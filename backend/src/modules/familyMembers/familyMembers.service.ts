@@ -127,11 +127,11 @@ export async function updateFamilyMember(
     let idx = 1;
 
     if (data.f_name !== undefined) {
-        fields.push(`f_name = LOWER($${idx++})`);
+        fields.push(`f_name = $${idx++}`);
         values.push(data.f_name);
     }
     if (data.l_name !== undefined) {
-        fields.push(`l_name = LOWER($${idx++})`);
+        fields.push(`l_name = $${idx++}`);
         values.push(data.l_name);
     }
     if (data.dob !== undefined) {

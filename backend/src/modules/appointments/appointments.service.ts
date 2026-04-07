@@ -232,8 +232,14 @@ export async function deleteAppointmentFromUsername(username: string) {
 
 export async function cleanupPastAppointments() {
     const text = `
-        DELETE FROM appointment_slot
-        WHERE appt_date < CURRENT_DATE
+        DELETE FROM appointment_slot a_s
+        WHERE appt_date < CURRENT_DATE 
+        AND NOT EXISTS (
+            SELECT appt_date, start_time
+            FROM appointment_booking a_b
+            WHERE a_s.appt_date = a_b.appt_date
+            AND a_s.start_time = a_b.start_time
+        )
         RETURNING appt_date, start_time
     `;
     const { rows } = await pool.query(text);

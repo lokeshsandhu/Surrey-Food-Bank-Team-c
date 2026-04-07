@@ -16,6 +16,7 @@ import { getAccount, getAccountEmail } from '../../api/accounts.js';
 import { sendConfirmationEmail } from '../../api/email.js';
 
 import arabic_img from '../assets/arabic.png';
+import { CHARLIMITS } from '../constants/Validation.js';
 
 const excludedDays = [5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
 
@@ -29,7 +30,7 @@ export default function ClientDashboard() {
     const [availableTimes, setAvailableTimes] = useState([]);
     const [bookedTimes, setBookedTimes] = useState([]);
     const [myAppointment, setMyAppointment] = useState({});
-    const [successModalState, {open: openSuccessModal, close: closeSuccessModal}] = useDisclosure(false);
+    const [successModalState, { open: openSuccessModal, close: closeSuccessModal }] = useDisclosure(false);
     const [modalLoading, setModalLoading] = useState(false);
     const [tinyBundles, setTinyBundles] = useState(false);
     const [bookingNote, setBookingNote] = useState('');
@@ -60,7 +61,7 @@ export default function ClientDashboard() {
     }
 
     if (role === 'admin') {
-        navigate('/adminDashboard')
+        navigate('/adminDashboard');
     }
 
     const normalizeApptDate = (apptDate) => {
@@ -110,13 +111,13 @@ export default function ClientDashboard() {
                     time: selectedTime,
                     username: effectiveUsername,
                     email: userEmail.email
-                }
+                };
 
                 const emailRes = await sendConfirmationEmail(token, confirmationEmail);
                 if (!emailRes?.success) {
                     notifications.show({
                         title: 'Email not sent',
-                        message: emailRes?.error || 'Appointment was booked but confirmation email failed.',
+                        message: 'Appointment was booked but confirmation email failed. Please make sure your account email is valid.',
                         color: 'yellow',
                     });
                 }
@@ -169,7 +170,7 @@ export default function ClientDashboard() {
                     time: modalSelectedTime,
                     username: effectiveUsername,
                     email: userEmail.email
-                }
+                };
 
                 const emailRes = await sendConfirmationEmail(token, confirmationEmail);
                 if (!emailRes?.success) {
@@ -214,7 +215,7 @@ export default function ClientDashboard() {
                 setTutorialState(2);
             }
         }
-    }
+    };
 
     const handleAvailableTimesModal = async (date) => {
         setModalSelectedTime(null);
@@ -222,7 +223,7 @@ export default function ClientDashboard() {
         setModalBookingNote('');
         setModalLoadingEdit(true);
         try {
-            
+
             const timeslots = await getAppointmentsInDateRange(token, date, date);
             const takenTimes = timeslots.filter(slot => slot.username !== null);
             setModalAvailableTimes(timeslots.map(appointment => appointment.start_time));
@@ -232,7 +233,7 @@ export default function ClientDashboard() {
         } finally {
             setModalLoadingEdit(false);
         }
-    }
+    };
 
     const handleCancelBooking = async (appointment) => {
         setModalLoading(true);
@@ -269,7 +270,7 @@ export default function ClientDashboard() {
         }
         fetchMyAppointment(); // Refresh user's appointment information after cancellation
         setBookingNote(''); // Reset booking note after cancellation
-    }
+    };
 
     const fetchMyAppointment = async () => {
         const myAppointment = await getMyAppointments(token);
@@ -295,13 +296,13 @@ export default function ClientDashboard() {
     };
 
     useEffect(() => {
-        
+
         fetchMyAppointment();
 
         const checkTinyBundles = async () => {
             const userInfo = await getAccount(token, username);
             return userInfo;
-        }
+        };
 
         checkTinyBundles().then(result => {
             console.log("check ", result.baby_or_pregnant);
@@ -315,7 +316,7 @@ export default function ClientDashboard() {
 
     useEffect(() => {
         const fetchTimeslots = async () => {
-            const timeslots = await getAppointmentsInDateRange(token, dayjs(currentMonth).startOf('month').format('YYYY-MM-DD'), dayjs(currentMonth).endOf('month').format('YYYY-MM-DD'))
+            const timeslots = await getAppointmentsInDateRange(token, dayjs(currentMonth).startOf('month').format('YYYY-MM-DD'), dayjs(currentMonth).endOf('month').format('YYYY-MM-DD'));
             setAllTimeslots(timeslots);
             console.log("check1 ");
         };
@@ -339,8 +340,8 @@ export default function ClientDashboard() {
                         </button>
                     )}
                 </div>
-                <div className="box" style={{display: 'flex', justifyContent: 'center'}}>
-                    
+                <div className="box" style={{ display: 'flex', justifyContent: 'center' }}>
+
                     <Button justify='center' size='lg' mt={20} onClick={(event) => openSuccessModal()}>
                         Check required documents
                     </Button>
@@ -385,7 +386,7 @@ export default function ClientDashboard() {
             </SimpleGrid>
             <Grid verticalspacing="xs" style={{ height: '60vh', marginTop: '20px', marginBottom: '20px', alignItems: 'stretch' }}>
 
-                <Grid.Col span={6} style={{height: "500px"}}>
+                <Grid.Col span={6} style={{ height: "500px" }}>
                     <Popover opened={tutorialState === 1} position="right" withArrow>
                         <Popover.Target>
                             <div className="calendar">
@@ -397,7 +398,7 @@ export default function ClientDashboard() {
                                     onNextMonth={setCurrentMonth}
                                     onPreviousMonth={setCurrentMonth}
                                     firstDayOfWeek={0}
-                                    excludeDate={(date) =>{
+                                    excludeDate={(date) => {
                                         if (excludedDays.includes(new Date(date).getDay())) {
                                             return true;
                                         } else if (!allTimeslots.some(timeslot => normalizeApptDate(timeslot.appt_date) === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
@@ -411,7 +412,7 @@ export default function ClientDashboard() {
                                         }
                                     }}
                                     hideOutsideDates
-                                    style={{justifySelf: 'center', marginTop: '15px'}}
+                                    style={{ justifySelf: 'center', marginTop: '15px' }}
                                 />
                             </div>
                         </Popover.Target>
@@ -423,13 +424,13 @@ export default function ClientDashboard() {
                     </Popover>
                 </Grid.Col>
 
-                <Grid.Col span={6} style={{height: "500px"}}>
+                <Grid.Col span={6} style={{ height: "500px" }}>
                     <Popover opened={tutorialState === 2} position="left" withArrow>
                         <Popover.Target>
                             <div className="time-grid">
                                 <ScrollArea style={{ marginBottom: '60px', height: '100%' }}>
                                     <LoadingOverlay visible={loadingTimeGrid} overlayProps={{ radius: "sm", blur: 2 }} />
-                                    
+
                                     <TimeGrid
                                         data={availableTimes}
                                         simpleGridProps={{
@@ -456,6 +457,7 @@ export default function ClientDashboard() {
                                     onChange={(event) => setBookingNote(event.currentTarget.value)}
                                     w="50%"
                                     style={{ position: 'absolute', bottom: '30px', left: '30px' }}
+                                    maxLength={CHARLIMITS.openTextField}
                                 />
                                 <div className="booking-button">
                                     <Button size="lg" w="100%" onClick={handleBooking} loading={processingBooking} disabled={!selectedDate || !selectedTime}>
@@ -475,11 +477,11 @@ export default function ClientDashboard() {
 
             <Modal.Stack>
                 <Modal {...stack.register('base-page')} title="Booking Information" transitionProps={{ transition: 'slide-left' }} centered>
-                    <LoadingOverlay visible={modalLoading}/>
+                    <LoadingOverlay visible={modalLoading} />
                     <div className="modal-content">
                         <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
                         <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A') : 'N/A'}</p>
-                        <p><strong>Notes:</strong> {myAppointment && myAppointment.booking_notes ? myAppointment.booking_notes : 'N/A'}</p>
+                        <p><strong>Notes:</strong> {myAppointment && myAppointment.booking_notes ? myAppointment.booking_notes : '(Empty)'}</p>
                         <div>
                             <Button mr={10} onClick={() => openStackPage("calendar-page")}>
                                 Edit Booking
@@ -493,8 +495,8 @@ export default function ClientDashboard() {
                 </Modal>
 
                 <Modal {...stack.register('calendar-page')} title="Choose date" size="70%" transitionProps={{ transition: 'slide-left' }} centered>
-                    <LoadingOverlay visible={modalLoadingEdit} overlayProps={{ radius: "sm", blur: 2 }}/>
-                    <Group grow style={{ position: 'relative', paddingBottom: '80px'}}>
+                    <LoadingOverlay visible={modalLoadingEdit} overlayProps={{ radius: "sm", blur: 2 }} />
+                    <Group grow style={{ position: 'relative', paddingBottom: '80px' }}>
                         <DatePicker
                             size="xl"
                             value={modalSelectedDate}
@@ -503,7 +505,7 @@ export default function ClientDashboard() {
                             onNextMonth={setModalCurrentMonth}
                             onPreviousMonth={setModalCurrentMonth}
                             firstDayOfWeek={0}
-                            excludeDate={(date) =>{
+                            excludeDate={(date) => {
                                 if (excludedDays.includes(new Date(date).getDay())) {
                                     return true;
                                 } else if (!modalAllTimeslots.some(timeslot => normalizeApptDate(timeslot.appt_date) === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
@@ -535,7 +537,7 @@ export default function ClientDashboard() {
                             value={modalSelectedTime}
                             onChange={setModalSelectedTime}
                             disabled={modalSelectedDate === null}
-                            style={{marginBottom: '20px', padding: '15px'}}
+                            style={{ marginBottom: '20px', padding: '15px' }}
                         />
                     </Group>
                     <TextInput
@@ -545,6 +547,7 @@ export default function ClientDashboard() {
                         onChange={(event) => setModalBookingNote(event.currentTarget.value)}
                         w={240}
                         style={{ position: 'absolute', bottom: '30px', left: '30px' }}
+                        maxLength={CHARLIMITS.openTextField}
                     />
 
                     <div className="booking-button">
@@ -553,7 +556,7 @@ export default function ClientDashboard() {
                         </Button>
                     </div>
                 </Modal>
-{/* 
+                {/* 
                 <Modal {...stack.register('confirm-page')} title="Booking Confirmation"  centered >
                     <LoadingOverlay visible={modalLoading}/>
                     <div className="modal-content">
@@ -573,7 +576,7 @@ export default function ClientDashboard() {
                 </Modal> */}
             </Modal.Stack>
 
-            
+
             <Modal
                 opened={successModalState}
                 onClose={closeSuccessModal}
@@ -668,7 +671,7 @@ export default function ClientDashboard() {
 
                     {currLanguage === "درى (Dari)" && (
                         <div style={{ textAlign: "right" }}>
-                           <h3>اگاهی</h3>
+                            <h3>اگاهی</h3>
 
                             <p>اسناد ضروری برای ثبت نام و تازه سازی دوسیه ها </p>
 

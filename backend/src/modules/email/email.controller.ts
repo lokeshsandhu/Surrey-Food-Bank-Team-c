@@ -26,8 +26,8 @@ export async function sendConfirmation(req: Request, res: Response) {
 // Send recovery email with unique password reset link to set new account password
 export async function sendRecovery(req: Request, res: Response) {
     try { 
-        const { email, link } = req.body;
-        const result = await service.sendRecoveryMessage(email, link);
+        const { email, link, username } = req.body;
+        const result = await service.sendRecoveryMessage(email, link, username);
 
         if (!result) {
             res.status(400).json({ error: "Issue creating email" });
