@@ -223,7 +223,7 @@ export async function updateAppointment(
 }
 
 
-export async function deleteAppointmentFromUsername(username: string, appt_date?: string, start_time?: string) {
+export async function deleteAppointmentFromUsername(username: string, appt_date?: string, start_time?: string, end_time?: string) {
     const values: unknown[] = [username];
     let text = `
         DELETE FROM appointment_booking
@@ -231,12 +231,31 @@ export async function deleteAppointmentFromUsername(username: string, appt_date?
           AND booking_status = 'upcoming'
     `;
 
-    if (appt_date && start_time) {
+    if (appt_date) {
+        values.push(appt_date);
         text += `
-          AND appt_date = $2
-          AND start_time = $3::time
+          AND appt_date = $${values.length}
         `;
-        values.push(appt_date, start_time);
+    }
+
+    if (start_time) {
+        values.push(start_time);
+        if (end_time) {
+            text += `
+              AND start_time >= $${values.length}::time
+            `;
+        } else {
+            text += `
+              AND start_time = $${values.length}::time
+            `;
+        }
+    }
+
+    if (end_time) {
+        values.push(end_time);
+        text += `
+          AND start_time < $${values.length}::time
+        `;
     }
 
     text += `
