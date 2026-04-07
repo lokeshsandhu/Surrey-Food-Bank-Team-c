@@ -48,7 +48,7 @@ export async function updateAppointment(
 
     if (username !== undefined) {
         if (username === null || username === "") {
-            const deleteResult = await pool.query(
+            await pool.query(
                 `
                 DELETE FROM appointment_booking
                 WHERE appt_date = $1
@@ -58,10 +58,6 @@ export async function updateAppointment(
             `,
                 [appt_date, start_time]
             );
-
-            if (deleteResult.rowCount === 0) {
-                return null;
-            }
         } else {
             if (booking_status !== undefined) {
                 const bookingUpdateFields = ["booking_status = $4"];

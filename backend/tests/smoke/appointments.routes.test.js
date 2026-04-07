@@ -59,6 +59,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
     // Clear appointments before each test
+    await pool.query('DELETE FROM appointment_booking WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
     await pool.query('DELETE FROM appointment_slot WHERE appt_date IN ($1, $2)', [APPT_DATE, APPT_DATE_NON_WED]);
 });
 
@@ -126,6 +127,36 @@ describe('PATCH /api/appointments/update (admin update)', () => {
 
         expect(res.status).toBe(200);
         expect(res.body.booked_count).toBe(0);
+    });
+
+    it('should keep arrived bookings when username is left null/blank', async () => {
+        await request(app)
+            .post('/api/appointments/appointments-in-range')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({ appt_date: APPT_DATE, start_time: '13:30', end_time: '13:45', appt_notes: 'arrived booking' });
+
+        await request(app)
+            .post('/api/appointments/book')
+            .set('Authorization', `Bearer ${clientToken}`)
+            .send({ appt_date: APPT_DATE, start_time: '13:30' });
+
+        await request(app)
+            .patch('/api/appointments/update')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                appt_date: APPT_DATE,
+                start_time: '13:30',
+                updateData: { username: CLIENT_USER, booking_status: 'arrived' }
+            });
+
+        const res = await request(app)
+            .patch('/api/appointments/update')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({ appt_date: APPT_DATE, start_time: '13:30', updateData: { username: '' } });
+
+        expect(res.status).toBe(200);
+        expect(res.body.booked_count).toBe(1);
+        expect(res.body.username).toBe(CLIENT_USER);
     });
 
     it('should return 404 for non-existent appointment', async () => {
@@ -232,6 +263,46 @@ describe('DELETE /api/appointments/delete/* (admin bulk delete)', () => {
             .send({ username: CLIENT_USER });
 
         expect(res.status).toBe(200);
+    });
+
+    it('should not delete arrived bookings by username', async () => {
+        await request(app)
+            .post('/api/appointments/appointments-in-range')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({ appt_date: APPT_DATE, start_time: '14:30', end_time: '14:45' });
+
+        await request(app)
+            .post('/api/appointments/book')
+            .set('Authorization', `Bearer ${clientToken}`)
+            .send({ appt_date: APPT_DATE, start_time: '14:30' });
+
+        await request(app)
+            .patch('/api/appointments/update')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                appt_date: APPT_DATE,
+                start_time: '14:30',
+                updateData: { username: CLIENT_USER, booking_status: 'arrived' }
+            });
+
+        const res = await request(app)
+            .delete('/api/appointments/delete/username')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({ username: CLIENT_USER });
+
+        expect(res.status).toBe(200);
+        expect(res.body.deleted).toHaveLength(0);
+
+        const bookingRes = await request(app)
+            .get(`/api/appointments/get/${CLIENT_USER}`)
+            .set('Authorization', `Bearer ${adminToken}`);
+
+        const remainingBooking = bookingRes.body.find(
+            (appointment) => appointment.appt_date === APPT_DATE && String(appointment.start_time).slice(0, 5) === '14:30'
+        );
+
+        expect(remainingBooking).toBeDefined();
+        expect(remainingBooking.booking_status).toBe('arrived');
     });
 });
 
