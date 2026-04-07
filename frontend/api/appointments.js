@@ -111,7 +111,7 @@ export function updateAppointment(token, appt_date, start_time, updateData) {
  *   updateAppointment(token, "2024-06-01", "10:00", "jane123", "new note");
  */
 export function updateBookingNotes(token, appt_date, start_time, username, bookingNotes) {
-  return fetch(`${API_BASE}/update/booking_notes`, {
+  return fetch(`${API_BASE}/update/booking-notes`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ appt_date, start_time, username, bookingNotes })
