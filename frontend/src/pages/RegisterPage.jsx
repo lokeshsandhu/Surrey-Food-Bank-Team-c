@@ -9,7 +9,7 @@ import AddFamilyMembers from '../components/AddFamilyMembers.jsx';
 import EligibilityQuestions from '../components/EligibilityQuestions.jsx';
 import RegistrationFinished from '../components/RegistrationFinished.jsx';
 
-import { Button, Card, Group, Image, Modal, Stepper, Text, Alert } from '@mantine/core';
+import { Button, Card, Group, Image, Modal, Stepper, Text, Alert, Title } from '@mantine/core';
 import { isNotEmpty, matchesField, useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 
@@ -22,6 +22,7 @@ import { createFamilyMember } from '../../api/familyMembers.js';
 
 import { canadaStatusOptions } from '../constants/FormOptions.js';
 import { isMinAge } from '../utils/registrationHelpers.js';
+import { IconCheck, IconCircleCheck, IconInfoCircle } from '@tabler/icons-react';
 
 const USERNAME_PATTERN = /^[A-Za-z0-9_-]+$/;
 
@@ -29,7 +30,7 @@ function getUsernameValidationError(value) {
     const normalized = String(value ?? '').trim();
 
     if (normalized.length < 5) {
-        return 'Username must be at least 5 characters';
+        return 'Username must be at least 5 characters.';
     }
 
     if (!USERNAME_PATTERN.test(normalized)) {
@@ -178,11 +179,11 @@ export default function RegisterPage() {
                     if (value.trim().length === 0 || !validator.isEmail(value.trim())) {
                         return 'Please enter a valid email (e.g. alexdoe@gmail.com).';
                     }
-                    
+
                     const currentEmail = value.trim().toLowerCase();
                     const familyEmails = form.values.family_members.map(m => m.email.trim().toLowerCase());
-                    
-                    
+
+
                     // checks if this is a duplicate email within this registration form
                     const duplicates = familyEmails.filter((email, i) => email === currentEmail).length > 0;
 
@@ -200,7 +201,7 @@ export default function RegisterPage() {
                     if (value.trim().length === 0) {
                         return null;
                     } else if (!validator.isEmail(value.trim())) {
-                        return 'Please enter a valid email (e.g. alexdoe@gmail.com).'
+                        return 'Please enter a valid email (e.g. alexdoe@gmail.com).';
                     }
 
                     const ownerEmail = form.values.main_family_member.email.trim().toLowerCase();
@@ -489,8 +490,17 @@ export default function RegisterPage() {
                     </div>
                 )}
             </Card>
-            <Modal opened={opened} onClose={close} title="Register Success" centered>
-                <Text mb={10}>Select 'Continue' to view your dashboard</Text>
+            <Modal
+                opened={opened}
+                onClose={close}
+                title={<Group gap='xs'>
+                    <IconCircleCheck size={30} color='green' />
+                    <Title order={4}>Register Success</Title>
+                </Group>}
+                centered
+            >
+                <Text mb={10}>Congratulations, you have successfully created an account with Surrey Food Bank!</Text>
+                <Text mb={10}> You will be navigated to your dashboard, where you can book appointments and edit your account information.</Text>
                 <Button mt={4} color='cyan' onClick={() => { loginNavigate(); }}>Continue</Button>
             </Modal>
         </div>

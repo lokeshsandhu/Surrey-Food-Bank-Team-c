@@ -31,16 +31,16 @@ export async function sendConfirmMessage(apptDate: string, apptTime: string, use
 }
 
 // send recovery email using "account recovery" template
-export async function sendRecoveryMessage(email: string, link: string) {
+export async function sendRecoveryMessage(email: string, link: string, username: string) {
   try {
-    const subjectUser = "Account Recovery for " + email;
+    const subjectUser = "Account Recovery for " + username;
     const data = await mg.messages.create("sandbox566ace4bec16451b809897c40c8e522a.mailgun.org", {
       from: "Mailgun Sandbox <postmaster@sandbox566ace4bec16451b809897c40c8e522a.mailgun.org>",
       to: [email],
       subject: subjectUser,
       template: "account recovery",
       "h:X-Mailgun-Variables": JSON.stringify({
-        useremail: email,
+        username: username,
         recoverylink: link,
       }),
     });

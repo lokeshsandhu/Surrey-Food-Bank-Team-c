@@ -13,8 +13,10 @@ import { getAccount } from '../../api/accounts';
 import { splitAddress } from '../utils/displayHelpers';
 import { notifications } from '@mantine/notifications';
 import dayjs from 'dayjs';
+import { capitalize } from '../utils/displayHelpers';
 
 import { mkConfig, generateCsv, download } from "export-to-csv";
+import { CHARLIMITS } from '../constants/Validation';
 
 export default function ClientList() {
 
@@ -40,24 +42,26 @@ export default function ClientList() {
             accountOwnerDetails = await Promise.all(
                 resultOwners.map(async (owner) => {
                     const details = await getAccount(token, owner.username);
-                    const address = splitAddress(details.addr);
+                    const address = splitAddress(details.addr ?? '');
 
                     return {
                         username: owner.username,
-                        f_name: owner.f_name,
-                        l_name: owner.l_name,
+                        f_name: capitalize(owner.f_name),
+                        l_name: capitalize(owner.l_name),
                         email: owner.email,
                         phone: owner.phone,
-                        address_line1: address.line1,
-                        address_line2: address.line2,
-                        address_city: address.city,
+                        address_line1: capitalize(address.line1),
+                        address_line2: capitalize(address.line2),
+                        address_city: capitalize(address.city),
                         address_postal_code: address.postal_code,
                         household_size: details.household_size,
-                        account_notes: details.account_notes
+                        account_notes: capitalize(details.account_notes)
 
                     };
                 })
             );
+
+            accountOwnerDetails = accountOwnerDetails.filter(d => d.username !== 'admin') // Filtering out the admin account... could break if username isn't admin
         }
         setAccountOwners(accountOwnerDetails);
     };
@@ -200,67 +204,90 @@ export default function ClientList() {
                 <ActionIcon mb={10} onClick={() => navigate('/adminDashboard')}>
                     <IconArrowLeft />
                 </ActionIcon>
-                <Title order={1}>Client List</Title>
-                <TextInput
-                    size="md"
-                    placeholder="Search Clients"
-                    radius={30}
-                    mt={15}
-                    value={searchText}
-                    onChange={e => {
-                        setSearchText(e.target.value);
-                        if (e.target.value.length === 0) {
-                            getAllAccountOwners();
-                        } else {
-                            searchClients(e.target.value);
-                        }
-                    }}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                <div
+                    style={{
+                        flex: 1,
+                        height: '95%',
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                    }}>
+                    <Title order={1}>Client List</Title>
+                    <TextInput
+                        className='search-bar'
+                        size="md"
+                        placeholder="Search Clients"
+                        radius={30}
+                        mt={15}
+                        value={searchText}
+                        onChange={e => {
+                            setSearchText(e.target.value);
                             if (e.target.value.length === 0) {
                                 getAllAccountOwners();
                             } else {
                                 searchClients(e.target.value);
                             }
-                        }
-                    }}
-                    rightSection={<CloseButton onClick={() => resetSearch()} />}
-                />
-                <div
-                    style={{
-                        width: '100%',
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        marginTop: 10
-                    }}>
-                    <Button
-                        variant='outline'
-                        onClick={handleExportData}
-                        loading={exportLoading}
-                    >
-                        Export All Clients to CSV
-                    </Button>
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                if (e.target.value.length === 0) {
+                                    getAllAccountOwners();
+                                } else {
+                                    searchClients(e.target.value);
+                                }
+                            }
+                        }}
+                        rightSection={<CloseButton onClick={() => resetSearch()} />}
+                        maxLength={CHARLIMITS.openTextField}
+                    />
+                    <div
+                        style={{
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            marginTop: 10
+                        }}>
+                        <Button
+                            variant='outline'
+                            onClick={handleExportData}
+                            loading={exportLoading}
+                        >
+                            Export All Clients to CSV
+                        </Button>
+                    </div>
+
+                    <Table.ScrollContainer
+                        style={{
+                            flex: 1,
+                            overflowY: 'auto',
+                            marginTop: 10
+                        }}>
+                        <Table
+                            stickyHeader
+                            withTableBorder
+                            highlightOnHover
+                            bgcolor='white'
+                            w={'100%'}
+                            style={{ tableLayout: 'fixed', width: '100%' }}>
+                            <Table.Thead>
+                                <Table.Tr>
+                                    <Table.Th>Last Name</Table.Th>
+                                    <Table.Th>First Name</Table.Th>
+                                    <Table.Th>Username</Table.Th>
+                                    <Table.Th>Email</Table.Th>
+                                    <Table.Th>Phone</Table.Th>
+                                    <Table.Th>Address</Table.Th>
+                                    <Table.Th>City</Table.Th>
+                                    <Table.Th>Postal Code</Table.Th>
+                                    <Table.Th>Family Members</Table.Th>
+                                    <Table.Th>Account Notes</Table.Th>
+                                    <Table.Th></Table.Th>
+                                </Table.Tr>
+                            </Table.Thead>
+                            <Table.Tbody>{clientRows}</Table.Tbody>
+                        </Table>
+                    </Table.ScrollContainer>
                 </div>
-                <Table.ScrollContainer height={'80%'} style={{ overflowY: 'auto' }}>
-                    <Table mt={15} stickyHeader withTableBorder highlightOnHover bgcolor='white' w={'100%'} style={{ tableLayout: 'fixed', width: '100%' }}>
-                        <Table.Thead>
-                            <Table.Tr>
-                                <Table.Th>Last Name</Table.Th>
-                                <Table.Th>First Name</Table.Th>
-                                <Table.Th>Username</Table.Th>
-                                <Table.Th>Email</Table.Th>
-                                <Table.Th>Phone</Table.Th>
-                                <Table.Th>Address</Table.Th>
-                                <Table.Th>City</Table.Th>
-                                <Table.Th>Postal Code</Table.Th>
-                                <Table.Th>Family Members</Table.Th>
-                                <Table.Th>Account Notes</Table.Th>
-                                <Table.Th></Table.Th>
-                            </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>{clientRows}</Table.Tbody>
-                    </Table>
-                </Table.ScrollContainer>
             </div>
         </div>
     );

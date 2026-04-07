@@ -1,4 +1,4 @@
-import { Radio, Group, TextInput, Text, Fieldset, Select } from '@mantine/core';
+import { Radio, Group, TextInput, Text, Fieldset, Select, Textarea } from '@mantine/core';
 import React from 'react';
 import { useState, useEffect } from 'react';
 import '../styles/global-styles.css';
@@ -8,6 +8,7 @@ import { provinceOptions, canadaStatusOptions } from '../constants/FormOptions';
 import CanadaStatusAlert from './alerts/CanadaStatusAlert';
 import CityAlert from './alerts/CityAlert';
 import ProvinceAlert from './alerts/ProvinceAlert';
+import { CHARLIMITS } from '../constants/Validation';
 
 export default function ElegibilityQuestions({ form }) {
     const [isCityEligible, setIsCityEligible] = useState(true);
@@ -80,21 +81,25 @@ export default function ElegibilityQuestions({ form }) {
                 <CanadaStatusAlert />
             }
             <Fieldset legend="2. Address" variant='unstyled'>
-                <Text size='sm' mb={3}>Please enter your residential address.</Text>
-                <Text size='sm' my={0} fs='italic'>Note: In order to be eligible for the program, clients must reside in British Columbia within Surrey, North Delta, or Cloverdale, north of 40th Avenue.</Text>
+                <Text size='sm' mb={3}>Please make sure your address is accurate, as you will need to provide documentation during your appointment.</Text>
+                <Text size='sm' my={0} fs='italic'><span style={{fontWeight: 600}}>Note:</span> In order to be eligible for the program, clients must reside in British Columbia within Surrey, North Delta, or Cloverdale, north of 40th Avenue.</Text>
                 <Group className='address' my={10}>
-                    <TextInput
+                    <Textarea
                         label="Address Line 1"
                         placeholder="e.g. 13478 78th Ave"
                         withAsterisk
                         key={form.key('addr.line1')}
                         {...form.getInputProps('addr.line1')}
+                        maxLength={CHARLIMITS.addr}
+                        autosize
                     />
-                    <TextInput
+                    <Textarea
                         label="Address Line 2 (optional)"
                         placeholder="e.g. Apt. 101"
                         key={form.key('addr.line2')}
-                        {...form.getInputProps('addr.line2')}
+                        {...form.getInputProps('addr.line2')} 
+                        maxLength={CHARLIMITS.addr}
+                        autosize
                     />
                 </Group>
                 <Group>
@@ -112,6 +117,7 @@ export default function ElegibilityQuestions({ form }) {
                             form.getInputProps('addr.city').onChange(e);
                             setIsCityEligible(true);
                         }}
+                        maxLength={CHARLIMITS.city}
                     />
                     <Select
                         label='Province'

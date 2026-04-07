@@ -1,7 +1,7 @@
 // Heavily inspired/referenced from mantine ui's demo from https://alpha.mantine.dev/schedule/schedule/#create-and-update-events
 
 import { useEffect, useState } from 'react';
-import { Modal, TextInput, Text, Button, Stack, Group, NativeSelect, Box, Paper, NumberInput, useModalsStack, Tabs, LoadingOverlay } from '@mantine/core';
+import { Modal, TextInput, Text, Button, Stack, Group, NativeSelect, Box, Paper, NumberInput, useModalsStack, Tabs, LoadingOverlay, Textarea, Select } from '@mantine/core';
 import React from 'react';
 import { DateTimePicker } from '@mantine/dates';
 import { isNotEmpty, useForm } from '@mantine/form';
@@ -9,9 +9,10 @@ import dayjs from 'dayjs';
 import { getOwnerFamilyMembers } from '../../api/familyMembers.js';
 import AccountInformationTab from "../components/AccountInformationTab";
 import back_icon from '../assets/arrow-left.svg';
-import '../styles/styles.css'
+import '../styles/styles.css';
 import { getUsernameAppointments, BOOKING_STATUS, updateBookingStatus } from '../../api/appointments.js';
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import { CHARLIMITS } from '../constants/Validation.js';
 
 export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDeleteTimeslot, values, bookedUsers = [], onRemoveBookedUser, removingBookingUsername, ...others }) {
   const form = useForm({
@@ -56,7 +57,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
     const res = await getUsernameAppointments(token, clientUsername);
     const booking = res.filter(appt => dayjs(form.values.start).isSame(dayjs(appt.appt_date), 'day') && dayjs(appt.start_time, "HH:mm").format('HH:mm') === dayjs(form.values.start).format('HH:mm'));
     return booking;
-  }
+  };
 
   const fetchNotesForClient = async (clientUsername) => {
     setLoadingNotes(true);
@@ -72,7 +73,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
   };
 
   const fetchBookingStatus = async (clientUsername) => {
-    try {      
+    try {
       const booking = await fetchBooking(clientUsername);
       const status = booking.length > 0 ? booking[0].booking_status : BOOKING_STATUS.DID_NOT_SHOW;
       return status;
@@ -160,7 +161,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
   const handleDeleteTimeslot = () => {
     onDeleteTimeslot?.(form.values);
     handleCloseAll();
-  }
+  };
 
   return (
     <Modal.Stack>
@@ -175,37 +176,43 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
         <Box style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 220px', gap: '16px', alignItems: 'start' }}>
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap="md">
-              <NativeSelect
+              <Select
                 label="Select Client to add to this timeslot"
                 placeholder="Client username"
                 radius="md"
                 data-autofocus
+                searchable
+                maxDropdownHeight={120}
                 value={currClient}
-                onChange={(event) => setCurrClient(event.currentTarget.value)}
-                data={[...clients.map(client => ({ value: client.username, label: client.username })), { value: 'admin', label: 'Admin' }, { value: "", label: '', disabled: true, hidden: true }]}
+                onChange={(value) => setCurrClient(value)} 
+                data={[
+                  ...clients.map(client => ({ value: client.username, label: client.username })),
+                ]}
               />
 
-                <DateTimePicker
-                  label="Start Time"
-                  clearable
-                  radius="md"
-                  {...form.getInputProps('start')}
-                  disabled
-                />
-                <DateTimePicker label="End Time" {...form.getInputProps('end')} clearable radius="md" disabled/>
+              <DateTimePicker
+                label="Start Time"
+                clearable
+                radius="md"
+                {...form.getInputProps('start')}
+                disabled
+              />
+              <DateTimePicker label="End Time" {...form.getInputProps('end')} clearable radius="md" disabled />
 
-                <NumberInput
-                  label="Capacity"
-                  radius="md"
-                  min={form.values.mincapacity}
-                  {...form.getInputProps('capacity')}
-                />
+              <NumberInput
+                label="Capacity"
+                radius="md"
+                min={form.values.mincapacity}
+                {...form.getInputProps('capacity')}
+              />
 
-                <TextInput
-                  label="Additional Notes"
-                  placeholder="Enter any additional notes"
-                  {...form.getInputProps('appt_notes')}
-                />
+              <Textarea
+                label="Admin Timeslot Notes (not visible to clients)"
+                placeholder="Enter any additional notes for this timeslot"
+                {...form.getInputProps('appt_notes')}
+                maxLength={CHARLIMITS.openTextField}
+                autosize
+              />
 
               <Group justify="space-between" align="flex-end" gap="sm" w="100%">
 
@@ -228,7 +235,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
               <Stack gap={6}>
                 {bookedUsers.map((user) => (
                   <Group key={user} justify="space-between" gap="xs" wrap="nowrap">
-                    <Button size="xs" onClick={() => { stack.open('User Info'); setSelectedClient(user); }}>
+                    <Button size="xs" onClick={() => {{stack.open('User Info'); setSelectedClient(user); }}}>
                       {user}
                     </Button>
                     <NativeSelect
@@ -249,7 +256,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
                           nextStatus
                         );
                       }}
-                      
+
                     />
                     <Button
                       type="button"
@@ -270,7 +277,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
           </Paper>
         </Box>
       </Modal>
-      <Modal {...stack.register('User Info')} 
+      <Modal {...stack.register('User Info')}
         onClose={() => stack.close('User Info')}
         title="User Information"
         size="70%"
@@ -282,7 +289,8 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
         <Tabs defaultValue="client-info" onChange={(value) => {
           if (value === 'appt-notes') {
             fetchNotesForClient(selectedClient);
-          }}}>
+          }
+        }}>
           <Tabs.List>
             <Tabs.Tab value="client-info">
               Client Information
@@ -292,7 +300,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
             </Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel value="client-info" pt="xs">
-            <AccountInformationTab clientUsername={selectedClient}/>
+            <AccountInformationTab clientUsername={selectedClient} />
           </Tabs.Panel>
           <Tabs.Panel value="appt-notes" pt="xs">
             <LoadingOverlay visible={loadingNotes} />

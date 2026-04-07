@@ -1,12 +1,13 @@
 // Heavily inspired/referenced from mantine ui's demo from https://alpha.mantine.dev/schedule/schedule/#create-and-update-events
 
 import { useEffect, useState } from 'react';
-import { Modal, TextInput, Button, Stack, Group, Checkbox, NumberInput } from '@mantine/core';
+import { Modal, TextInput, Button, Stack, Group, Checkbox, NumberInput, Textarea, Select } from '@mantine/core';
 import React from 'react';
 import { DatePickerInput, TimePicker, getTimeRange } from '@mantine/dates';
 import { isNotEmpty, useForm } from '@mantine/form';
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import { CHARLIMITS } from '../constants/Validation';
 
 export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...others }) {
   dayjs.extend(customParseFormat);
@@ -62,7 +63,7 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
       capacity: form.values.capacity,
     });
     onClose();
-  }
+  };
 
   const handleDelete = () => {
     onDelete?.(form.values);
@@ -116,10 +117,12 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
             {...form.getInputProps('capacity')}
           />
 
-          <TextInput
-            label="Additional Notes"
-            placeholder="Enter any additional notes for the timeslot"
+          <Textarea
+            label="Admin Timeslot Notes (not visible to clients)"
+            placeholder="Enter any additional notes for this timeslot"
             {...form.getInputProps('appt_notes')}
+            maxLength={CHARLIMITS.openTextField}
+            autosize
           />
 
           <Group justify="flex-end" gap="sm">
@@ -128,7 +131,7 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
                 Delete Booking
               </Button>
             )}
-            
+
             <Button type="submit" radius="md" disabled={timeslotDates.length === 0}>
               Create
             </Button>

@@ -38,3 +38,15 @@ html, body {
 .mantine-Alert-body {
     gap: 2px;
 }
+
+.mantine-Radio-body, .mantine-Radio-inner *, .mantine-Radio-label {
+    cursor: pointer;
+}
+
+.mantine-InputWrapper-root:not(.search-bar, .login, .account-recovery) {
+    min-height: 80px;
+}
+
+.matnine-Stack-root {
+    gap: 0px;
+}

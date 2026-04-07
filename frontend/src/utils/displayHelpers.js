@@ -9,3 +9,11 @@ export const splitAddress = (address) => {
         postal_code: addrParts[4] ?? '',
     };
 };
+
+// capitalizes first letter of given text input
+export function capitalize(text) {
+        if (text != null) {
+            return text.length ? text.charAt(0).toUpperCase() + text.slice(1) : text
+        }
+        return text;
+};
