@@ -147,6 +147,18 @@ export function deleteAppointmentFromUsername(token, username, appt_date, start_
 }
 
 /**
+ * Cancel the current user's own appointment range.
+ * If the booking spans two consecutive slots, passing end_time removes both.
+ */
+export function cancelMyAppointment(token, appt_date, start_time, end_time) {
+  return fetch(`${API_BASE}/cancel`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ appt_date, start_time, end_time })
+  }).then(res => res.json());
+}
+
+/**
  * Get all appointments booked by a user (admin only).
  * Response rows include booking_status.
  * Example:

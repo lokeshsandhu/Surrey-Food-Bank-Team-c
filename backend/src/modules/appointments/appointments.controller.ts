@@ -28,6 +28,18 @@ export async function deleteAppointmentFromUsername(req: Request, res: Response)
     }
 }
 
+// Client: cancel their own appointment, deleting the whole booked range if needed
+export async function cancelMyAppointment(req: Request, res: Response) {
+    try {
+        const username = req.user!.username;
+        const { appt_date, start_time, end_time } = req.body;
+        const deleted = await service.deleteAppointmentFromUsername(username, appt_date, start_time, end_time);
+        res.status(200).json({ deleted });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 // Admin: delete past appointment slots
 export async function cleanupPastAppointments(req: Request, res: Response) {
     try {
