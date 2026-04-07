@@ -223,7 +223,8 @@ export async function updateBookingNotes(appt_date: string, start_time: string, 
     const updateBookingNotes = 
         `UPDATE appointment_booking
         SET booking_notes = $1
-        WHERE appt_date = $2 AND start_time = $3 AND username = $4`
+        WHERE appt_date = $2 AND start_time = $3 AND username = $4
+        RETURNING appt_date, start_date, username, booking_notes`
     const { rows: summaryRows } = await pool.query(updateBookingNotes, [bookingNotes, appt_date, start_time, username]);
     return summaryRows[0] ?? null;
 }
