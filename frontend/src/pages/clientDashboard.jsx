@@ -222,7 +222,28 @@ export default function ClientDashboard() {
     const renderAddToCalendarMenu = (buttonProps = {}) => (
         <Menu shadow="md" width={200} withinPortal>
             <Menu.Target>
-                <Button size='lg' rightSection={<IconChevronDown size={16} />} {...buttonProps}>
+                <Button size='lg' rightSection={<IconChevronDown size={16}/>} {...buttonProps}>
+                    Add to Calender
+                </Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+                <Menu.Item onClick={handleAddToGoogleCalendar}>
+                    Google
+                </Menu.Item>
+                <Menu.Item onClick={handleAddToOutlookCalendar}>
+                    Outlook
+                </Menu.Item>
+                <Menu.Item onClick={handleDownloadCalendarFile}>
+                    Other
+                </Menu.Item>
+            </Menu.Dropdown>
+        </Menu>
+    );
+
+    const renderAddToCalendarMenuModal = (buttonProps = {}) => (
+        <Menu shadow="md" width={200} withinPortal >
+            <Menu.Target>
+                <Button size='sm' rightSection={<IconChevronDown size={16}/>} {...buttonProps}>
                     Add to Calender
                 </Button>
             </Menu.Target>
@@ -863,88 +884,91 @@ export default function ClientDashboard() {
             </Grid>
 
             <Modal.Stack>
-                <Modal {...stack.register('base-page')} title="Booking Information" transitionProps={{ transition: 'slide-left' }} centered>
+                <Modal {...stack.register('base-page')} size="lg" title="Booking Information" transitionProps={{ transition: 'slide-left' }} centered>
                     <LoadingOverlay visible={modalLoading} />
                         <div className="modal-content">
                         <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
                         <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? `${dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A')} - ${dayjs(myAppointment.end_time, 'HH:mm').format('h:mm A')}` : 'N/A'}</p>
                         <p><strong>Notes:</strong> {myAppointment && myAppointment.booking_notes ? (myAppointment.booking_notes.length > 30 ? `${myAppointment.booking_notes.substring(0, 30)}...` : myAppointment.booking_notes) : '(Empty)'}</p>
-                        <div>
-                            {renderAddToCalendarMenu({ mr: 10 })}
+                        <Group>
                             <Button mr={10} onClick={() => openStackPage("calendar-page")}>
                                 Edit Booking
                             </Button>
+                            
+                            {renderAddToCalendarMenuModal()}
 
                             <Button ml={10} onClick={() => handleCancelBooking(myAppointment)}>
                                 Cancel Booking
                             </Button>
-                        </div>
+                        </Group>
                     </div>
                 </Modal>
 
                 <Modal {...stack.register('calendar-page')} title="Choose date" size="70%" transitionProps={{ transition: 'slide-left' }} visibleFrom='md' centered>
                     <LoadingOverlay visible={modalLoadingEdit} overlayProps={{ radius: "sm", blur: 2 }}/>
-                    <Group grow style={{ position: 'relative', paddingBottom: '80px'}}>
-                        <DatePicker
-                            size="xl"
-                            value={modalSelectedDate}
-                            onChange={handleAvailableTimesModal}
-                            onMonthSelect={setModalCurrentMonth}
-                            onNextMonth={setModalCurrentMonth}
-                            onPreviousMonth={setModalCurrentMonth}
-                            firstDayOfWeek={0}
-                            excludeDate={(date) => {
-                                if (excludedDays.includes(new Date(date).getDay())) {
-                                    return true;
-                                } else if (!modalAllTimeslots.some(timeslot => normalizeApptDate(timeslot.appt_date) === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
-                                    return true;
-                                } else if (dayjs(date).format('YYYY-MM-DD') < dayjs().format('YYYY-MM-DD')) { // Disable past dates
-                                    return true;
-                                } else if (dayjs(date).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD') && dayjs().format('HH:mm') > "15:00") { // Disable same-day bookings after 3pm
+                    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '60vh' }}>
+                        <Group grow style={{ flex: 1 }}>
+                            <DatePicker
+                                size="xl"
+                                value={modalSelectedDate}
+                                onChange={handleAvailableTimesModal}
+                                onMonthSelect={setModalCurrentMonth}
+                                onNextMonth={setModalCurrentMonth}
+                                onPreviousMonth={setModalCurrentMonth}
+                                firstDayOfWeek={0}
+                                excludeDate={(date) => {
+                                    if (excludedDays.includes(new Date(date).getDay())) {
                                         return true;
-                                } else if (tinyBundles) { // If tiny bundles, only allow Wednesdays
-                                    return dayjs(date).day() !== 3;
-                                } else {
-                                    return dayjs(date).day() === 3; // If not tiny bundles, disable Wednesdays
+                                    } else if (!modalAllTimeslots.some(timeslot => normalizeApptDate(timeslot.appt_date) === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
+                                        return true;
+                                    } else if (dayjs(date).format('YYYY-MM-DD') < dayjs().format('YYYY-MM-DD')) { // Disable past dates
+                                        return true;
+                                    } else if (dayjs(date).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD') && dayjs().format('HH:mm') > "15:00") { // Disable same-day bookings after 3pm
+                                            return true;
+                                    } else if (tinyBundles) { // If tiny bundles, only allow Wednesdays
+                                        return dayjs(date).day() !== 3;
+                                    } else {
+                                        return dayjs(date).day() === 3; // If not tiny bundles, disable Wednesdays
+                                    }
+                                }}
+                                hideOutsideDates
+                            />
+
+                            <TimeGrid
+                                data={modalAvailableTimes}
+                                simpleGridProps={{
+                                    type: 'container',
+                                    cols: { base: 3 },
+                                    spacing: 'lg',
+                                }}
+                                format="12h"
+                                withSeconds={false}
+                                size="md"
+                                disableTime={(time) =>
+                                    modalBookedTimes.includes(time) || (dayjs(time, 'HH:mm:ss').isBefore(dayjs()) && dayjs(modalSelectedDate).isSame(dayjs(), 'day'))
                                 }
-                            }}
-                            hideOutsideDates
-                        />
+                                value={modalSelectedTime}
+                                onChange={setModalSelectedTime}
+                                disabled={modalSelectedDate === null}
+                                style={{ marginBottom: '20px', padding: '15px' }}
+                            />
+                        </Group>
 
-                        <TimeGrid
-                            data={modalAvailableTimes}
-                            simpleGridProps={{
-                                type: 'container',
-                                cols: { base: 3 },
-                                spacing: 'lg',
-                            }}
-                            format="12h"
-                            withSeconds={false}
-                            size="md"
-                            disableTime={(time) =>
-                                modalBookedTimes.includes(time) || (dayjs(time, 'HH:mm:ss').isBefore(dayjs()) && dayjs(modalSelectedDate).isSame(dayjs(), 'day'))
-                            }
-                            value={modalSelectedTime}
-                            onChange={setModalSelectedTime}
-                            disabled={modalSelectedDate === null}
-                            style={{ marginBottom: '20px', padding: '15px' }}
-                        />
-                    </Group>
-                    
-                    <TextInput
-                        size="lg"
-                        placeholder="Add booking note"
-                        value={modalBookingNote}
-                        onChange={(event) => setModalBookingNote(event.currentTarget.value)}
-                        style={{ position: 'absolute', bottom: '30px', left: '30px' }}
-                        maxLength={CHARLIMITS.openTextField}
-                        styles={{ root: { minHeight: 'unset' } }}
-                    />
+                        <Group gap="sm" style={{ marginTop: 'auto', paddingTop: '12px' }} align="flex-end">
+                            <TextInput
+                                size="lg"
+                                placeholder="Add booking note"
+                                value={modalBookingNote}
+                                onChange={(event) => setModalBookingNote(event.currentTarget.value)}
+                                maxLength={CHARLIMITS.openTextField}
+                                styles={{ root: { minHeight: 'unset', flex: 1 } }}
+                                style={{ flex: 1 }}
+                            />
 
-                    <div className="booking-button">
-                        <Button size="lg" onClick={handleEdit} loading={processingEdit} disabled={!modalSelectedDate || !modalSelectedTime}>
-                            Book Appointment
-                        </Button>
+                            <Button size="lg" onClick={handleEdit} loading={processingEdit} disabled={!modalSelectedDate || !modalSelectedTime}>
+                                Book Appointment
+                            </Button>
+                        </Group>
                     </div>
                 </Modal>
 
