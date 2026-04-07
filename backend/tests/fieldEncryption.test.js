@@ -46,6 +46,10 @@ describe("field encryption", () => {
         const { ENCRYPTION_POLICY } = require("../src/shared/crypto/encryptionPolicy");
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const { encryptForDb, decryptRowFromDb } = require("../src/shared/crypto/dbFieldEncryption");
+        expect(ENCRYPTION_POLICY).toEqual({
+            account: ["addr"],
+            familymember: ["email", "phone"],
+        });
         for (const [table, columns] of Object.entries(ENCRYPTION_POLICY)) {
             for (const column of columns) {
                 const encrypted = encryptForDb(table, column, "value");
@@ -54,5 +58,11 @@ describe("field encryption", () => {
                 expect(decryptedRow[column]).toBe("value");
             }
         }
+    });
+    test("non-policy fields remain plaintext", () => {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { encryptForDb } = require("../src/shared/crypto/dbFieldEncryption");
+        expect(encryptForDb("familymember", "relationship", "owner")).toBe("owner");
+        expect(encryptForDb("appointment", "appt_notes", "note")).toBe("note");
     });
 });

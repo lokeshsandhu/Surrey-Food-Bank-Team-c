@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS public.familymember
     dob date,
     phone varchar,
     email varchar,
+    email_lookup_hash varchar,
     relationship varchar,
     CONSTRAINT familymember_pkey PRIMARY KEY (username, id),
     CONSTRAINT familymember_fkey_username FOREIGN KEY (username)
@@ -58,8 +59,13 @@ CREATE TABLE IF NOT EXISTS public.appointment_booking
         ON DELETE CASCADE
 );
 
+
 CREATE INDEX IF NOT EXISTS idx_appointment_booking_username_date
     ON public.appointment_booking (username, appt_date, start_time);
 
 CREATE INDEX IF NOT EXISTS idx_appointment_booking_status
     ON public.appointment_booking (booking_status);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_familymember_email_lookup_hash_unique
+    ON public.familymember (email_lookup_hash)
+    WHERE email_lookup_hash IS NOT NULL;

@@ -1,6 +1,13 @@
 import pool from "../../db/postgres";
 import { AccountDTO, UpdateAccountDTO } from "./accounts.dto";
 import { hashPassword } from "../../shared/crypto/password";
+import { decryptRowFromDb, decryptValueFromDb, encryptForDb } from "../../shared/crypto/dbFieldEncryption";
+import { hashEmailForLookup } from "../../shared/crypto/emailLookup";
+
+function isOwnerRelationship(value: unknown): boolean {
+    const decrypted = decryptValueFromDb("familymember", "relationship", value);
+    return typeof decrypted === "string" && decrypted.trim().toLowerCase() === "owner";
+}
 
 // Insert a new row into account table with given info, return row
 export async function createAccount(data: AccountDTO) {
@@ -16,13 +23,13 @@ export async function createAccount(data: AccountDTO) {
         hashedPassword,
         data.canada_status,
         data.household_size,
-        data.addr,
+        encryptForDb("account", "addr", data.addr),
         data.baby_or_pregnant,
         data.language_spoken,
         data.account_notes
     ];
     const { rows } = await pool.query(text, values);
-    return rows[0];
+    return rows[0] ? decryptRowFromDb("account", rows[0]) : null;
 }
 
 // Select from account table with given username, return row
@@ -33,23 +40,26 @@ export async function getAccountByUsername(username: string) {
         WHERE username = $1
     `;
     const { rows } = await pool.query(text, [username]);
-    return rows[0] ?? null;
+    return rows[0] ? decryptRowFromDb("account", rows[0]) : null;
 }
 
 // Select from account table join family member with given username, return owner's email
 export async function getAccountEmail(username: string) {
     const text = `
-        SELECT email
-                FROM familymember
-                WHERE username = $1
-                    AND LOWER(TRIM(COALESCE(relationship, ''))) = 'owner'
-                    AND email IS NOT NULL
-                    AND TRIM(email) <> ''
-                ORDER BY id ASC
-                LIMIT 1
+        SELECT email, relationship
+        FROM familymember
+        WHERE username = $1
+        ORDER BY id ASC
     `;
     const { rows } = await pool.query(text, [username]);
-    return rows[0] ?? null;
+    const owner = rows
+        .map((row) => ({
+            ...row,
+            relationship: decryptValueFromDb("familymember", "relationship", row.relationship),
+        }))
+        .find((row) => isOwnerRelationship(row.relationship) && row.email != null && String(row.email).trim() !== "");
+
+    return owner ? decryptRowFromDb("familymember", { email: owner.email }) : null;
 }
 
 // Select from account table with given username, return boolean
@@ -75,13 +85,17 @@ export async function emailExists(
         return { exists: false, is_family_member: null };
     }
 
+    const emailLookupHash = hashEmailForLookup(normalizedEmail);
+    if (!emailLookupHash) {
+        return { exists: false, is_family_member: null };
+    }
+
     const text = `
         SELECT username, id
         FROM familymember
-        WHERE email IS NOT NULL
-          AND LOWER(TRIM(email)) = LOWER(TRIM($1))
+        WHERE email_lookup_hash = $1
     `;
-    const { rows } = await pool.query(text, [normalizedEmail]);
+    const { rows } = await pool.query(text, [emailLookupHash]);
     if (rows.length === 0) {
         return { exists: false, is_family_member: null };
     }
@@ -100,22 +114,21 @@ export async function emailExists(
 
 // Select from account table with a username or email identifier, return username and password
 export async function getAccountWithPassword(identifier: string) {
+    const emailLookupHash = hashEmailForLookup(identifier);
     const text = `
         SELECT username, user_password
         FROM account a
         WHERE a.username = $1
-           OR EXISTS (
+           OR ($2::varchar IS NOT NULL AND EXISTS (
                 SELECT 1
                 FROM familymember fm
                 WHERE fm.username = a.username
-                  AND fm.email IS NOT NULL
-                  AND TRIM(fm.email) <> ''
-                  AND LOWER(TRIM(fm.email)) = LOWER(TRIM($1))
-            )
+                  AND fm.email_lookup_hash = $2
+            ))
         ORDER BY CASE WHEN a.username = $1 THEN 0 ELSE 1 END
         LIMIT 1
     `;
-    const { rows } = await pool.query(text, [identifier]);
+    const { rows } = await pool.query(text, [identifier, emailLookupHash]);
     return rows[0] ?? null;
 }
 
@@ -153,7 +166,7 @@ export async function updateAccount(username: string, data: UpdateAccountDTO) {
     }
     if (data.addr !== undefined) {
         fields.push(`addr = $${idx++}`);
-        values.push(data.addr);
+        values.push(encryptForDb("account", "addr", data.addr));
     }
     if (data.baby_or_pregnant !== undefined) {
         fields.push(`baby_or_pregnant = $${idx++}`);
@@ -181,5 +194,5 @@ export async function updateAccount(username: string, data: UpdateAccountDTO) {
     `;
 
     const { rows } = await pool.query(text, values);
-    return rows[0] ?? null;
+    return rows[0] ? decryptRowFromDb("account", rows[0]) : null;
 }
