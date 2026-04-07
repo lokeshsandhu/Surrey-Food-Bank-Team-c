@@ -71,7 +71,7 @@ export default function RequestPasswordChangePage() {
                     <Text size='sm' color='gray'>Enter your username or email and we will send password reset instructions to the owner email on file.</Text>
                 </Group>
                 <TextInput
-                    placeholder='Username or email'
+                    placeholder='Username or Email'
                     value={identifier}
                     onChange={e => setIdentifier(e.target.value)}
                     className='account-recovery'
