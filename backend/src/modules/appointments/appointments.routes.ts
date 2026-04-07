@@ -23,6 +23,8 @@ router.post("/appointments-in-range", authenticate, requireAdmin, controller.cre
 router.delete("/appointment", authenticate, requireAdmin, controller.deleteAppointment);
 // Update an appointment (admin)
 router.patch("/update", authenticate, requireAdmin, controller.updateAppointment);
+// Update an appointment (admin)
+router.patch("/update/booking_notes", authenticate, requireAdmin, controller.updateBookingNotes);
 // Delete appointments by username (admin)
  router.delete("/delete/username", authenticate, controller.deleteAppointmentFromUsername);
  // Get appointments by username (admin)
