@@ -51,7 +51,10 @@ export async function updateAppointment(
             await pool.query(
                 `
                 DELETE FROM appointment_booking
-                WHERE appt_date = $1 AND start_time = $2::time
+                WHERE appt_date = $1
+                  AND start_time = $2::time
+                  AND booking_status = 'upcoming'
+                RETURNING *
             `,
                 [appt_date, start_time]
             );
@@ -224,6 +227,7 @@ export async function deleteAppointmentFromUsername(username: string) {
     const text = `
         DELETE FROM appointment_booking
         WHERE username = $1
+          AND booking_status = 'upcoming'
         RETURNING *
     `;
     const { rows } = await pool.query(text, [username]);

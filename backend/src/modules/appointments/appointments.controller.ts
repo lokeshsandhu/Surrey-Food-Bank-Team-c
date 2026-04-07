@@ -17,7 +17,7 @@ export async function updateAppointment(req: Request, res: Response) {
     }
 }
 
-// Delete appointments by username
+// Delete upcoming appointments by username
 export async function deleteAppointmentFromUsername(req: Request, res: Response) {
     try {
         const { username } = req.body;

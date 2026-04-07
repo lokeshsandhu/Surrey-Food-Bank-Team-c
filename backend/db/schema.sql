@@ -61,6 +61,10 @@ CREATE TABLE IF NOT EXISTS public.appointment_booking
     CONSTRAINT appointment_booking_fkey_user FOREIGN KEY (username)
         REFERENCES public.account (username) MATCH SIMPLE
         ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT appointment_booking_fkey_slot FOREIGN KEY (appt_date, start_time)
+        REFERENCES public.appointment_slot (appt_date, start_time) MATCH SIMPLE
+        ON UPDATE CASCADE
         ON DELETE CASCADE
 );
 

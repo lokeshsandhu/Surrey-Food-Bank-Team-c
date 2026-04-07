@@ -265,11 +265,20 @@ export default function TimeslotPage() {
                 return;
             }
 
-            notifications.show({
-                title: 'Success',
-                message: `Removed all bookings for ${usernameToRemove}`,
-                color: 'green',
-            });
+            const deletedCount = Array.isArray(res?.deleted) ? res.deleted.length : 0;
+            if (deletedCount === 0) {
+                notifications.show({
+                    title: 'Notice',
+                    message: `No upcoming bookings were removed for ${usernameToRemove}. Only bookings with status "upcoming" can be deleted here.`,
+                    color: 'yellow',
+                });
+            } else {
+                notifications.show({
+                    title: 'Success',
+                    message: `Removed ${deletedCount} upcoming booking(s) for ${usernameToRemove}`,
+                    color: 'green',
+                });
+            }
 
             const refreshedEvents = await fetchTimeslots();
             const refreshed = refreshedEvents?.find((event) => event.start === selectedBookingData.start);

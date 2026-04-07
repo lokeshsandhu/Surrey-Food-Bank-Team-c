@@ -91,7 +91,7 @@ export function cleanupPastAppointments(token) {
  * Required fields: appt_date (YYYY-MM-DD), start_time (HH:mm), updateData (object with fields to update)
  * updateData can include: end_time, appt_notes, capacity, username, booking_status, booking_notes
  * - username: "someuser" adds a booking on that slot (if capacity allows)
- * - username: null clears all bookings for that slot
+ * - username: null clears upcoming bookings for that slot
  * - booking_status: one of BOOKING_STATUS.UPCOMING | BOOKING_STATUS.ARRIVED | BOOKING_STATUS.DID_NOT_SHOW
  * Example:
  *   updateAppointment(token, "2024-06-01", "10:00", { capacity: 3 });
@@ -132,7 +132,7 @@ export function markBookingDidNotShow(token, appt_date, start_time, username) {
 
 
 /**
- * Delete all appointments for a username (admin only).
+ * Delete upcoming appointments for a username (admin only).
  * Required field: username
  * Example:
  *   deleteAppointmentFromUsername(token, "johndoe");
