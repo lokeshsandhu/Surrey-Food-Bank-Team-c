@@ -76,6 +76,48 @@ export default function ClientDashboard() {
 
     const parseApptDate = (apptDate) => dayjs(normalizeApptDate(apptDate), 'YYYY-MM-DD', true);
     const toApiDate = (date) => dayjs(date).format('YYYY-MM-DD');
+    const hasUpcomingAppointment = Boolean(myAppointment?.appt_date && myAppointment?.start_time && myAppointment?.end_time);
+
+    const getGoogleCalendarUrl = (appointment) => {
+        if (!appointment?.appt_date || !appointment?.start_time || !appointment?.end_time) {
+            return '#';
+        }
+
+        const eventStart = dayjs(
+            `${normalizeApptDate(appointment.appt_date)} ${appointment.start_time}`,
+            'YYYY-MM-DD HH:mm:ss'
+        );
+        const eventEnd = dayjs(
+            `${normalizeApptDate(appointment.appt_date)} ${appointment.end_time}`,
+            'YYYY-MM-DD HH:mm:ss'
+        );
+
+        const location = 'Surrey Food Bank, Unit 1 - 13478 78th Ave, Surrey, BC V3W 8J6';
+        const details = [
+            'Surrey Food Bank appointment',
+            appointment.booking_notes ? `Booking notes: ${appointment.booking_notes}` : null,
+            'Bring your required registration documents.'
+        ].filter(Boolean).join('\n');
+
+        const params = new URLSearchParams({
+            action: 'TEMPLATE',
+            text: 'Surrey Food Bank Appointment',
+            dates: `${eventStart.format('YYYYMMDDTHHmmss')}/${eventEnd.format('YYYYMMDDTHHmmss')}`,
+            details,
+            location,
+            ctz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Vancouver',
+        });
+
+        return `https://calendar.google.com/calendar/render?${params.toString()}`;
+    };
+
+    const handleAddToGoogleCalendar = () => {
+        if (!hasUpcomingAppointment) {
+            return;
+        }
+
+        window.open(getGoogleCalendarUrl(myAppointment), '_blank', 'noopener,noreferrer');
+    };
 
     const handleBooking = async () => {
         if (myAppointment && myAppointment.appt_date) {
@@ -371,10 +413,15 @@ export default function ClientDashboard() {
                             <Button size='lg' onClick={(event) => openSuccessModal()}>
                                 Check required documents
                             </Button>
-                            {myAppointment && myAppointment.appt_date && (
-                            <Button size='lg' onClick={() => openStackPage('base-page')}>
-                                Edit Booking
-                            </Button>
+                            {hasUpcomingAppointment && (
+                                <>
+                                    <Button size='lg' onClick={handleAddToGoogleCalendar}>
+                                        Add to Google Calendar
+                                    </Button>
+                                    <Button size='lg' onClick={() => openStackPage('base-page')}>
+                                        Edit Booking
+                                    </Button>
+                                </>
                             )}
                         </Group>
                     </div>
@@ -430,11 +477,16 @@ export default function ClientDashboard() {
                         <Button size='lg' onClick={(event) => openSuccessModal()}>
                             Check required documents
                         </Button>
-                        {myAppointment && myAppointment.appt_date && (
-                        <Button size='lg' onClick={() => openStackPage('base-page')}>
-                            Edit Booking
-                        </Button>
-                        )}
+                    {hasUpcomingAppointment && (
+                        <>
+                            <Button size='lg' onClick={handleAddToGoogleCalendar}>
+                                Add to Google Calendar
+                            </Button>
+                            <Button size='lg' onClick={() => openStackPage('base-page')}>
+                                Edit Booking
+                            </Button>
+                        </>
+                    )}
                     </Group>
                 </div>
                 <div className="box" style={{ margin: '20px'}}>
@@ -676,11 +728,14 @@ export default function ClientDashboard() {
             <Modal.Stack>
                 <Modal {...stack.register('base-page')} title="Booking Information" transitionProps={{ transition: 'slide-left' }} centered>
                     <LoadingOverlay visible={modalLoading} />
-                    <div className="modal-content">
+                        <div className="modal-content">
                         <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
                         <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? `${dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A')} - ${dayjs(myAppointment.end_time, 'HH:mm').format('h:mm A')}` : 'N/A'}</p>
                         <p><strong>Notes:</strong> {myAppointment && myAppointment.booking_notes ? (myAppointment.booking_notes.length > 30 ? `${myAppointment.booking_notes.substring(0, 30)}...` : myAppointment.booking_notes) : '(Empty)'}</p>
                         <div>
+                            <Button mr={10} onClick={handleAddToGoogleCalendar}>
+                                Add to Google Calendar
+                            </Button>
                             <Button mr={10} onClick={() => openStackPage("calendar-page")}>
                                 Edit Booking
                             </Button>
@@ -884,7 +939,7 @@ export default function ClientDashboard() {
                     )}
 
                     {currLanguage === "پښتو (Pashto)" && (
-                        <div style={{ textAlign: "right" }}>
+                        <div className="rtl-message" dir="rtl">
                             <h3>پوهاوی</h3>
                             <p>د نوم لیکنې لپاره اړین اسناد</p>
 
@@ -916,7 +971,7 @@ export default function ClientDashboard() {
                     )}
 
                     {currLanguage === "درى (Dari)" && (
-                        <div style={{ textAlign: "right" }}>
+                        <div className="rtl-message" dir="rtl">
                             <h3>اگاهی</h3>
 
                             <p>اسناد ضروری برای ثبت نام و تازه سازی دوسیه ها </p>
