@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS public.familymember
     dob date,
     phone varchar,
     email varchar,
+    email_lookup_hash varchar,
     relationship varchar,
     CONSTRAINT familymember_pkey PRIMARY KEY (username, id),
     CONSTRAINT familymember_fkey_username FOREIGN KEY (username)
@@ -48,20 +49,23 @@ CREATE TABLE IF NOT EXISTS public.appointment_booking
     created_at timestamp with time zone NOT NULL DEFAULT now(),
     CONSTRAINT appointment_booking_pkey PRIMARY KEY (appt_date, start_time, username),
     CONSTRAINT appointment_booking_status_check CHECK (booking_status IN ('upcoming', 'arrived', 'did_not_show')),
+    CONSTRAINT appointment_booking_fkey_slot FOREIGN KEY (appt_date, start_time)
+        REFERENCES public.appointment_slot (appt_date, start_time) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
     CONSTRAINT appointment_booking_fkey_user FOREIGN KEY (username)
         REFERENCES public.account (username) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
 
-ALTER TABLE IF EXISTS public.appointment_booking
-    ADD COLUMN IF NOT EXISTS booking_notes varchar;
-
-ALTER TABLE IF EXISTS public.appointment_booking
-    DROP CONSTRAINT IF EXISTS appointment_booking_fkey_slot;
 
 CREATE INDEX IF NOT EXISTS idx_appointment_booking_username_date
     ON public.appointment_booking (username, appt_date, start_time);
 
 CREATE INDEX IF NOT EXISTS idx_appointment_booking_status
     ON public.appointment_booking (booking_status);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_familymember_email_lookup_hash_unique
+    ON public.familymember (email_lookup_hash)
+    WHERE email_lookup_hash IS NOT NULL;
