@@ -359,7 +359,7 @@ export default function ClientDashboard() {
     return (
         <div className="page">
             <ClientNavBar />
-            <Grid spacing="xs" verticalSpacing="xs" style={{marginLeft: '20px', marginRight: '20px', marginTop: '20px'}} visibleFrom='md'>
+            <Grid spacing="xs" verticalSpacing="xs" style={{ marginLeft: '20px', marginRight: '20px', paddingTop: '20px' }} visibleFrom='md'>
                 <Grid.Col span={4}>
                     <div className="box">
                         <h3 style={{marginBottom: '10px', marginTop: '0px'}}>Booking Information</h3>
@@ -569,7 +569,7 @@ export default function ClientDashboard() {
                 </Popover>
             </Stack>
 
-            <Grid verticalSpacing="xs" style={{ height: '60vh', alignItems: 'stretch' }} visibleFrom='md'>
+            <Grid verticalSpacing="xs" style={{ alignItems: 'stretch' }} visibleFrom='md'>
 
                 <Grid.Col span={6} style={{height: "500px"}}>
                     <Popover opened={tutorialState === 1} position="top" withArrow>
