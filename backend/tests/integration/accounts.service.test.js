@@ -1,5 +1,8 @@
-const { createAccount, getAccountByUsername, usernameExists, emailExists, getAccountWithPassword, updateAccount } = require('../../src/modules/accounts/accounts.service');
+const { createAccount, getAccountByUsername, getAccountEmail, usernameExists, emailExists, getAccountWithPassword, updateAccount } = require('../../src/modules/accounts/accounts.service');
 const pool = require('../../src/db/postgres').default;
+const { encryptForDb } = require('../../src/shared/crypto/dbFieldEncryption');
+const { hashEmailForLookup } = require('../../src/shared/crypto/emailLookup');
+const { encryptString } = require('../../src/shared/crypto/fieldEncryption');
 
 describe('accounts.service', () => {
     beforeEach(async () => {
@@ -41,6 +44,11 @@ describe('accounts.service', () => {
         const account = await getAccountByUsername('testuser');
         expect(account).not.toBeNull();
         expect(account.username).toBe('testuser');
+        expect(account.addr).toBe('123 Main St');
+
+        const raw = await pool.query(`SELECT addr FROM account WHERE username = $1`, ['testuser']);
+        expect(raw.rows[0].addr).not.toBe('123 Main St');
+        expect(raw.rows[0].addr).toMatch(/^enc:v1:/);
     });
 
     it('usernameExists should return true for existing username', async () => {
@@ -77,9 +85,9 @@ describe('accounts.service', () => {
         };
         await createAccount(accountData);
         await pool.query(
-            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
-             VALUES ($1, 'owner', 'user', 'email@email.com', 'owner')`,
-            ['testuser']
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship, email_lookup_hash)
+             VALUES ($1, 'owner', 'user', $2, 'owner', $3)`,
+            ['testuser', encryptForDb('familymember', 'email', 'email@email.com'), hashEmailForLookup('email@email.com')]
         );
 
         const result = await emailExists('email@email.com');
@@ -99,9 +107,9 @@ describe('accounts.service', () => {
         };
         await createAccount(accountData);
         await pool.query(
-            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
-             VALUES ($1, 'owner', 'user', 'Email@Email.com', 'owner')`,
-            ['testuser']
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship, email_lookup_hash)
+             VALUES ($1, 'owner', 'user', $2, 'owner', $3)`,
+            ['testuser', encryptForDb('familymember', 'email', 'Email@Email.com'), hashEmailForLookup('Email@Email.com')]
         );
 
         const result = await emailExists('  email@email.com  ');
@@ -126,10 +134,10 @@ describe('accounts.service', () => {
         };
         await createAccount(accountData);
         const insertResult = await pool.query(
-            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
-             VALUES ($1, 'owner', 'user', 'email@email.com', 'owner')
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship, email_lookup_hash)
+             VALUES ($1, 'owner', 'user', $2, 'owner', $3)
              RETURNING id`,
-            ['testuser']
+            ['testuser', encryptForDb('familymember', 'email', 'email@email.com'), hashEmailForLookup('email@email.com')]
         );
 
         const result = await emailExists('email@email.com', 'testuser', insertResult.rows[0].id);
@@ -149,9 +157,9 @@ describe('accounts.service', () => {
         };
         await createAccount(accountData);
         await pool.query(
-            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
-             VALUES ($1, 'owner', 'user', 'email@email.com', 'owner')`,
-            ['testuser']
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship, email_lookup_hash)
+             VALUES ($1, 'owner', 'user', $2, 'owner', $3)`,
+            ['testuser', encryptForDb('familymember', 'email', 'email@email.com'), hashEmailForLookup('email@email.com')]
         );
 
         const result = await emailExists('email@email.com', 'otheruser', 999);
@@ -171,6 +179,79 @@ describe('accounts.service', () => {
         };
         await createAccount(accountData);
         const account = await getAccountWithPassword('testuser');
+        expect(account).not.toBeNull();
+        expect(account.username).toBe('testuser');
+        expect(account.user_password).toBeDefined();
+    });
+
+    it('getAccountEmail should return decrypted owner email', async () => {
+        const accountData = {
+            username: 'testuser',
+            user_password: 'password123',
+            canada_status: 'citizen',
+            household_size: 1,
+            addr: '123 Main St',
+            baby_or_pregnant: false,
+            language_spoken: 'English',
+            account_notes: 'none'
+        };
+        await createAccount(accountData);
+        await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship, email_lookup_hash)
+             VALUES ($1, 'owner', 'user', $2, 'owner', $3)`,
+            ['testuser', encryptForDb('familymember', 'email', 'owner@email.com'), hashEmailForLookup('owner@email.com')]
+        );
+
+        const result = await getAccountEmail('testuser');
+        expect(result).toEqual({ email: 'owner@email.com' });
+    });
+
+    it('getAccountEmail should support legacy encrypted owner relationships', async () => {
+        const accountData = {
+            username: 'testuser',
+            user_password: 'password123',
+            canada_status: 'citizen',
+            household_size: 1,
+            addr: '123 Main St',
+            baby_or_pregnant: false,
+            language_spoken: 'English',
+            account_notes: 'none'
+        };
+        await createAccount(accountData);
+        await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship, email_lookup_hash)
+             VALUES ($1, 'owner', 'user', $2, $3, $4)`,
+            [
+                'testuser',
+                encryptForDb('familymember', 'email', 'legacy-owner@email.com'),
+                encryptString('owner', 'familymember.relationship'),
+                hashEmailForLookup('legacy-owner@email.com')
+            ]
+        );
+
+        const result = await getAccountEmail('testuser');
+        expect(result).toEqual({ email: 'legacy-owner@email.com' });
+    });
+
+    it('getAccountWithPassword should find account by encrypted owner email', async () => {
+        const accountData = {
+            username: 'testuser',
+            user_password: 'password123',
+            canada_status: 'citizen',
+            household_size: 1,
+            addr: '123 Main St',
+            baby_or_pregnant: false,
+            language_spoken: 'English',
+            account_notes: 'none'
+        };
+        await createAccount(accountData);
+        await pool.query(
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship, email_lookup_hash)
+             VALUES ($1, 'owner', 'user', $2, 'owner', $3)`,
+            ['testuser', encryptForDb('familymember', 'email', 'owner@email.com'), hashEmailForLookup('owner@email.com')]
+        );
+
+        const account = await getAccountWithPassword('OWNER@email.com');
         expect(account).not.toBeNull();
         expect(account.username).toBe('testuser');
         expect(account.user_password).toBeDefined();
@@ -213,6 +294,10 @@ describe('accounts.service', () => {
         expect(updated.baby_or_pregnant).toBe(true);
         expect(updated.language_spoken).toBe('Spanish');
         expect(updated.account_notes).toBe('updated');
+
+        const raw = await pool.query(`SELECT addr FROM account WHERE username = $1`, ['updatedtestuser']);
+        expect(raw.rows[0].addr).not.toBe('abc');
+        expect(raw.rows[0].addr).toMatch(/^enc:v1:/);
     });
 
     it('updateAccount should update select account fields', async () => {

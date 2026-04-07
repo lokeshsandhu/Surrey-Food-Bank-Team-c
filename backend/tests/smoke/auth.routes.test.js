@@ -2,6 +2,8 @@ const request = require('supertest');
 const app = require('../../src/app').default;
 const pool = require('../../src/db/postgres').default;
 const { hashPassword } = require('../../src/shared/crypto/password');
+const { encryptForDb } = require('../../src/shared/crypto/dbFieldEncryption');
+const { hashEmailForLookup } = require('../../src/shared/crypto/emailLookup');
 
 const TEST_USER = 'auth_testuser';
 const TEST_PASS = 'password123';
@@ -21,9 +23,14 @@ beforeAll(async () => {
         [TEST_USER, hashed]
     );
     await pool.query(
-        `INSERT INTO familymember (username, f_name, l_name, dob, phone, email, relationship)
-         VALUES ($1, 'Auth', 'Tester', '1990-01-01', '111-111-1111', $2, 'owner')`,
-        [TEST_USER, TEST_EMAIL]
+        `INSERT INTO familymember (username, f_name, l_name, dob, phone, email, relationship, email_lookup_hash)
+         VALUES ($1, 'Auth', 'Tester', '1990-01-01', $2, $3, 'owner', $4)`,
+        [
+            TEST_USER,
+            encryptForDb('familymember', 'phone', '111-111-1111'),
+            encryptForDb('familymember', 'email', TEST_EMAIL),
+            hashEmailForLookup(TEST_EMAIL)
+        ]
     );
     await pool.query(
         `INSERT INTO account (username, user_password, canada_status, household_size, addr, baby_or_pregnant, language_spoken, account_notes)
@@ -31,9 +38,14 @@ beforeAll(async () => {
         [ADMIN_USER, hashed]
     );
     await pool.query(
-        `INSERT INTO familymember (username, f_name, l_name, dob, phone, email, relationship)
-         VALUES ($1, 'Admin', 'Account', '1990-01-01', '222-222-2222', $2, 'owner')`,
-        [ADMIN_USER, ADMIN_EMAIL]
+        `INSERT INTO familymember (username, f_name, l_name, dob, phone, email, relationship, email_lookup_hash)
+         VALUES ($1, 'Admin', 'Account', '1990-01-01', $2, $3, 'owner', $4)`,
+        [
+            ADMIN_USER,
+            encryptForDb('familymember', 'phone', '222-222-2222'),
+            encryptForDb('familymember', 'email', ADMIN_EMAIL),
+            hashEmailForLookup(ADMIN_EMAIL)
+        ]
     );
 });
 

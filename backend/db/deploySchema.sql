@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS public.familymember
     dob date,
     phone varchar,
     email varchar,
+    email_lookup_hash varchar,
     relationship varchar,
     CONSTRAINT familymember_pkey PRIMARY KEY (username, id),
     CONSTRAINT familymember_fkey_username FOREIGN KEY (username)
@@ -60,8 +61,18 @@ ALTER TABLE IF EXISTS public.appointment_booking
 ALTER TABLE IF EXISTS public.appointment_booking
     DROP CONSTRAINT IF EXISTS appointment_booking_fkey_slot;
 
+ALTER TABLE IF EXISTS public.familymember
+    ADD COLUMN IF NOT EXISTS email_lookup_hash varchar;
+
+ALTER TABLE IF EXISTS public.familymember
+    DROP CONSTRAINT IF EXISTS familymember_email_key;
+
 CREATE INDEX IF NOT EXISTS idx_appointment_booking_username_date
     ON public.appointment_booking (username, appt_date, start_time);
 
 CREATE INDEX IF NOT EXISTS idx_appointment_booking_status
     ON public.appointment_booking (booking_status);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_familymember_email_lookup_hash_unique
+    ON public.familymember (email_lookup_hash)
+    WHERE email_lookup_hash IS NOT NULL;

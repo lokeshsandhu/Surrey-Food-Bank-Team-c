@@ -2,6 +2,8 @@ const request = require('supertest');
 const app = require('../../src/app').default;
 const pool = require('../../src/db/postgres').default;
 const { hashPassword } = require('../../src/shared/crypto/password');
+const { encryptForDb } = require('../../src/shared/crypto/dbFieldEncryption');
+const { hashEmailForLookup } = require('../../src/shared/crypto/emailLookup');
 
 const TEST_USER = 'acct_testuser';
 const TEST_PASS = 'password123';
@@ -146,18 +148,18 @@ describe('GET /api/accounts/email-exists/:email', () => {
         );
 
         const ownerInsert = await pool.query(
-            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
-             VALUES ($1, 'owner', 'user', 'owner@example.com', 'owner')
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship, email_lookup_hash)
+             VALUES ($1, 'owner', 'user', $2, 'owner', $3)
              RETURNING id`,
-            [EMAIL_TEST_USER]
+            [EMAIL_TEST_USER, encryptForDb('familymember', 'email', 'owner@example.com'), hashEmailForLookup('owner@example.com')]
         );
         emailOwnerId = ownerInsert.rows[0].id;
 
         await pool.query(
-            `INSERT INTO familymember (username, f_name, l_name, email, relationship)
-             VALUES ($1, 'other', 'user', 'other@example.com', 'owner')
+            `INSERT INTO familymember (username, f_name, l_name, email, relationship, email_lookup_hash)
+             VALUES ($1, 'other', 'user', $2, 'owner', $3)
              RETURNING id`,
-            [EMAIL_OTHER_USER]
+            [EMAIL_OTHER_USER, encryptForDb('familymember', 'email', 'other@example.com'), hashEmailForLookup('other@example.com')]
         );
     });
 
@@ -274,9 +276,14 @@ describe('GET /api/accounts/email/:username', () => {
         );
 
         await pool.query(
-            `INSERT INTO familymember (username, f_name, l_name, dob, phone, email, relationship)
-             VALUES ($1, 'first', 'last', '2000/01/01', '(111)-111-111', 'testuser@email.com', 'owner')`,
-            [TEST_USER]
+            `INSERT INTO familymember (username, f_name, l_name, dob, phone, email, relationship, email_lookup_hash)
+             VALUES ($1, 'first', 'last', '2000/01/01', $2, $3, 'owner', $4)`,
+            [
+                TEST_USER,
+                encryptForDb('familymember', 'phone', '(111)-111-111'),
+                encryptForDb('familymember', 'email', 'testuser@email.com'),
+                hashEmailForLookup('testuser@email.com')
+            ]
         );
 
         // Get client token
