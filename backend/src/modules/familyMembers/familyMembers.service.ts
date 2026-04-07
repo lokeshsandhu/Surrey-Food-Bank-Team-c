@@ -59,7 +59,7 @@ export async function createFamilyMember(data: FamilyMemberDTO) {
     const text = `
         INSERT INTO familymember
         (username, f_name, l_name, dob, phone, email, relationship)
-        VALUES ($1, LOWER($2), LOWER($3), $4, $5, $6, $7)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *
     `;
     const values = [
@@ -99,11 +99,11 @@ export async function updateFamilyMember(
     let idx = 1;
 
     if (data.f_name !== undefined) {
-        fields.push(`f_name = LOWER($${idx++})`);
+        fields.push(`f_name = $${idx++}`);
         values.push(data.f_name);
     }
     if (data.l_name !== undefined) {
-        fields.push(`l_name = LOWER($${idx++})`);
+        fields.push(`l_name = $${idx++}`);
         values.push(data.l_name);
     }
     if (data.dob !== undefined) {

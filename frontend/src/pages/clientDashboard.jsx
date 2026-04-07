@@ -18,6 +18,7 @@ import { sendConfirmationEmail } from '../../api/email.js';
 import arabic_img from '../assets/arabic.png';
 import help_icon from '../assets/help-circle.svg';
 import x_icon from '../assets/x.svg';
+import { CHARLIMITS } from '../constants/Validation.js';
 
 const excludedDays = [5, 6]; // Exclude specific days (0 = Monday, ..., 6 = Sunday)
 
@@ -31,7 +32,7 @@ export default function ClientDashboard() {
     const [availableTimes, setAvailableTimes] = useState([]);
     const [bookedTimes, setBookedTimes] = useState([]);
     const [myAppointment, setMyAppointment] = useState({});
-    const [successModalState, {open: openSuccessModal, close: closeSuccessModal}] = useDisclosure(false);
+    const [successModalState, { open: openSuccessModal, close: closeSuccessModal }] = useDisclosure(false);
     const [modalLoading, setModalLoading] = useState(false);
     const [tinyBundles, setTinyBundles] = useState(false);
     const bookingNoteRef = useRef(null);
@@ -62,7 +63,7 @@ export default function ClientDashboard() {
     }
 
     if (role === 'admin') {
-        navigate('/adminDashboard')
+        navigate('/adminDashboard');
     }
 
     const normalizeApptDate = (apptDate) => {
@@ -113,13 +114,13 @@ export default function ClientDashboard() {
                     time: selectedTime,
                     username: effectiveUsername,
                     email: userEmail.email
-                }
+                };
 
                 const emailRes = await sendConfirmationEmail(token, confirmationEmail);
                 if (!emailRes?.success) {
                     notifications.show({
                         title: 'Email not sent',
-                        message: emailRes?.error || 'Appointment was booked but confirmation email failed.',
+                        message: 'Appointment was booked but confirmation email failed. Please make sure your account email is valid.',
                         color: 'yellow',
                     });
                 }
@@ -172,7 +173,7 @@ export default function ClientDashboard() {
                     time: modalSelectedTime,
                     username: effectiveUsername,
                     email: userEmail.email
-                }
+                };
 
                 const emailRes = await sendConfirmationEmail(token, confirmationEmail);
                 if (!emailRes?.success) {
@@ -222,7 +223,7 @@ export default function ClientDashboard() {
                 setTutorialState(2);
             }
         }
-    }
+    };
 
     const handleAvailableTimesModal = async (date) => {
         if (!date) return;
@@ -243,7 +244,7 @@ export default function ClientDashboard() {
         } finally {
             setModalLoadingEdit(false);
         }
-    }
+    };
 
     const handleCancelBooking = async (appointment) => {
         setModalLoading(true);
@@ -323,13 +324,13 @@ export default function ClientDashboard() {
     };
 
     useEffect(() => {
-        
+
         fetchMyAppointment();
 
         const checkTinyBundles = async () => {
             const userInfo = await getAccount(token, username);
             return userInfo;
-        }
+        };
 
         checkTinyBundles().then(result => {
             console.log("check ", result.baby_or_pregnant);
@@ -343,7 +344,7 @@ export default function ClientDashboard() {
 
     useEffect(() => {
         const fetchTimeslots = async () => {
-            const timeslots = await getAppointmentsInDateRange(token, dayjs(currentMonth).startOf('month').format('YYYY-MM-DD'), dayjs(currentMonth).endOf('month').format('YYYY-MM-DD'))
+            const timeslots = await getAppointmentsInDateRange(token, dayjs(currentMonth).startOf('month').format('YYYY-MM-DD'), dayjs(currentMonth).endOf('month').format('YYYY-MM-DD'));
             setAllTimeslots(timeslots);
             console.log("check1 ");
         };
@@ -547,6 +548,7 @@ export default function ClientDashboard() {
                                     size="sm"
                                     placeholder="Add booking note"
                                     defaultValue=""
+                                    styles={{ root: { minHeight: 'unset' } }}
                                 />
                                 <Button size="sm" onClick={handleBooking} loading={processingBooking} disabled={!selectedDate || !selectedTime} style={{ flexShrink: 0 }}>
                                     Book Appointment
@@ -582,7 +584,7 @@ export default function ClientDashboard() {
                                     onNextMonth={setCurrentMonth}
                                     onPreviousMonth={setCurrentMonth}
                                     firstDayOfWeek={0}
-                                    excludeDate={(date) =>{
+                                    excludeDate={(date) => {
                                         if (excludedDays.includes(new Date(date).getDay())) {
                                             return true;
                                         } else if (!allTimeslots.some(timeslot => normalizeApptDate(timeslot.appt_date) === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
@@ -622,7 +624,7 @@ export default function ClientDashboard() {
                                 <h3 style={{marginBottom: '0px', marginTop: '0px'}}>Available Time Slots</h3>
                                 <ScrollArea style={{ flex: '1 1 0', minHeight: 0 }}>
                                     <LoadingOverlay visible={loadingTimeGrid} overlayProps={{ radius: "sm", blur: 2 }} />
-                                    
+
                                     <TimeGrid
                                         data={availableTimes}
                                         simpleGridProps={{
@@ -648,6 +650,8 @@ export default function ClientDashboard() {
                                         size="lg"
                                         placeholder="Add booking note"
                                         defaultValue=""
+                                        maxLength={CHARLIMITS.openTextField}
+                                        styles={{ root: { minHeight: 'unset' } }}
                                     />
                                     <Button size="lg" onClick={handleBooking} loading={processingBooking} disabled={!selectedDate || !selectedTime} style={{ flexShrink: 0 }}>
                                         Book Appointment
@@ -671,7 +675,7 @@ export default function ClientDashboard() {
 
             <Modal.Stack>
                 <Modal {...stack.register('base-page')} title="Booking Information" transitionProps={{ transition: 'slide-left' }} centered>
-                    <LoadingOverlay visible={modalLoading}/>
+                    <LoadingOverlay visible={modalLoading} />
                     <div className="modal-content">
                         <p><strong>Date:</strong> {myAppointment && myAppointment.appt_date ? parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY') : 'N/A'}</p>
                         <p><strong>Time:</strong> {myAppointment && myAppointment.start_time ? `${dayjs(myAppointment.start_time, 'HH:mm').format('h:mm A')} - ${dayjs(myAppointment.end_time, 'HH:mm').format('h:mm A')}` : 'N/A'}</p>
@@ -699,13 +703,15 @@ export default function ClientDashboard() {
                             onNextMonth={setModalCurrentMonth}
                             onPreviousMonth={setModalCurrentMonth}
                             firstDayOfWeek={0}
-                            excludeDate={(date) =>{
+                            excludeDate={(date) => {
                                 if (excludedDays.includes(new Date(date).getDay())) {
                                     return true;
                                 } else if (!modalAllTimeslots.some(timeslot => normalizeApptDate(timeslot.appt_date) === dayjs(date).format('YYYY-MM-DD') && timeslot.username === null)) {
                                     return true;
                                 } else if (dayjs(date).format('YYYY-MM-DD') < dayjs().format('YYYY-MM-DD')) { // Disable past dates
                                     return true;
+                                } else if (dayjs(date).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD') && dayjs().format('HH:mm') > "15:00") { // Disable same-day bookings after 3pm
+                                        return true;
                                 } else if (tinyBundles) { // If tiny bundles, only allow Wednesdays
                                     return dayjs(date).day() !== 3;
                                 } else {
@@ -731,7 +737,7 @@ export default function ClientDashboard() {
                             value={modalSelectedTime}
                             onChange={setModalSelectedTime}
                             disabled={modalSelectedDate === null}
-                            style={{marginBottom: '20px', padding: '15px'}}
+                            style={{ marginBottom: '20px', padding: '15px' }}
                         />
                     </Group>
                     
@@ -740,8 +746,9 @@ export default function ClientDashboard() {
                         placeholder="Add booking note"
                         value={modalBookingNote}
                         onChange={(event) => setModalBookingNote(event.currentTarget.value)}
-                        w={240}
                         style={{ position: 'absolute', bottom: '30px', left: '30px' }}
+                        maxLength={CHARLIMITS.openTextField}
+                        styles={{ root: { minHeight: 'unset' } }}
                     />
 
                     <div className="booking-button">
@@ -805,6 +812,7 @@ export default function ClientDashboard() {
                             value={modalBookingNote}
                             onChange={(event) => setModalBookingNote(event.currentTarget.value)}
                             w={240}
+                            styles={{ root: { minHeight: 'unset' } }}
                         />
                         <Button size="sm" onClick={handleEdit} loading={processingEdit} disabled={!modalSelectedDate || !modalSelectedTime}>
                             Book Appointment
@@ -813,7 +821,7 @@ export default function ClientDashboard() {
                 </Modal>
             </Modal.Stack>
 
-            
+
             <Modal
                 opened={successModalState}
                 onClose={closeSuccessModal}
@@ -827,6 +835,7 @@ export default function ClientDashboard() {
                             data={["English", "Español (Spanish)", "پښتو (Pashto)", "درى (Dari)", "العربية (Arabic)"]}
                             value={currLanguage}
                             onChange={setCurrLanguage}
+                            styles={{ root: { minHeight: 'unset' } }}
                         />
                     </div>
                 }
@@ -908,7 +917,7 @@ export default function ClientDashboard() {
 
                     {currLanguage === "درى (Dari)" && (
                         <div style={{ textAlign: "right" }}>
-                           <h3>اگاهی</h3>
+                            <h3>اگاهی</h3>
 
                             <p>اسناد ضروری برای ثبت نام و تازه سازی دوسیه ها </p>
 

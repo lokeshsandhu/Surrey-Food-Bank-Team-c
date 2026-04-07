@@ -1,8 +1,8 @@
-import { Input, Radio, Group, Stack, TextInput, Text, Fieldset, Select, PasswordInput, Alert } from '@mantine/core';
+import { Input, Radio, Group, Stack, TextInput, Text, Fieldset, Select, PasswordInput, Alert, Textarea } from '@mantine/core';
 import React from 'react';
-import '../styles/global-styles.css'
-import '../styles/Register.css'
-import { IconCircleCheckFilled } from '@tabler/icons-react'
+import '../styles/global-styles.css';
+import '../styles/Register.css';
+import { IconCircleCheckFilled } from '@tabler/icons-react';
 
 
 export default function RegistrationFinished({ form }) {
@@ -21,12 +21,13 @@ export default function RegistrationFinished({ form }) {
                     readOnly
                     withAsterisk
                 />
-                <TextInput
+                <Textarea
                     variant="filled"
                     label="2. Address"
                     value={form.values.addr.line1 + ', ' + form.values.addr.line2 + ', ' + form.values.addr.city + ', ' + form.values.addr.province + ', ' + form.values.addr.postal_code}
                     readOnly
                     withAsterisk
+                    autosize
                 />
             </Stack>
             <hr />
@@ -49,19 +50,21 @@ export default function RegistrationFinished({ form }) {
                     readOnly
                 />
                 <Group>
-                    <TextInput
+                    <Textarea
                         variant="filled"
                         label="1. First Name"
                         value={form.values.main_family_member.f_name}
                         readOnly
                         withAsterisk
+                        autosize
                     />
-                    <TextInput
+                    <Textarea
                         variant="filled"
                         label="2. Last Name"
                         value={form.values.main_family_member.l_name}
                         readOnly
                         withAsterisk
+                        autosize
                     />
                 </Group>
                 <TextInput
@@ -71,7 +74,7 @@ export default function RegistrationFinished({ form }) {
                     readOnly
                     withAsterisk
                 />
-                <TextInput
+                <Textarea
                     variant="filled"
                     label="4. Email"
                     value={form.values.main_family_member.email}
@@ -91,18 +94,20 @@ export default function RegistrationFinished({ form }) {
                     readOnly
                     withAsterisk
                 />
-                <TextInput
+                <Textarea
                     variant="filled"
                     label="7. Language Spoken"
                     value={form.values.language_spoken}
                     readOnly
                     withAsterisk
+                    autosize
                 />
-                <TextInput
+                <Textarea
                     variant="filled"
                     label="8. Additional Notes"
                     value={form.values.account_notes.length > 0 ? form.values.account_notes : '(Empty)'}
                     readOnly
+                    autosize
                 />
             </Stack>
             <hr />
@@ -115,19 +120,21 @@ export default function RegistrationFinished({ form }) {
                             <Stack gap={3} key={index}>
                                 <Text size='md' fw={700} td='underline'>Family Member {index + 1}</Text>
                                 <Group>
-                                    <TextInput
+                                    <Textarea
                                         variant="filled"
                                         label="1. First Name"
                                         value={member.f_name}
                                         readOnly
                                         withAsterisk
+                                        autosize
                                     />
-                                    <TextInput
+                                    <Textarea
                                         variant="filled"
                                         label="2. Last Name"
                                         value={member.l_name}
                                         readOnly
                                         withAsterisk
+                                        autosize
                                     />
                                 </Group>
                                 <TextInput
@@ -137,11 +144,12 @@ export default function RegistrationFinished({ form }) {
                                     readOnly
                                     withAsterisk
                                 />
-                                <TextInput
+                                <Textarea
                                     variant="filled"
                                     label="4. Email"
                                     value={member.email.length > 0 ? member.email : '(Empty)'}
                                     readOnly
+                                    autosize
                                 />
                                 <TextInput
                                     variant="filled"
@@ -164,8 +172,8 @@ export default function RegistrationFinished({ form }) {
             </Stack>
             <hr />
             <Alert variant="light" color="cyan" title="Ready to Register?" icon={<IconCircleCheckFilled />}>
-                Select 'Register' when you are ready to register your account.
+                Select 'Register' when you are ready to create your account.
             </Alert>
         </div>
-    )
+    );
 }
