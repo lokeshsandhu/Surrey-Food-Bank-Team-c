@@ -7,7 +7,7 @@ import { ClientNavBar } from '../components/navBar.jsx';
 import { useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router';
-import { bookAppointment, deleteAppointmentFromUsername, getAppointmentsInDateRange, getMyAppointments } from '../../api/appointments.js';
+import { bookAppointment, cancelMyAppointment, deleteAppointmentFromUsername, getAppointmentsInDateRange, getMyAppointments } from '../../api/appointments.js';
 import { me } from '../../api/auth.js';
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -247,8 +247,22 @@ export default function ClientDashboard() {
     };
 
     const handleCancelBooking = async (appointment) => {
+        if (!appointment?.username || !appointment?.appt_date || !appointment?.start_time) {
+            notifications.show({
+                title: 'Error',
+                message: 'Unable to cancel appointment. Please try again.',
+                color: 'red',
+            });
+            return;
+        }
+
         setModalLoading(true);
-        const res = await deleteAppointmentFromUsername(token, appointment?.username);
+        const res = await cancelMyAppointment(
+            token,
+            appointment.appt_date,
+            appointment.start_time,
+            appointment.end_time
+        );
         const cancelSucceeded = Array.isArray(res?.deleted);
         if (cancelSucceeded) {
             if (!stack.state['calendar-page']) {
@@ -280,7 +294,9 @@ export default function ClientDashboard() {
             handleAvailableTimes(selectedDate); // Refresh available times after cancellation
         }
         fetchMyAppointment(); // Refresh user's appointment information after cancellation
-        bookingNoteRef.current.value = '';
+        if (bookingNoteRef.current) {
+            bookingNoteRef.current.value = '';
+        }
     }
 
     const fetchMyAppointment = async () => {
@@ -289,18 +305,22 @@ export default function ClientDashboard() {
             appointment => appointment.end_time && normalizeApptDate(appointment.appt_date) >= dayjs().format('YYYY-MM-DD')
         );
 
-        if (earliestAppointment.length > 0) {
-            if (earliestAppointment[0].appt_date === earliestAppointment[1].appt_date) {
-                 if (earliestAppointment[0].end_time == earliestAppointment[1].start_time) {
-                    const appt = earliestAppointment[0];
-                    appt.end_time = earliestAppointment[1].end_time;
-                    setMyAppointment(appt);
-                 }
-            }
-        } else {
-            setMyAppointment(earliestAppointment[0]);
+        if (earliestAppointment.length === 0) {
+            setMyAppointment({});
+            return;
         }
-        
+
+        if (
+            earliestAppointment.length > 1 &&
+            earliestAppointment[0].appt_date === earliestAppointment[1].appt_date &&
+            earliestAppointment[0].end_time === earliestAppointment[1].start_time
+        ) {
+            const appt = { ...earliestAppointment[0], end_time: earliestAppointment[1].end_time };
+            setMyAppointment(appt);
+            return;
+        }
+
+        setMyAppointment(earliestAppointment[0]);
     };
 
     const fetchModalTimeslots = async () => {

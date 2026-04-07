@@ -31,6 +31,8 @@ router.patch("/update", authenticate, requireAdmin, controller.updateAppointment
 // Client routes
 // Book an appointment
 router.post("/book", authenticate, controller.bookAppointment);
+// Client: cancel their own appointment range
+router.delete("/cancel", authenticate, controller.cancelMyAppointment);
 // Get the user's own booked appointments
 router.get("/mine", authenticate, controller.getMyAppointments);
 
