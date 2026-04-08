@@ -570,7 +570,7 @@ export default function ClientDashboard() {
                         {myAppointment && myAppointment.appt_date ? `You have a booking on ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} from ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')} to ${dayjs(myAppointment.end_time, 'HH:mm:ss').format('h:mm A')}, ` : `Welcome back ${username}! You do not have any upcoming bookings.`}
 
                         <p>If you have a pregnant mother or a baby in your family, only Wednesday bookings will be available to you</p>
-                        <p>If you have 5 or more members in your family, bookings will be 30 minutes long, otherwise it'll be 15 minutes</p>
+                        <p>If you have 4 or more members in your family, bookings will be 30 minutes long, otherwise it'll be 15 minutes</p>
                         <Group justify="space-between" mt={20}>
                             <Button size='lg' onClick={(event) => openSuccessModal()}>
                                 Check required documents
@@ -632,7 +632,7 @@ export default function ClientDashboard() {
                     {myAppointment && myAppointment.appt_date ? `You have a booking on ${parseApptDate(myAppointment.appt_date).format('MMMM D, YYYY')} from ${dayjs(myAppointment.start_time, 'HH:mm:ss').format('h:mm A')} to ${dayjs(myAppointment.end_time, 'HH:mm:ss').format('h:mm A')}, ` : `Welcome back ${username}! You do not have any upcoming bookings.`}
 
                     <p>If you have a pregnant mother or a baby in your family, only Wednesday bookings will be available to you</p>
-                    <p>If you have 5 or more members in your family, bookings will be 30 minutes long, otherwise it'll be 15 minutes</p>
+                    <p>If you have 4 or more members in your family, bookings will be 30 minutes long, otherwise it'll be 15 minutes</p>
                     <Group justify="space-between" mt={20}>
                         <Button size='lg' onClick={(event) => openSuccessModal()}>
                             Check required documents

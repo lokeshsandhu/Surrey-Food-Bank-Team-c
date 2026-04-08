@@ -420,7 +420,7 @@ export async function bookAppointment(data: BookAppointmentDTO, username: string
     const householdText = `SELECT household_size FROM account WHERE username = $1`;
     const { rows: householdRows } = await pool.query(householdText, [username]);
     const householdSize = householdRows[0]?.household_size ?? 1;
-    const slotsNeeded = householdSize >= 5 ? 2 : 1;
+    const slotsNeeded = householdSize >= 4 ? 2 : 1;
     const normalizedBookingNotes = normalizeOptionalText(data.booking_notes);
 
     const [startHourRaw, startMinRaw] = String(data.start_time).split(":");
@@ -466,7 +466,7 @@ export async function bookAppointment(data: BookAppointmentDTO, username: string
             const firstEnd = String(slots[0].end_time).slice(0, 5);
             const secondStart = String(slots[1].start_time).slice(0, 5);
             if (firstEnd !== secondStart) {
-                throw new Error("Both slots must be consecutive to book a 30-minute appointment (household size 5+).");
+                throw new Error("Both slots must be consecutive to book a 30-minute appointment (household size 4+).");
             }
         }
 
