@@ -76,8 +76,8 @@ describe('POST /api/family-members', () => {
             });
 
         expect(res.status).toBe(201);
-        expect(res.body.f_name).toBe('john');
-        expect(res.body.l_name).toBe('doe');
+        expect(res.body.f_name).toBe('John');
+        expect(res.body.l_name).toBe('Doe');
         expect(res.body.username).toBe(CLIENT_USER);
     });
 });
@@ -184,7 +184,7 @@ describe('DELETE /api/family-members/:username/:f_name', () => {
             .set('Authorization', `Bearer ${clientToken}`);
 
         expect(res.status).toBe(200);
-        expect(res.body.f_name).toBe('alice');
+        expect(res.body.f_name).toBe('Alice');
     });
 
     it('should return 404 for non-existent family member', async () => {
@@ -250,7 +250,7 @@ describe('GET /api/family-members/search/* (admin search)', () => {
 
         expect(res.status).toBe(200);
         expect(res.body.length).toBeGreaterThanOrEqual(1);
-        expect(res.body[0].f_name).toBe('searchfirst');
+        expect(res.body[0].f_name).toBe('SearchFirst');
     });
 
     it('should find family members by last name (admin)', async () => {
@@ -261,7 +261,7 @@ describe('GET /api/family-members/search/* (admin search)', () => {
 
         expect(res.status).toBe(200);
         expect(res.body.length).toBeGreaterThanOrEqual(1);
-        expect(res.body[0].l_name).toBe('searchlast');
+        expect(res.body[0].l_name).toBe('SearchLast');
     });
 
     it('should return 400 if f_name query param missing', async () => {

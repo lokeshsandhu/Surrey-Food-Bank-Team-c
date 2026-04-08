@@ -17,6 +17,8 @@ import dayjs from 'dayjs';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
 import { CHARLIMITS } from '../constants/Validation';
 
+import { capitalize } from '../utils/displayHelpers';
+
 export default function ClientList() {
     const token = sessionStorage.getItem('token');
     const navigate = useNavigate();
@@ -157,21 +159,21 @@ export default function ClientList() {
 
     const clientRows = accountOwners.map((owner) => (
         <Table.Tr key={owner.username}>
-            <Table.Td style={{ ...cellBase, ...colStyles.name }}>{owner.l_name}</Table.Td>
-            <Table.Td style={{ ...cellBase, ...colStyles.name }}>{owner.f_name}</Table.Td>
+            <Table.Td style={{ ...cellBase, ...colStyles.name }}>{capitalize(owner.l_name)}</Table.Td>
+            <Table.Td style={{ ...cellBase, ...colStyles.name }}>{capitalize(owner.f_name)}</Table.Td>
             <Table.Td style={{ ...cellBase, ...colStyles.username }}>{owner.username}</Table.Td>
             <Table.Td style={{ ...cellBase, ...colStyles.email }}>
                 <a href={`mailto:${owner.email}`}>{owner.email}</a>
             </Table.Td>
             <Table.Td style={{ ...cellBase, ...colStyles.phone }}>{owner.phone}</Table.Td>
             <Table.Td style={{ ...cellBase, ...colStyles.address }}>
-                {owner.address_line1}
+                {capitalize(owner.address_line1)}
                 {owner.address_line2 && owner.address_line2.length > 0 ? `, ${owner.address_line2}` : null}
             </Table.Td>
-            <Table.Td style={{ ...cellBase, ...colStyles.city }}>{owner.address_city}</Table.Td>
+            <Table.Td style={{ ...cellBase, ...colStyles.city }}>{capitalize(owner.address_city)}</Table.Td>
             <Table.Td style={{ ...cellBase, ...colStyles.postal }}>{owner.address_postal_code}</Table.Td>
             <Table.Td style={{ ...cellBase, ...colStyles.household }}>{owner.household_size}</Table.Td>
-            <Table.Td style={{ ...cellBase, ...colStyles.notes }}>{owner.account_notes}</Table.Td>
+            <Table.Td style={{ ...cellBase, ...colStyles.notes }}>{capitalize(owner.account_notes)}</Table.Td>
             <Table.Td style={{ ...cellBase, ...colStyles.action }}>
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
                     <Button size="compact-sm" onClick={() => navigate(`/adminDashboard/clientList/account/${owner.username}`)}>
