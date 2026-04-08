@@ -514,7 +514,7 @@ export default function ClientDashboard() {
             dayjs(modalCurrentMonth).endOf('month').format('YYYY-MM-DD')
         );
         setModalAllTimeslots(timeslots);
-        console.log("check2");
+        // console.log("check2");
     };
 
     const openStackPage = (page) => {
@@ -537,7 +537,7 @@ export default function ClientDashboard() {
         };
 
         checkTinyBundles().then(result => {
-            console.log("check ", result.baby_or_pregnant);
+            // console.log("check ", result.baby_or_pregnant);
             if (result.baby_or_pregnant) {
                 setTinyBundles(true);
             }
@@ -550,7 +550,7 @@ export default function ClientDashboard() {
         const fetchTimeslots = async () => {
             const timeslots = await getAppointmentsInDateRange(token, dayjs(currentMonth).startOf('month').format('YYYY-MM-DD'), dayjs(currentMonth).endOf('month').format('YYYY-MM-DD'));
             setAllTimeslots(timeslots);
-            console.log("check1 ");
+            // console.log("check1 ");
         };
 
         fetchTimeslots();

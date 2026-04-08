@@ -19,7 +19,7 @@ export default function LogoHome() {
             <a key={link.label} href={link.link} className={styles.link} onClick={async (event) => {
                 event.preventDefault();
                 const role = await getRole();
-                console.log(role);
+                // console.log(role);
 
                 if (role === 'admin') {
                     navigate('/adminDashboard');

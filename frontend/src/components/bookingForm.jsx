@@ -60,7 +60,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
       return dayjs(values.start).isSame(dayjs(appt.appt_date), 'day') &&
         dayjs(appt.start_time, "HH:mm").format('HH:mm') === dayjs(values.start).format('HH:mm');
     });
-    console.log(booking);
+    // console.log(booking);
     return booking;
   };
 
@@ -69,7 +69,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
     try {
       const booking = await fetchBooking(clientUsername);
       const notes = booking.length > 0 ? (booking[0].booking_notes === null ? "No additional notes for this appointment." : booking[0].booking_notes) : "No additional notes for this appointment.";
-      console.log("check1", booking);
+      // console.log("check1", booking);
       setClientNotes(notes);
     } catch (error) {
       console.error('Error fetching notes for client:', error);
@@ -81,7 +81,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
   const fetchBookingStatus = async (clientUsername) => {
     try {
       const booking = await fetchBooking(clientUsername);
-      console.log(booking);
+      // console.log(booking);
       const status = booking.length > 0 ? booking[0].booking_status : BOOKING_STATUS.DID_NOT_SHOW;
       return status;
     }
@@ -106,7 +106,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
 
   const handleUpdateNotes = async () => {
     try {
-      console.log("check3", clientNotes);
+      // console.log("check3", clientNotes);
       const res = await updateBookingNotes(token, dayjs(form.values.start).format('YYYY-MM-DD'), dayjs(form.values.start).format('HH:mm'), selectedClient, clientNotes);
       if (res && !res.error) {
         notifications.show({
@@ -164,7 +164,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
         bookedUsers.map(async (user) => [user, await fetchBookingStatus(user)])
       );
 
-      console.log(statuses);
+      // console.log(statuses);
 
       setBookingStatuses(Object.fromEntries(statuses));
     };
@@ -326,7 +326,7 @@ export function BookingForm({ opened, onClose, onSubmit, onDeleteBooking, onDele
         <Tabs defaultValue="client-info" onChange={(value) => {
           if (value === 'appt-notes') {
             fetchNotesForClient(selectedClient);
-            console.log(clientNotes);
+            // console.log(clientNotes);
           }
         }}>
           <Tabs.List>
