@@ -86,7 +86,7 @@ export async function createFamilyMember(data: FamilyMemberDTO) {
     const text = `
         INSERT INTO familymember
         (username, f_name, l_name, dob, phone, email, relationship, email_lookup_hash)
-        VALUES ($1, LOWER($2), LOWER($3), $4, $5, $6, $7, $8)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING ${FAMILY_MEMBER_PUBLIC_COLUMNS}
     `;
     const values = [
