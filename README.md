@@ -8,7 +8,7 @@ Clients are able to create accounts, add family members and personal information
 This application has been created using Javascript, Typescript, [React](https://react.dev/), [Mantine](https://mantine.dev/), [Node.js](https://nodejs.org/en), and [PostgreSQL](https://www.postgresql.org/), with additional email functionality provided through [Mailgun](https://www.mailgun.com/).
 
 ## Deploying on Render
-This repository now includes a Render Blueprint at [render.yaml](/Users/lokeshsandhu/Documents/Study/CPSC%20319/Surrey-Food-Bank-Team-c/render.yaml) for deploying:
+This repository now includes a Render Blueprint at [render.yaml](https://github.com/lokeshsandhu/Surrey-Food-Bank-Team-c/blob/e2345d775308e165c64ce02218be9e1bbc089919/render.yaml#L1) for deploying:
 - the Vite frontend as a Render Static Site
 - the Express backend as a Render Web Service
 - a Render Postgres database
