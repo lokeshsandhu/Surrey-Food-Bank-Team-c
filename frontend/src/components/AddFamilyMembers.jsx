@@ -88,6 +88,7 @@ export default function AddFamilyMembers({ form }) {
                                 placeholder="e.g. (123) 456-7890"
                                 key={form.key(`family_members.${index}.phone`)}
                                 {...form.getInputProps(`family_members.${index}.phone`)}
+                                onAccept={(value) => form.setFieldValue(`family_members.${index}.phone`, value)}
                                 component={IMaskInput}
                                 mask='(000) 000-0000'
                                 w={'45%'}

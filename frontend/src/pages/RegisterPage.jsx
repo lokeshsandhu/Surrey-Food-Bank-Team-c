@@ -191,7 +191,7 @@ export default function RegisterPage() {
                         return 'Email is already taken. Please enter another email.';
                     }
                 },
-                phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
+                phone: (value) => value.trim().length === 14 ? null : 'Please enter a valid phone number with exactly 10 digits (e.g. (123) 456-7890).'
             },
             family_members: {
                 f_name: (value) => value && value.trim().length > 0 ? null : 'Please enter their first name.',
@@ -216,6 +216,15 @@ export default function RegisterPage() {
 
                     if (duplicates) {
                         return 'Email is already taken. Please enter another email.';
+                    }
+                    return null;
+                },
+                phone: (value) => {
+                    const digits = value.replace(/\D/g, '');
+                    if (digits.length === 0) {
+                        return null;
+                    } else if (digits.length !== 10) {
+                        return 'Please enter a valid phone number with exactly 10 digits (e.g. (123) 456-7890).'
                     }
                     return null;
                 },

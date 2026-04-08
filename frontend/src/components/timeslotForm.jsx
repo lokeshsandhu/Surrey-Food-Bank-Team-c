@@ -53,8 +53,8 @@ export function TimeslotForm({ opened, onClose, onSubmit, onDelete, values, ...o
   }, [values]);
 
   const handleSubmit = () => {
-    console.log(form.values.start, form.values.end);
-    console.log(timeslotDates);
+    // console.log(form.values.start, form.values.end);
+    // console.log(timeslotDates);
     onSubmit({
       dates: timeslotDates,
       start: form.values.start,

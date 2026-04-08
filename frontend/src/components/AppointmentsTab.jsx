@@ -61,12 +61,9 @@ export default function AppointmentsTab({ clientUsername }) {
             } else {
                 appts = await getMyAppointments(token);
             }
-            console.log('appts', appts);
             const mergedApts = mergeAppointments(appts);
-            console.log(mergedApts);
             setAppointments(mergedApts);
         } catch (err) {
-            console.log("Error loading appointments ", err);
         }
     };
 

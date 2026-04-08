@@ -84,7 +84,7 @@ export default function AccountInformationTab({ clientUsername }) {
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your last name.',
                 dob: (value) => value && value.trim().length > 0 ? null : 'Please enter your date of birth.',
                 email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
-                phone: (value) => value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).'
+                phone: (value) => value.trim().length === 14 ? null : 'Please enter a valid phone number with exactly 10 digits (e.g. (123) 456-7890).'
             }
         }
     });
@@ -241,7 +241,7 @@ export default function AccountInformationTab({ clientUsername }) {
             }
         } else {
             notifications.show({
-                title: 'Missing Fields',
+                title: 'Invalid or Missing Fields',
                 message: 'Please fill all the required fields (*).',
                 color: 'red',
             });
@@ -319,6 +319,7 @@ export default function AccountInformationTab({ clientUsername }) {
                         placeholder="e.g. (123) 456-7890"
                         key={form.key('accountOwner.phone')}
                         {...form.getInputProps('accountOwner.phone')}
+                        onAccept={(value) => form.setFieldValue(`accountOwner.phone`, value)}
                         component={IMaskInput}
                         mask='(000) 000-0000'
                         withAsterisk
