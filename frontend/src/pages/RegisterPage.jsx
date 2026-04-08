@@ -42,7 +42,7 @@ function getUsernameValidationError(value) {
 
 export default function RegisterPage() {
     const errorRef = useRef(null);
-    const [activeSection, setActiveSection] = useState(2);
+    const [activeSection, setActiveSection] = useState(0);
     const [registerError, setRegisterError] = useState('');
     const [opened, { open, close }] = useDisclosure(false);
     const [loading, setLoading] = useState(false);
