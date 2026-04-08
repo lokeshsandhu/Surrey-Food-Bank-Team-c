@@ -301,7 +301,7 @@ export default function TimeslotPage() {
             <LoadingOverlay visible={loadingTimeslots}/>
             <WeekView
                 date={date}
-                onDateChange={(newDate) => { if (dayjs(newDate).day() === 1 && dayjs(newDate).isSame(dayjs(date), 'day') === false) setDate(newDate); }}
+                onDateChange={(newDate) => { if (dayjs(newDate).day() === 1 && dayjs(newDate).isSame(dayjs(date), 'day') === false) setDate(newDate);}}
                 events={events}
                 onEventClick={handleEventClick}
                 onTimeSlotClick={handleTimeslotClick}
@@ -341,6 +341,7 @@ export default function TimeslotPage() {
                     boxShadow: '0px 4px 4px 2px #0000006a',
                     justifySelf: 'top',
                 }}
+                todayControlProps={{ onClick: () => setDate(dayjs().format('YYYY-MM-DD')) }}
             />
             <TimeslotForm opened={timeslotModalOpened} onClose={timeslotModalHandlers.close} values={selectedTimeslotData} onSubmit={handleTimeslotFormSubmit}/>
             
