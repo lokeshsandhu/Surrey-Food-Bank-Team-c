@@ -66,8 +66,14 @@ export default function FamilyMembersTab({ clientUsername }) {
           }
         }
       },
-      phone: (value) => form.values.relationship === 'owner' ?
-        (value.trim().length > 0 ? null : 'Please enter a valid phone number (e.g. (123) 456-7890).') : null,
+      phone: (value) => {
+        if (form.values.relationship !== 'owner' && value.length === 0) {
+          return null;
+        } else if (value.length < 14) {
+          return 'Please enter a valid phone number with exactly 10 digits (e.g. (123) 456-7890).';
+        }
+        return null;
+      },
       relationship: (value) => value.trim().length > 0 ? null : "Please select your relationship to this family member."
     }
   });
@@ -433,6 +439,7 @@ export default function FamilyMembersTab({ clientUsername }) {
             placeholder="e.g. (123) 456-7890"
             key={form.key(`phone`)}
             {...form.getInputProps(`phone`)}
+            onAccept={(value) => form.setFieldValue(`phone`, value)}
             component={IMaskInput}
             mask='(000) 000-0000'
             w={'45%'}

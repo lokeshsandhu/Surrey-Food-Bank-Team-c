@@ -125,6 +125,7 @@ export default function AccountInformation({ form }) {
                         placeholder="e.g. (123) 456-7890"
                         key={form.key('main_family_member.phone')}
                         {...form.getInputProps('main_family_member.phone')}
+                        onAccept={(value) => form.setFieldValue(`main_family_member.phone`, value)}
                         component={IMaskInput}
                         mask='(000) 000-0000'
                         withAsterisk
