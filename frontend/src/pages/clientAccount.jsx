@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 
 import '../styles/adminstyles.css';
-import '../styles/clientList.css';
 import AccountInformationTab from "../components/AccountInformationTab";
 import { AdminNavBar, ClientNavBar } from "../components/navBar";
 

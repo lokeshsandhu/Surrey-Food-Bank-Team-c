@@ -1,6 +1,5 @@
 import { Group, Table, Button, Title } from "@mantine/core";
 import React, { useEffect, useState } from "react";
-import '../styles/clientList.css';
 import { getMyAppointments, getUsernameAppointments } from "../../api/appointments";
 import { useNavigate } from "react-router";
 

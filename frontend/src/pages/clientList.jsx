@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router';
 import { AdminNavBar } from '../components/navBar';
 
 import '../styles/adminstyles.css';
-import '../styles/clientList.css';
 
 import { ActionIcon, CloseButton, TextInput, Title, Table, Button } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
