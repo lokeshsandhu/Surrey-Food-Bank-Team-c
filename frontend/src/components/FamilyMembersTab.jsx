@@ -2,7 +2,6 @@ import { Stack, TextInput, Group, Table, Button, Modal, Select, Title, Textarea 
 import React, { useEffect, useState } from "react";
 import { createFamilyMember, deleteFamilyMember, getFamilyMembers, updateFamilyMember } from "../../api/familyMembers";
 import { useDisclosure } from "@mantine/hooks";
-import '../styles/clientList.css';
 import { useForm } from "@mantine/form";
 import dayjs from 'dayjs';
 import { DateInput } from "@mantine/dates";
@@ -172,7 +171,6 @@ export default function FamilyMembersTab({ clientUsername }) {
         email: member.email.trim().length > 0 ? member.email.trim() : null,
         relationship: member.relationship
       };
-      // console.log(memberData);
       try {
         const result = await updateFamilyMember(token, clientUsername, currentMember.id, memberData);
         await getFamilyMembersInformation();
