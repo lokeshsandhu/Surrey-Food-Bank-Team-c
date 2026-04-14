@@ -127,7 +127,6 @@ export default function AccountInformationTab({ clientUsername }) {
         const ownerTemp = familyMembers.filter(member => member.relationship === 'owner');
         const owner = ownerTemp[0];
         const address = splitAddress(result.addr);
-        // TODO: Rewrite (better practices)
         if (result && owner) {
             setOwnerId(owner.id);
             form.setValues({

@@ -94,7 +94,7 @@ We recommend using the latest versions and cannot guarantee functionality on old
 
 5. Run the setup script: `node resetDB.js`.
 
-    This message will print to console if successful: `Database initialized: 6 successful, 0 errors`.
+    This message will print to console if successful: `Database initialized: 12 successful, 0 errors. Admin account seeded.`.
 
     Example:
     ![DB init example](/setup-images/vscode1.png)
@@ -229,6 +229,7 @@ For additional details, please refer to the sampleDB.ts script.
 Admin Account
 - Username: admin
 - Password: adminPassword#123
+Note: The admin account is created by the resetDB.js script.
 
 Client Account with 5 Family Members
 - Username: jane123
