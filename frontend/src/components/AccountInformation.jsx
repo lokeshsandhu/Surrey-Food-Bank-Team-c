@@ -128,7 +128,6 @@ export default function AccountInformation({ form }) {
                         onAccept={(value) => form.setFieldValue(`main_family_member.phone`, value)}
                         component={IMaskInput}
                         mask='(000) 000-0000'
-                        withAsterisk
                         w={'45%'}
                     />
                     <Radio.Group
