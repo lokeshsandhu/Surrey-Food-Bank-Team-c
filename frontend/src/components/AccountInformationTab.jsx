@@ -84,7 +84,7 @@ export default function AccountInformationTab({ clientUsername }) {
                 l_name: (value) => value && value.trim().length > 0 ? null : 'Please enter your last name.',
                 dob: (value) => value && value.trim().length > 0 ? null : 'Please enter your date of birth.',
                 email: (value) => value && value.trim().length > 0 && validator.isEmail(value) ? null : 'Please enter a valid email (e.g. alexdoe@gmail.com).',
-                phone: (value) => value.trim().length === 14 ? null : 'Please enter a valid phone number with exactly 10 digits (e.g. (123) 456-7890).'
+                phone: (value) => value.trim().length === 14 || value.trim().length === 0 ? null : 'Please enter a valid phone number with exactly 10 digits (e.g. (123) 456-7890).'
             }
         }
     });
@@ -321,7 +321,6 @@ export default function AccountInformationTab({ clientUsername }) {
                         onAccept={(value) => form.setFieldValue(`accountOwner.phone`, value)}
                         component={IMaskInput}
                         mask='(000) 000-0000'
-                        withAsterisk
                         w={'45%'}
                     />
                     <Fieldset variant='unstyled' my={10}>

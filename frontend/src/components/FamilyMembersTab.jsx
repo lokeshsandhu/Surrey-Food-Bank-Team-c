@@ -66,7 +66,7 @@ export default function FamilyMembersTab({ clientUsername }) {
         }
       },
       phone: (value) => {
-        if (form.values.relationship !== 'owner' && value.length === 0) {
+        if (value.length === 0) {
           return null;
         } else if (value.length < 14) {
           return 'Please enter a valid phone number with exactly 10 digits (e.g. (123) 456-7890).';
@@ -441,7 +441,6 @@ export default function FamilyMembersTab({ clientUsername }) {
             component={IMaskInput}
             mask='(000) 000-0000'
             w={'45%'}
-            withAsterisk={form.values.relationship === 'owner'}
           />
 
           {form.values.relationship !== 'owner' &&

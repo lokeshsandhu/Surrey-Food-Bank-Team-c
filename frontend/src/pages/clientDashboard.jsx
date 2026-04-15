@@ -15,7 +15,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import utc from "dayjs/plugin/utc";
 import { useDisclosure } from '@mantine/hooks';
 import { getAccount, getAccountEmail } from '../../api/accounts.js';
-import { sendConfirmationEmail } from '../../api/email.js';
+import { sendCancelEmail, sendConfirmationEmail } from '../../api/email.js';
 
 import arabic_img from '../assets/arabic.png';
 import help_icon from '../assets/help-circle.svg';
@@ -363,7 +363,7 @@ export default function ClientDashboard() {
                 if (!emailRes?.success) {
                     notifications.show({
                         title: 'Email not sent',
-                        message: emailRes?.error || 'Appointment was booked but confirmation email failed.',
+                        message: 'Appointment was booked but confirmation email failed.  Please make sure your account email is valid.',
                         color: 'yellow',
                     });
                 }
@@ -465,6 +465,37 @@ export default function ClientDashboard() {
                     }
                 });
             }
+
+            // Cancellation Email
+            // const effectiveUsername = username || (await me(token))?.username || '';
+            // const userEmail = await getAccountEmail(token, effectiveUsername);
+            // if (!userEmail?.email) {
+            //     notifications.show({
+            //         title: 'Email not sent',
+            //         message: 'Appointment was cancelled but no account email was found.',
+            //         color: 'yellow',
+            //     });
+            //     handleAvailableTimesModal(modalSelectedDate);
+            //     fetchMyAppointment();
+            //     setProcessingEdit(false);
+            //     return;
+            // }
+
+            // const cancellationEmail = {
+            //     date: appointment.appt_date,
+            //     time: appointment.start_time,
+            //     username: effectiveUsername,
+            //     email: userEmail.email
+            // };
+
+            // const emailRes = await sendCancelEmail(token, cancellationEmail);
+            // if (!emailRes?.success) {
+            //     notifications.show({
+            //         title: 'Email not sent',
+            //         message: 'Appointment was cancelled but cancellation email failed.  Please make sure your account email is valid.',
+            //         color: 'yellow',
+            //     });
+            // }
         } else {
             notifications.show({
                 title: 'Error',

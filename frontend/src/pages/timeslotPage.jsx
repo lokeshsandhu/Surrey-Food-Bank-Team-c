@@ -12,6 +12,8 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { BookingForm } from '../components/bookingForm';
 import { TimeslotForm } from '../components/timeslotForm.jsx';
+import { sendConfirmationEmail, sendCancelEmail } from '../../api/email.js';
+import { getAccountEmail } from '../../api/accounts.js';
 
 export default function TimeslotPage() {
     const [date, setDate] = useState(dayjs().format('YYYY-MM-DD HH:mm:ss'));
@@ -200,6 +202,35 @@ export default function TimeslotPage() {
                 message: 'Booking successfully edited',
                 color: 'green'
             });
+
+            // Confirmation Email
+            // if (username !== '') {
+            //     const userEmail = await getAccountEmail(token, username);
+            //     if (!userEmail?.email) {
+            //         notifications.show({
+            //             title: 'Email not sent',
+            //             message: 'Appointment was booked but no account email was found.',
+            //             color: 'yellow',
+            //         });
+            //     } else {
+            //         const confirmationEmail = {
+            //             date: bookingDate,
+            //             time: bookingTime,
+            //             username: username,
+            //             email: userEmail.email
+            //         };
+
+            //         const emailRes = await sendConfirmationEmail(token, confirmationEmail);
+            //         if (!emailRes?.success) {
+            //             notifications.show({
+            //                 title: 'Email not sent',
+            //                 message: 'Appointment was booked but confirmation email failed.  Please confirm account email is valid.',
+            //                 color: 'yellow',
+            //             });
+            //         }
+            //     }
+            // }
+            
             // Reload timeslots to reflect new booking
             if (values) {
                 await fetchTimeslots();
@@ -280,6 +311,32 @@ export default function TimeslotPage() {
                     message: `Removed ${deletedCount} upcoming booking(s) for ${usernameToRemove}`,
                     color: 'green',
                 });
+
+                // Cancellation Email
+                // const userEmail = await getAccountEmail(token, usernameToRemove);
+                // if (!userEmail?.email) {
+                //     notifications.show({
+                //         title: 'Email not sent',
+                //         message: 'Appointment was cancelled but no account email was found.',
+                //         color: 'yellow',
+                //     });
+                // } else {
+                //     const cancellationEmail = {
+                //         date: bookingDate,
+                //         time: bookingTime,
+                //         username: usernameToRemove,
+                //         email: userEmail.email
+                //     };
+
+                //     const emailRes = await sendCancelEmail(token, cancellationEmail);
+                //     if (!emailRes?.success) {
+                //         notifications.show({
+                //             title: 'Email not sent',
+                //             message: 'Appointment was cancelled but cancellation email failed.  Please confirm account email is valid.',
+                //             color: 'yellow',
+                //         });
+                //     }
+                // }
             }
 
             const refreshedEvents = await fetchTimeslots();
